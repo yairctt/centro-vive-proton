@@ -42,10 +42,13 @@ function fraseHorario(lugar: LugarParaTexto): string {
   const meta = lugar.meta ?? {};
   const horarioVerificado = lugar.verified && meta.horarioVerificado !== false;
 
+  // Se limpia el punto final del texto para no duplicarlo al añadir el cierre.
+  const horario = lugar.hours.trim().replace(/\.\s*$/, "");
+
   if (!horarioVerificado) {
-    return ` Horario según la ficha: ${lugar.hours} (por confirmar).`;
+    return ` Horario según la ficha: ${horario} (por confirmar).`;
   }
-  return ` Horario según la ficha: ${lugar.hours}.`;
+  return ` Horario según la ficha: ${horario}.`;
 }
 
 /** Mismo contrato que Gemini, pero sin llamar a la red. */
