@@ -5,6 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 
 import { aiConfig } from "./config";
 import { fallbackMission, type MissionCopy } from "./fallback";
+import { flags } from "../flags";
 import type { Place } from "../types";
 
 /** Datos que se le dan al modelo. Nada más: no se inventa información. */
@@ -73,6 +74,8 @@ export function parseModelJson(raw: string): { text: string; why: string } | nul
 export async function generateMission(ctx: MissionContext): Promise<MissionCopy> {
   const respaldo = fallbackMission(ctx.place, ctx.interests);
   const apiKey = process.env.GEMINI_API_KEY;
+  // Interruptor de funciones: si la IA está apagada, siempre la plantilla.
+  if (!flags.ia) return respaldo;
   if (!apiKey) return respaldo;
 
   try {
