@@ -58,21 +58,30 @@ export function parseHoursRange(hours: string | null): { opensAt: string; closes
   return { opensAt, closesAt };
 }
 
-/** Datos derivados de un lugar, con valores por omisión cuando el dato falta. */
+/**
+ * Datos derivados de un lugar, con valores por omisión cuando el dato falta.
+ *
+ * Orden de lectura de cada campo:
+ * 1. El campo directo de `Place` (lo llena el mapper del backend, I3).
+ * 2. `place.meta` (jsonb: donde el seed guarda lo específico de cada lugar).
+ * 3. El texto legible de `hours`, parseado.
+ */
 export function readPlaceInfo(place: Place): PlaceInfo {
   const meta = place.meta ?? {};
   const parsed = parseHoursRange(place.hours);
 
   const metaOpens = readString(meta, "opensAt");
   const metaCloses = readString(meta, "closesAt");
-  const opensAt = metaOpens ?? parsed?.opensAt ?? null;
-  const closesAt = metaCloses ?? parsed?.closesAt ?? null;
+  const opensAt = place.opensAt ?? metaOpens ?? parsed?.opensAt ?? null;
+  const closesAt = place.closesAt ?? metaCloses ?? parsed?.closesAt ?? null;
 
   const metaPrice = readString(meta, "priceLevel") as PriceLevel | null;
-  const priceLevel = metaPrice && metaPrice in RANGO_PRECIO ? metaPrice : null;
+  const precioDirecto = place.priceLevel as PriceLevel | null | undefined;
+  const precio = precioDirecto ?? metaPrice;
+  const priceLevel = precio && precio in RANGO_PRECIO ? precio : null;
 
-  const avgVisitMin = readNumber(meta, "avgVisitMin");
-  const opportunity = readNumber(meta, "opportunity");
+  const avgVisitMin = place.avgVisitMin ?? readNumber(meta, "avgVisitMin");
+  const opportunity = place.opportunity ?? readNumber(meta, "opportunity");
 
   return {
     avgVisitMin: avgVisitMin !== null && avgVisitMin > 0 ? avgVisitMin : 30,
