@@ -190,12 +190,16 @@ export function toBusiness(row: Record<string, unknown>): Business {
     }
   }
 
+  const rawName = row.name ?? (row.place as Record<string, unknown>)?.name ?? (row.places as Record<string, unknown>)?.name;
+  const ownerId = row.owner_id ? String(row.owner_id) : (row.ownerId ? String(row.ownerId) : undefined);
+  const contact = row.contact ? String(row.contact) : (row.contact === null ? null : undefined);
+
   return {
     id: String(row.id ?? ""),
     placeId: String(row.place_id ?? row.placeId ?? ""),
-    ownerId: row.owner_id ? String(row.owner_id) : (row.ownerId ? String(row.ownerId) : null),
-    name: String(row.name ?? (row.place as Record<string, unknown>)?.name ?? (row.places as Record<string, unknown>)?.name ?? ""),
-    contact: row.contact ? String(row.contact) : null,
+    ownerId: ownerId ?? undefined,
+    ...(rawName ? { name: String(rawName) } : {}),
+    contact: contact ?? undefined,
     active: Boolean(row.active ?? true),
     verified: Boolean(row.verified ?? true),
     meta,
@@ -207,14 +211,18 @@ export function toBusiness(row: Record<string, unknown>): Business {
  */
 export function toReward(row: Record<string, unknown>): Reward {
   const cost = Number(row.cost_points ?? row.points_cost ?? row.costPoints ?? row.pointsCost ?? 0);
+  const validUntil = toIsoStringOrNull(row.valid_until ?? row.validUntil);
+  const redemptions = Number(row.redemptions ?? 0);
+
   return {
     id: String(row.id ?? ""),
     businessId: String(row.business_id ?? row.businessId ?? ""),
     title: String(row.title ?? ""),
     conditions: String(row.conditions ?? ""),
     pointsCost: cost,
-    validUntil: toIsoStringOrNull(row.valid_until ?? row.validUntil),
-    redemptions: Number(row.redemptions ?? 0),
+    costPoints: cost,
+    validUntil: validUntil ?? undefined,
+    redemptions,
   };
 }
 

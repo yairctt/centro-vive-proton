@@ -156,3 +156,4 @@ ON CONFLICT (id) DO UPDATE SET
 DELETE FROM qr_tokens;
 INSERT INTO qr_tokens (place_id)
 SELECT id FROM places;
+

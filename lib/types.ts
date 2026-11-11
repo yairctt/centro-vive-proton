@@ -34,12 +34,12 @@ export interface Place {
 export interface Business {
   id: string;
   placeId: string;
-  ownerId: string | null;
-  name: string;
-  contact: string | null;
+  ownerId?: string | null;
+  name?: string;
+  contact?: string | null;
   /** Estado de participación en el programa. */
   active: boolean;
-  verified: boolean;
+  verified?: boolean;
   meta: Record<string, unknown>;
 }
 
@@ -101,9 +101,10 @@ export interface Reward {
   businessId: string;
   title: string;
   conditions: string;
-  pointsCost: number;
-  validUntil: string | null;
-  redemptions: number;
+  pointsCost?: number;
+  costPoints?: number;
+  validUntil?: string | null;
+  redemptions?: number;
 }
 
 // --- Contratos de API (docs/propuesta.md, sección 11.3) ---
