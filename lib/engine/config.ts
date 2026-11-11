@@ -31,8 +31,19 @@ export const engineConfig = {
   disponibilidadDesconocida: 0.5,
   /** Cercanía cuando el visitante no autoriza ubicación. */
   cercaniaSinOrigen: 0.5,
-  /** Penalización por saltar de un extremo a otro de la ciudad. */
-  penalSaltoDeRuta: 0.1,
+  /**
+   * Penalización por cada minuto de caminata extra entre paradas.
+   * Es un valor pequeño a propósito: la afinidad y la cercanía (que ya están
+   * en la puntuación) deben mandar, no el salto. Con 0.1 este factor
+   * aplastaba la afinidad y la ruta elegía siempre lo más cercano.
+   */
+  penalSaltoDeRuta: 0.005,
   /** Tope de paradas para no saturar la pantalla del móvil. */
   maxParadas: 12,
+  /**
+   * Lugar que se toma como punto de partida cuando el visitante no autoriza
+   * ubicación. El Zócalo es el corazón del Centro Histórico: es el punto de
+   * referencia más razonable para ordenar la ruta.
+   */
+  lugarReferenciaId: "zocalo",
 } as const;
