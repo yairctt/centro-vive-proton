@@ -23,6 +23,35 @@ describe("plantilla de respaldo", () => {
     expect(copy.text).toContain("por confirmar");
   });
 
+  it("marca como «por confirmar» cuando la ficha avisa que el horario es variable", () => {
+    const copy = fallbackMission(
+      {
+        ...zocalo,
+        verified: true,
+        hours: "Todos los días de 7:00 a 23:00 (se recomienda confirmar).",
+        meta: { horarioVerificado: false },
+      },
+      [],
+    );
+
+    expect(copy.text).toContain("por confirmar");
+  });
+
+  it("afirma el horario cuando la ficha lo declara verificado", () => {
+    const copy = fallbackMission(
+      {
+        ...zocalo,
+        verified: true,
+        hours: "Todos los días, 24 horas",
+        meta: { horarioVerificado: true },
+      },
+      [],
+    );
+
+    expect(copy.text).toContain("24 horas");
+    expect(copy.text).not.toContain("por confirmar");
+  });
+
   it("no menciona horarios si la ficha no los tiene", () => {
     const copy = fallbackMission({ ...zocalo, hours: null }, []);
 

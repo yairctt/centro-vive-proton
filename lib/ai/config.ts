@@ -12,6 +12,7 @@ export const aiConfig = {
     "Redacta únicamente con los datos que se te entregan. " +
     "PROHIBIDO inventar horarios, precios, eventos, promociones, accesibilidad o cualquier dato que no esté en la ficha. " +
     "Si un dato no aparece en la ficha, no lo menciones. " +
+    "Si el horario no está verificado, menciónalo como 'por confirmar'. " +
     "No prometas descuentos ni puntos que no estén indicados. " +
     "Devuelve únicamente un JSON válido con las claves 'text' (la misión, máximo 2 frases) y 'why' (por qué se recomienda, máximo 1 frase).",
 } as const;
