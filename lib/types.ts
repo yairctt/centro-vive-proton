@@ -24,6 +24,11 @@ export interface Place {
   hours: string | null;
   verified: boolean;
   meta: Record<string, unknown>;
+  opensAt?: string | null;
+  closesAt?: string | null;
+  avgVisitMin?: number | null;
+  priceLevel?: Budget | string | null;
+  opportunity?: number | null;
 }
 
 export interface Business {
@@ -52,6 +57,8 @@ export interface Event {
   source: string;
   verified: boolean;
   meta: Record<string, unknown>;
+  /** Lugar asociado al evento (opcional, incluido en respuestas con relación places(*)). */
+  place?: Place | null;
 }
 
 export type MissionStatus = "activa" | "pausada" | "vencida";
