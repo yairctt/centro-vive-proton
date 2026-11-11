@@ -65,7 +65,7 @@ export function buildReason(
   }
 
   if (breakdown.oportunidad >= 0.7) {
-    partes.push("es un comercio que necesita visibilidad");
+    partes.push("necesita que le pongas un sello");
   }
 
   if (opts.eventName) {
@@ -113,10 +113,18 @@ export function buildRoute(
   const now = options.now ?? new Date();
   const minutosVentana = Math.max(0, request.minutes);
   const ahora = minutesOfDay(now);
-  const origin: LatLng | null =
+
+  // Punto de partida: la ubicación del visitante si la autoriza; si no, el
+  // lugar de referencia (el Zócalo), que es el corazón del Centro Histórico.
+  let origin: LatLng | null =
     request.lat !== undefined && request.lng !== undefined
       ? { lat: request.lat, lng: request.lng }
       : null;
+
+  if (!origin) {
+    const referencia = places.find((lugar) => lugar.id === engineConfig.lugarReferenciaId);
+    if (referencia) origin = { lat: referencia.lat, lng: referencia.lng };
+  }
 
   const eventos = (options.events ?? []).filter((event) => {
     const inicio = Date.parse(event.startsAt);
