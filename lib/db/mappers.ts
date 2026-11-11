@@ -144,8 +144,8 @@ export function toEvent(row: Record<string, unknown>): Event {
 
   return {
     id: String(row.id ?? ""),
-    name: String(row.name ?? ""),
-    description: String(row.description ?? ""),
+    name: String(row.name ?? row.title ?? ""),
+    description: String(row.description ?? row.details ?? ""),
     category: String(row.category ?? ""),
     startsAt: toIsoString(row.starts_at ?? row.startsAt),
     endsAt: toIsoStringOrNull(row.ends_at ?? row.endsAt),
@@ -258,3 +258,4 @@ export function toVisit(row: Record<string, unknown>): Visit {
     pointsAwarded: Number(row.points_awarded ?? row.pointsAwarded ?? 0),
   };
 }
+

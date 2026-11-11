@@ -18,3 +18,4 @@ export function getBrowserClient() {
 
   return browserClient;
 }
+
