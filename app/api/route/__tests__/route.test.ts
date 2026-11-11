@@ -61,8 +61,9 @@ describe("POST /api/route", () => {
         minutes: 90,
         interests: ["paseo"],
         budget: "medio",
-        lat: 19.5438,
-        lng: -96.9111,
+        // Coordenadas reales del Zócalo de Veracruz (OpenStreetMap).
+        lat: 19.2002,
+        lng: -96.1385,
       }),
     );
 
