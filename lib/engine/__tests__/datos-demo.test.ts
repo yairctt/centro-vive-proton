@@ -10,6 +10,7 @@ import {
   buscarLugarDemo,
 } from "../datos-demo";
 import { buildRoute } from "../route";
+import { distanceM } from "../geo";
 import { isOpenAt, readPlaceInfo } from "../place";
 import type { Place } from "../../types";
 
@@ -56,6 +57,57 @@ describe("catálogo de demostración", () => {
       if (lugar.meta.estado) continue; // cerrados: sin horario aplicable
       expect(info.horarioSemanal, `falta horario de ${lugar.id}`).not.toBeNull();
     }
+  });
+});
+
+describe("coordenadas", () => {
+  // El Centro Histórico de Veracruz está en ~19.20, -96.13 (OpenStreetMap).
+  // Antes se usaron unas coordenadas equivocadas de la zona de Xalapa, que
+  // dejaban la ruta entera a 80 km. Esta prueba lo evita.
+  const ZOCALO = { lat: 19.2002, lng: -96.1385 };
+  /** Distancia a pie razonable desde el Zócalo (unos 4 km). */
+  const RADIO_CENTRO_M = 4000;
+
+  it("el Zócalo es el punto de referencia y queda en el centro", () => {
+    const zocalo = buscarLugarDemo("zocalo")!;
+
+    expect(zocalo.lat).toBeCloseTo(ZOCALO.lat, 3);
+    expect(zocalo.lng).toBeCloseTo(ZOCALO.lng, 3);
+  });
+
+  it("los lugares del núcleo están a menos de 4 km del Zócalo", () => {
+    for (const lugar of CATALOGO_DEMO) {
+      // Boca del Río y la Isla de Sacrificios quedan fuera a propósito.
+      if (lugar.meta.fueraDelCentro) continue;
+      const distancia = distanceM(ZOCALO, { lat: lugar.lat, lng: lugar.lng });
+      expect(
+        distancia,
+        `${lugar.id} está a ${Math.round(distancia / 1000)} km del Zócalo`,
+      ).toBeLessThan(RADIO_CENTRO_M);
+    }
+  });
+
+  it("el catálogo ampliado solo tiene destinos fuera del centro marcados", () => {
+    for (const lugar of CATALOGO_AMPLIO) {
+      const distancia = distanceM(ZOCALO, { lat: lugar.lat, lng: lugar.lng });
+      const fueraDelCentro = lugar.meta.fueraDelCentro === true;
+      expect(
+        distancia < RADIO_CENTRO_M || fueraDelCentro,
+        `${lugar.id} está a ${Math.round(distancia / 1000)} km y no lo declara`,
+      ).toBe(true);
+    }
+  });
+
+  it("las distancias entre lugares del centro son caminables", () => {
+    const zocalo = buscarLugarDemo("zocalo")!;
+    const portales = buscarLugarDemo("portales-de-veracruz")!;
+
+    // Entre el Zócalo y los Portales hay unos metros, no kilómetros.
+    const distancia = distanceM(
+      { lat: zocalo.lat, lng: zocalo.lng },
+      { lat: portales.lat, lng: portales.lng },
+    );
+    expect(distancia).toBeLessThan(500);
   });
 });
 
