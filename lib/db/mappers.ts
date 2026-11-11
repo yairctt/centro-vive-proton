@@ -194,10 +194,10 @@ export function toBusiness(row: Record<string, unknown>): Business {
     id: String(row.id ?? ""),
     placeId: String(row.place_id ?? row.placeId ?? ""),
     ownerId: row.owner_id ? String(row.owner_id) : (row.ownerId ? String(row.ownerId) : null),
-    name: String(row.name ?? ""),
+    name: String(row.name ?? (row.place as Record<string, unknown>)?.name ?? (row.places as Record<string, unknown>)?.name ?? ""),
     contact: row.contact ? String(row.contact) : null,
     active: Boolean(row.active ?? true),
-    verified: Boolean(row.verified),
+    verified: Boolean(row.verified ?? true),
     meta,
   };
 }
@@ -206,12 +206,13 @@ export function toBusiness(row: Record<string, unknown>): Business {
  * Convierte una fila de la tabla `rewards` (snake_case) al tipo `Reward` (camelCase).
  */
 export function toReward(row: Record<string, unknown>): Reward {
+  const cost = Number(row.cost_points ?? row.points_cost ?? row.costPoints ?? row.pointsCost ?? 0);
   return {
     id: String(row.id ?? ""),
     businessId: String(row.business_id ?? row.businessId ?? ""),
     title: String(row.title ?? ""),
     conditions: String(row.conditions ?? ""),
-    pointsCost: Number(row.points_cost ?? row.pointsCost ?? 0),
+    pointsCost: cost,
     validUntil: toIsoStringOrNull(row.valid_until ?? row.validUntil),
     redemptions: Number(row.redemptions ?? 0),
   };
