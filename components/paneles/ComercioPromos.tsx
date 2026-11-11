@@ -176,3 +176,4 @@ export function ComercioPromos({ initialPromotions }: ComercioPromosProps) {
     </div>
   );
 }
+

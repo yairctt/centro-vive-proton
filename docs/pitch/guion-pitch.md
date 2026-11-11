@@ -73,3 +73,4 @@
 
 ### 3. ¿Por qué las métricas se presentan como 'actividad registrada en la app' y no afluencia total?
 > **Respuesta:** *"Por rigor metodológico y ética de datos. Reconocemos la diferencia entre el conteo total de transeúntes y las señales de interacción verificadas digitalmente. Nuestras métricas reflejan tracción real, visitas confirmadas y canjes comerciales verificables, lo cual es mucho más accionable que una estimación aproximada de cabezas en la calle."*
+

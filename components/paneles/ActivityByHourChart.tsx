@@ -153,3 +153,4 @@ export function ActivityByHourChart({ data }: ActivityByHourChartProps) {
     </div>
   );
 }
+

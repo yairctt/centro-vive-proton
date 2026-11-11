@@ -42,3 +42,4 @@ El módulo de paneles provee las dos interfaces clave de gestión y visualizaci�
 
 ### P3: ¿Qué utilidad práctica tiene para las autoridades ver la gráfica de 'Actividad vs. Comercios Abiertos'?
 > **Respuesta:** *"Es la prueba cuantitativa de la oportunidad económica desaprovechada. Muestra que mientras los visitantes siguen activos y buscando experiencias en el Centro Histórico después de las 19:00 hrs, la mayoría de los negocios tradicionales ya cerraron sus puertas. Sirve a las cámaras de comercio y al ayuntamiento para justificar incentivos de apertura nocturna, iluminación y seguridad."*
+

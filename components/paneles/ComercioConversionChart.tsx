@@ -88,3 +88,4 @@ export function ComercioConversionChart({ data }: ComercioConversionChartProps) 
     </div>
   );
 }
+

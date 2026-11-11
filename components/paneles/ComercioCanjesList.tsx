@@ -88,3 +88,4 @@ export function ComercioCanjesList({ initialRedemptions }: ComercioCanjesListPro
     </div>
   );
 }
+

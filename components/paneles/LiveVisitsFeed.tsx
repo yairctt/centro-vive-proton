@@ -130,3 +130,4 @@ export function LiveVisitsFeed({ initialVisits }: LiveVisitsFeedProps) {
     </div>
   );
 }
+

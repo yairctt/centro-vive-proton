@@ -110,3 +110,4 @@ export function ScansByPlaceChart({ data }: ScansByPlaceChartProps) {
     </div>
   );
 }
+

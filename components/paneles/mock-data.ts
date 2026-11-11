@@ -255,3 +255,4 @@ export const MOCK_COMERCIO: ComercioMockData = {
     { name: "Canjes de Beneficio", valor: 11, color: "#d97706" },
   ],
 };
+
