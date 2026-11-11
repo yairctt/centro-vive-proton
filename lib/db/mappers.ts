@@ -63,7 +63,6 @@ export function toPlace(row: Record<string, unknown>): Place {
   const rawMeta = (row.meta && typeof row.meta === "object" ? row.meta : {}) as Record<string, unknown>;
   const meta: Record<string, unknown> = { ...rawMeta };
 
-  // Convertir llaves snake_case en meta si existen
   for (const [k, v] of Object.entries(meta)) {
     if (k.includes("_")) {
       const camel = k.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
@@ -79,17 +78,16 @@ export function toPlace(row: Record<string, unknown>): Place {
 
   const opensAt = formatTime(rawOpensAt);
   const closesAt = formatTime(rawClosesAt);
-  const avgVisitMin = rawAvgVisitMin !== undefined && rawAvgVisitMin !== null ? Number(rawAvgVisitMin) : null;
-  const priceLevel = rawPriceLevel ? (String(rawPriceLevel) as Budget) : null;
-  const opportunity = rawOpportunity !== undefined && rawOpportunity !== null ? Number(rawOpportunity) : null;
+  const avgVisitMin = rawAvgVisitMin !== undefined && rawAvgVisitMin !== null ? Number(rawAvgVisitMin) : 30;
+  const priceLevel = (rawPriceLevel ? String(rawPriceLevel) : "bajo") as Budget;
+  const opportunity = rawOpportunity !== undefined && rawOpportunity !== null ? Number(rawOpportunity) : 0.5;
 
-  if (opensAt !== null) meta.opensAt = opensAt;
-  if (closesAt !== null) meta.closesAt = closesAt;
-  if (avgVisitMin !== null) meta.avgVisitMin = avgVisitMin;
-  if (priceLevel !== null) meta.priceLevel = priceLevel;
-  if (opportunity !== null) meta.opportunity = opportunity;
+  if (opensAt) meta.opensAt = opensAt;
+  if (closesAt) meta.closesAt = closesAt;
+  meta.avgVisitMin = avgVisitMin;
+  meta.priceLevel = priceLevel;
+  meta.opportunity = opportunity;
 
-  // Limpiar llaves snake_case redundantes en meta
   delete meta.opens_at;
   delete meta.closes_at;
   delete meta.avg_visit_min;
@@ -98,7 +96,7 @@ export function toPlace(row: Record<string, unknown>): Place {
   return {
     id: String(row.id ?? ""),
     name: String(row.name ?? ""),
-    category: String(row.category ?? ""),
+    category: String(row.category ?? "historia"),
     lat: Number(row.lat ?? row.latitude ?? 0),
     lng: Number(row.lng ?? row.longitude ?? 0),
     description: String(row.description ?? ""),
@@ -107,9 +105,9 @@ export function toPlace(row: Record<string, unknown>): Place {
     meta,
     opensAt: opensAt ?? null,
     closesAt: closesAt ?? null,
-    avgVisitMin: avgVisitMin ?? null,
-    priceLevel: priceLevel ?? null,
-    opportunity: opportunity ?? null,
+    avgVisitMin,
+    priceLevel,
+    opportunity,
   };
 }
 
@@ -128,7 +126,6 @@ export function toEvent(row: Record<string, unknown>): Event {
     }
   }
 
-  // Soporta relación places(*) ya sea como objeto único o como arreglo de 1 elemento
   let place: Place | null = null;
   const rawPlace = row.places ?? row.place;
   if (rawPlace && typeof rawPlace === "object") {
@@ -139,16 +136,19 @@ export function toEvent(row: Record<string, unknown>): Event {
     }
   }
 
+  const name = String(row.name ?? row.title ?? "");
   const lat = Number(row.lat ?? row.latitude ?? (place ? place.lat : 0));
   const lng = Number(row.lng ?? row.longitude ?? (place ? place.lng : 0));
+  const endsAt = toIsoStringOrNull(row.ends_at ?? row.endsAt);
 
   return {
     id: String(row.id ?? ""),
-    name: String(row.name ?? row.title ?? ""),
+    title: name,
+    name,
     description: String(row.description ?? row.details ?? ""),
-    category: String(row.category ?? ""),
+    category: String(row.category ?? "cultura"),
     startsAt: toIsoString(row.starts_at ?? row.startsAt),
-    endsAt: toIsoStringOrNull(row.ends_at ?? row.endsAt),
+    endsAt: endsAt ?? null,
     placeId: row.place_id ? String(row.place_id) : (row.placeId ? String(row.placeId) : null),
     lat,
     lng,
@@ -163,16 +163,24 @@ export function toEvent(row: Record<string, unknown>): Event {
  * Convierte una fila de la tabla `missions` (snake_case) al tipo `Mission` (camelCase).
  */
 export function toMission(row: Record<string, unknown>): Mission {
+  const title = String(row.title ?? "");
+  const rules = String(row.rules ?? row.description ?? "");
+  const validUntil = toIsoStringOrNull(row.valid_until ?? row.validUntil);
+  const validFrom = toIsoString(row.valid_from ?? row.validFrom) || new Date().toISOString();
+
   return {
     id: String(row.id ?? ""),
     placeId: String(row.place_id ?? row.placeId ?? ""),
     businessId: row.business_id ? String(row.business_id) : (row.businessId ? String(row.businessId) : null),
-    title: String(row.title ?? ""),
-    rules: String(row.rules ?? ""),
+    title,
+    description: rules,
+    rules,
     points: Number(row.points ?? 0),
-    validFrom: toIsoString(row.valid_from ?? row.validFrom),
-    validUntil: toIsoStringOrNull(row.valid_until ?? row.validUntil),
+    nightBonus: Boolean(row.night_bonus ?? row.nightBonus ?? false),
+    active: Boolean(row.active ?? true),
     status: (row.status as MissionStatus) ?? "activa",
+    validFrom,
+    validUntil,
   };
 }
 
@@ -191,15 +199,15 @@ export function toBusiness(row: Record<string, unknown>): Business {
   }
 
   const rawName = row.name ?? (row.place as Record<string, unknown>)?.name ?? (row.places as Record<string, unknown>)?.name;
-  const ownerId = row.owner_id ? String(row.owner_id) : (row.ownerId ? String(row.ownerId) : undefined);
-  const contact = row.contact ? String(row.contact) : (row.contact === null ? null : undefined);
+  const ownerId = row.owner_id ? String(row.owner_id) : (row.ownerId ? String(row.ownerId) : null);
+  const contact = row.contact ? String(row.contact) : null;
 
   return {
     id: String(row.id ?? ""),
     placeId: String(row.place_id ?? row.placeId ?? ""),
-    ownerId: ownerId ?? undefined,
-    ...(rawName ? { name: String(rawName) } : {}),
-    contact: contact ?? undefined,
+    ownerId,
+    name: String(rawName ?? ""),
+    contact,
     active: Boolean(row.active ?? true),
     verified: Boolean(row.verified ?? true),
     meta,
@@ -221,7 +229,7 @@ export function toReward(row: Record<string, unknown>): Reward {
     conditions: String(row.conditions ?? ""),
     pointsCost: cost,
     costPoints: cost,
-    validUntil: validUntil ?? undefined,
+    validUntil,
     redemptions,
   };
 }
@@ -243,13 +251,16 @@ export function toProfile(row: Record<string, unknown>): Profile {
  * Convierte una fila de la tabla `qr_tokens` (snake_case) al tipo `QrToken` (camelCase).
  */
 export function toQrToken(row: Record<string, unknown>): QrToken {
+  const used = Boolean(row.used);
+  const active = Boolean(row.active ?? !used);
   return {
     id: String(row.id ?? ""),
     token: String(row.token ?? ""),
     placeId: String(row.place_id ?? row.placeId ?? ""),
     missionId: row.mission_id ? String(row.mission_id) : (row.missionId ? String(row.missionId) : null),
     expiresAt: toIsoStringOrNull(row.expires_at ?? row.expiresAt),
-    used: Boolean(row.used),
+    used,
+    active,
   };
 }
 
@@ -267,4 +278,3 @@ export function toVisit(row: Record<string, unknown>): Visit {
     pointsAwarded: Number(row.points_awarded ?? row.pointsAwarded ?? 0),
   };
 }
-
