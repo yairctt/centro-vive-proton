@@ -94,4 +94,14 @@ describe("POST /api/route", () => {
 
     expect(respuesta.status).toBe(400);
   });
+
+  it("indica de dónde salieron los datos", async () => {
+    const respuesta = await POST(
+      peticion({ minutes: 90, interests: ["paseo"], budget: "medio" }),
+    );
+    const cuerpo = await respuesta.json();
+
+    // Sin base de datos configurada, la ruta usa el catálogo de respaldo.
+    expect(["base", "respaldo"]).toContain(cuerpo.origen);
+  });
 });

@@ -1,7 +1,7 @@
 // Punto de entrada del motor de recomendación (Integrante 4).
 // El Integrante 3 importa desde aquí para no conocer los archivos internos.
 
-export { buildRoute, buildReason } from "./route";
+export { buildRoute, buildReason, buscarLugarReferencia } from "./route";
 export type { BuildRouteOptions, EngineRouteResponse, EngineRouteStop } from "./route";
 export { scorePlace, matchesInterest, normalizeText } from "./score";
 export type { ScoreBreakdown, ScoreContext } from "./score";
@@ -18,3 +18,4 @@ export {
   buscarLugarDemo,
 } from "./datos-demo";
 export { EVENTOS_DEMO, eventosDemo } from "./datos-eventos";
+export { ZONA_DESTINO, diaSemanaIso, minutosDelDia } from "./zona-horaria";

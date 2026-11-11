@@ -213,9 +213,17 @@ function dentroDelTramo(minutos: number, apertura: number, cierre: number): bool
 /**
  * ¿El lugar sigue abierto después de las 19:00 (Centro de noche)?
  * `null` significa "no se sabe".
+ *
+ * Se respeta el distintivo `meta.abreDeNoche` que usa el seed del backend:
+ * un lugar marcado ahí cuenta como nocturno aunque no tenga horario cerrado.
  */
-export function abiertoDeNoche(info: PlaceInfo, hoy: DiaSemana = 1): boolean | null {
+export function abiertoDeNoche(
+  info: PlaceInfo,
+  hoy: DiaSemana = 1,
+  meta?: Record<string, unknown>,
+): boolean | null {
   if (info.estado !== "operativo") return false;
+  if (meta?.abreDeNoche === true) return true;
 
   let apertura: number | null = null;
   let cierre: number | null = null;
