@@ -4,7 +4,8 @@
 import type { Place } from "../types";
 import { engineConfig, weights } from "./config";
 import { distanceM, type LatLng } from "./geo";
-import { isOpenAt, readPlaceInfo, type PlaceInfo } from "./place";
+import { abiertoDeNoche, isOpenAt, readPlaceInfo, type DiaSemana, type PlaceInfo } from "./place";
+import { diaSemanaIso, minutosDelDia } from "./zona-horaria";
 
 export interface ScoreContext {
   /** Categorías que le interesan al visitante (texto libre, se normaliza). */
@@ -41,9 +42,19 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
-/** Minutos transcurridos desde medianoche para una fecha. */
+/**
+ * Minutos transcurridos desde medianoche, en la zona horaria del destino
+ * (Veracruz). No se usa `getHours()` porque el servidor corre en UTC.
+ */
 export function minutesOfDay(date: Date): number {
-  return date.getHours() * 60 + date.getMinutes();
+  return minutosDelDia(date);
+}
+
+/**
+ * Día de la semana en ISO 8601: 1 = lunes … 7 = domingo, en la zona del destino.
+ */
+export function dayOfWeek(date: Date): DiaSemana {
+  return diaSemanaIso(date);
 }
 
 /** ¿La categoría del lugar está entre los intereses del visitante? */
@@ -69,9 +80,10 @@ function distanceToOrigin(place: Place, origin?: LatLng | null): number | null {
 export function scorePlace(
   place: Place,
   ctx: ScoreContext,
-  info: PlaceInfo = readPlaceInfo(place),
+  info: PlaceInfo = readPlaceInfo(place, dayOfWeek(ctx.now)),
 ): ScoreBreakdown {
   const ahora = minutesOfDay(ctx.now);
+  const hoy = dayOfWeek(ctx.now);
 
   // Afinidad: 1 si la categoría interesa, 0.2 si no.
   const afinidad = matchesInterest(place, ctx.interests) ? 1 : engineConfig.afinidadFueraDeInteres;
@@ -85,7 +97,7 @@ export function scorePlace(
 
   // Disponibilidad: 1 si está abierto ahora, 0 si está cerrado,
   // valor neutro si no se conoce el horario.
-  const abierto = isOpenAt(info, ahora);
+  const abierto = isOpenAt(info, ahora, hoy);
   const disponibilidad =
     abierto === null ? engineConfig.disponibilidadDesconocida : abierto ? 1 : 0;
 
@@ -97,15 +109,8 @@ export function scorePlace(
 
   // Bono nocturno: a partir de las 19:00 y abierto después de esa hora.
   const esNoche = ahora >= engineConfig.horaBonoNocturno * 60;
-  const abiertoDeNoche =
-    abierto === true ||
-    (info.hoursVerified && info.closesAt !== null
-      ? (() => {
-          const cierra = Number(info.closesAt.slice(0, 2)) * 60 + Number(info.closesAt.slice(3, 5));
-          return cierra > engineConfig.horaBonoNocturno * 60;
-        })()
-      : false);
-  const bonoNocturno = esNoche && abiertoDeNoche ? 1 : 0;
+  const sigueAbierto = abiertoDeNoche(info, hoy, place.meta);
+  const bonoNocturno = esNoche && sigueAbierto === true ? 1 : 0;
 
   const total =
     weights.afinidad * afinidad +

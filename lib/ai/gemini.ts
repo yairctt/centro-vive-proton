@@ -26,10 +26,17 @@ export function buildPrompt(ctx: MissionContext): string {
     categoria: place.category,
     descripcion: place.description,
     horario: place.hours ?? "no informado",
-    horarioVerificado: place.verified,
+    horarioVerificado: place.verified && meta.horarioVerificado !== false,
   };
 
-  for (const clave of ["avgVisitMin", "priceLevel", "opportunity", "accessible", "bajoTecho"]) {
+  for (const clave of [
+    "avgVisitMin",
+    "priceLevel",
+    "opportunity",
+    "accessible",
+    "bajoTecho",
+    "horarioNota",
+  ]) {
     if (meta[clave] !== undefined) datos[clave] = meta[clave];
   }
 

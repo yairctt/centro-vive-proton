@@ -6,7 +6,6 @@
  * Body: { token: string; profileId?: string }
  * Response: ValidateResponse
  */
-export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

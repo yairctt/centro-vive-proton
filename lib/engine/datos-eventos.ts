@@ -1,24 +1,33 @@
-// Eventos de demostración para la agenda (Integrante 4).
+// Eventos de respaldo para la agenda (Integrante 4).
+//
+// ⚠️ ESTE ARCHIVO ES EL RESPALDO, NO LA FUENTE PRINCIPAL.
+// La agenda real viene de la base de datos (`GET /api/events`, tabla `events`
+// sembrada por el Integrante 3). Estos eventos de muestra solo se usan cuando
+// la base no responde o no tiene agenda cargada.
 //
 // Son eventos SIMULADOS para probar el motor: la lista de lugares del equipo
 // no incluye eventos, así que estos son de muestra y están marcados como
-// tales en `meta.demo = true`. Cuando el backend tenga la agenda real
-// (`GET /api/events`), estos dejan de usarse.
+// tales en `meta.demo = true`.
 //
 // Regla del proyecto: no se inventan eventos reales. Por eso cada ficha
 // lleva `source: "demo"`, `verified: false` y una hora calculada a partir del
 // día de la demo, no una fecha real.
 
 import type { Event } from "../types";
+import { instanteEnZona } from "./zona-horaria";
 
 /**
  * Genera los eventos de muestra para una fecha dada.
  * El día de la demo (miércoles 11 de noviembre) hay uno nocturno.
+ *
+ * La referencia por defecto es el mediodía de Veracruz del 11 de noviembre,
+ * para que el día no cambie según la zona horaria del servidor.
  */
-export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Event[] {
-  const dia = fecha.toISOString().slice(0, 10);
-
-  const aLas = (hora: string) => new Date(`${dia}T${hora}:00`).toISOString();
+export function eventosDemo(
+  fecha: Date = new Date("2026-11-11T18:00:00.000Z"),
+): Event[] {
+  /** Convierte una hora de reloj de Veracruz al instante absoluto. */
+  const aLas = (hora: string) => instanteEnZona(fecha, hora).toISOString();
 
   return [
     {
@@ -30,8 +39,8 @@ export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Even
       startsAt: aLas("18:00"),
       endsAt: aLas("21:00"),
       placeId: "plazuela-de-la-campana",
-      lat: 19.5427,
-      lng: -96.9145,
+      lat: 19.1989,
+      lng: -96.137,
       source: "demo",
       verified: false,
       meta: { demo: true, entorno: "abierta al aire libre" },
@@ -45,8 +54,8 @@ export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Even
       startsAt: aLas("20:00"),
       endsAt: aLas("23:30"),
       placeId: "malecon",
-      lat: 19.5433,
-      lng: -96.921,
+      lat: 19.2015,
+      lng: -96.1352,
       source: "demo",
       verified: false,
       meta: { demo: true, nocturno: true, centroDeNoche: true },
@@ -60,8 +69,8 @@ export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Even
       startsAt: aLas("10:00"),
       endsAt: aLas("12:00"),
       placeId: "gran-cafe-de-la-parroquia",
-      lat: 19.5432,
-      lng: -96.9104,
+      lat: 19.2011,
+      lng: -96.1351,
       source: "demo",
       verified: false,
       meta: { demo: true },
@@ -75,8 +84,8 @@ export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Even
       startsAt: aLas("16:00"),
       endsAt: aLas("19:00"),
       placeId: "mercado-hidalgo",
-      lat: 19.5425,
-      lng: -96.915,
+      lat: 19.1936,
+      lng: -96.1371,
       source: "demo",
       verified: false,
       meta: { demo: true },

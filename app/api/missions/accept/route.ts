@@ -5,7 +5,6 @@
  * Body: { missionId: string; profileId?: string }
  * Response: { ok: true } | { error: string }
  */
-export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

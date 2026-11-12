@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { fallbackMission } from "@/lib/ai/fallback";
 import { generateMission } from "@/lib/ai/gemini";
+import { buscarLugarDemo } from "@/lib/engine/datos-demo";
 import type { Place } from "@/lib/types";
 
 const bodySchema = z.object({
@@ -66,19 +67,27 @@ export async function POST(request: Request) {
 }
 
 /**
- * Busca la ficha en GET /api/places (backend del Integrante 3).
- * Si ese endpoint todavía no existe, se devuelve null y quien llama
- * puede mandar la ficha en el cuerpo.
+ * Busca la ficha del lugar:
+ * 1. En GET /api/places, que es la fuente principal (base de datos del
+ *    Integrante 3).
+ * 2. Si no está (base sin configurar, caída o seed sin correr), en el catálogo
+ *    de respaldo de `lib/engine/datos-demo.ts`.
+ * Si tampoco está ahí, quien llama puede mandar la ficha en el cuerpo.
  */
 async function buscarLugar(placeId: string, urlActual: string): Promise<Place | null> {
   try {
     const origen = new URL(urlActual).origin;
     const respuesta = await fetch(`${origen}/api/places`, { cache: "no-store" });
-    if (!respuesta.ok) return null;
-    const lugares = (await respuesta.json()) as Place[];
-    if (!Array.isArray(lugares)) return null;
-    return lugares.find((l) => l.id === placeId) ?? null;
+    if (respuesta.ok) {
+      const lugares = (await respuesta.json()) as Place[];
+      if (Array.isArray(lugares)) {
+        const encontrado = lugares.find((l) => l.id === placeId);
+        if (encontrado) return encontrado;
+      }
+    }
   } catch {
-    return null;
+    // Sin backend disponible: se intenta el catálogo de respaldo.
   }
+
+  return buscarLugarDemo(placeId) ?? null;
 }

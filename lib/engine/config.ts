@@ -44,6 +44,12 @@ export const engineConfig = {
    * Lugar que se toma como punto de partida cuando el visitante no autoriza
    * ubicación. El Zócalo es el corazón del Centro Histórico: es el punto de
    * referencia más razonable para ordenar la ruta.
+   *
+   * Se busca primero por id y, si no aparece, por nombre que contenga esta
+   * palabra. Así funciona con el catálogo de demostración ("zocalo") y con el
+   * seed del backend ("Zócalo de Veracruz (Plaza de Armas)").
    */
   lugarReferenciaId: "zocalo",
+  /** Palabra clave para localizar el lugar de referencia por su nombre. */
+  palabraClaveReferencia: "zocalo",
 } as const;
