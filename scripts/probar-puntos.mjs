@@ -103,15 +103,32 @@ async function conectarPestana() {
     await dormir(1600);
   };
 
-  return { evaluar, irA, cerrar: () => ws.close() };
+  /** Espera a que una expresión sea verdadera. */
+  const esperarA = async (expresion, ms = 15000) => {
+    const limite = Date.now() + ms;
+    while (Date.now() < limite) {
+      const valor = await evaluar(expresion);
+      if (valor) return true;
+      await dormir(400);
+    }
+    return false;
+  };
+
+  return { evaluar, irA, esperarA, cerrar: () => ws.close() };
 }
 
 try {
   console.log("\nFlujo de puntos en el navegador\n");
-  const { evaluar, irA, cerrar } = await conectarPestana();
+  const { evaluar, irA, esperarA, cerrar } = await conectarPestana();
 
   // 1. Escaneamos un QR de demostración.
+  // La validación puede tardar (el servidor consulta Supabase), así que
+  // esperamos a que la pantalla cambie de "validando" a un resultado.
   await irA("/escanear?t=demo-p1-0000");
+  await esperarA(
+    `document.body.innerText.includes("Validando") === false`,
+    20000,
+  );
   const trasEscanear = await evaluar(`document.body.innerText.slice(0, 220)`);
   console.log(`  Pantalla de escaneo: ${String(trasEscanear).replace(/\n+/g, " | ").slice(0, 150)}`);
 
@@ -123,6 +140,7 @@ try {
 
   // 2. El mismo token no debe volver a contar.
   await irA("/escanear?t=demo-p1-0000");
+  await esperarA(`document.body.innerText.includes("Validando") === false`, 20000);
   const puntos2 = await evaluar(`sessionStorage.getItem("pulso:puntos-demo")`);
   comprobar(
     puntos2 === puntos1,
@@ -130,9 +148,22 @@ try {
   );
 
   // 3. El pasaporte debe mostrar los puntos acumulados.
+  // La pantalla hace varias consultas al servidor (pasaporte, sesión y canjes),
+  // así que puede tardar; se espera a que termine de cargar.
   await irA("/pasaporte");
+  await esperarA(
+    `document.body.innerText.includes("Cargando") === false`,
+    45000,
+  );
   const enPasaporte = await evaluar(
-    `(() => { const m = document.body.innerText.match(/Puntos Acumulados\\s*(\\d+)/i); return m ? Number(m[1]) : null; })()`,
+    `(() => {
+      const t = document.body.innerText;
+      // El número va en un <p> aparte, justo después de "Puntos acumulados".
+      const i = t.indexOf("Puntos acumulados");
+      if (i < 0) return null;
+      const m = t.slice(i, i + 60).match(/([0-9]+)/);
+      return m ? Number(m[1]) : null;
+    })()`,
   );
   comprobar(
     enPasaporte !== null && enPasaporte === Number(puntos1),
@@ -141,6 +172,7 @@ try {
 
   // 4. Un token distinto sí suma.
   await irA("/escanear?t=demo-p2-0000");
+  await esperarA(`document.body.innerText.includes("Validando") === false`, 20000);
   const puntos3 = await evaluar(`sessionStorage.getItem("pulso:puntos-demo")`);
   comprobar(
     Number(puntos3) > Number(puntos1),
@@ -149,8 +181,18 @@ try {
 
   // 5. Y el pasaporte refleja el total nuevo.
   await irA("/pasaporte");
+  await esperarA(
+    `document.body.innerText.includes("Cargando") === false`,
+    45000,
+  );
   const final = await evaluar(
-    `(() => { const m = document.body.innerText.match(/Puntos Acumulados\\s*(\\d+)/i); return m ? Number(m[1]) : null; })()`,
+    `(() => {
+      const t = document.body.innerText;
+      const i = t.indexOf("Puntos acumulados");
+      if (i < 0) return null;
+      const m = t.slice(i, i + 60).match(/([0-9]+)/);
+      return m ? Number(m[1]) : null;
+    })()`,
   );
   comprobar(final === Number(puntos3), `El pasaporte refleja el total final (${final} = ${puntos3})`);
 

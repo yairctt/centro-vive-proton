@@ -13,7 +13,10 @@ export async function GET() {
       .order("name", { ascending: true });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      // Si la base no responde (red caída, proyecto mal configurado) se cae al
+      // catálogo de respaldo: la demo nunca debe quedarse en blanco.
+      console.error("GET /api/places:", error.message);
+      return NextResponse.json(CATALOGO_DEMO);
     }
 
     const places = (data ?? []).map(toPlace);
