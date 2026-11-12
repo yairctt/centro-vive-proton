@@ -49,9 +49,12 @@ export default function PanelLayout({
           </div>
         </div>
 
-        <div className="mx-auto mt-4 max-w-6xl px-4 text-center sm:px-6">
+        <div className="mx-auto mt-4 max-w-6xl px-4 text-center sm:px-6 space-y-1">
           <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
             Métricas basadas en actividad registrada en la app (visitas validadas por QR y cupones confirmados).
+          </p>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
           </p>
         </div>
       </footer>

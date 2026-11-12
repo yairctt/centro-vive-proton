@@ -338,14 +338,17 @@ export default function PasaportePage() {
         </div>
       </div>
 
-      <nav className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-8 max-w-lg mx-auto w-full sticky bottom-0 z-20">
+      <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
         <Link
           href="/inicio"
           className="block w-full text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors text-sm"
         >
           Generar Nueva Ruta
         </Link>
-      </nav>
+        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
+          Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+        </p>
+      </footer>
     </main>
   );
 }

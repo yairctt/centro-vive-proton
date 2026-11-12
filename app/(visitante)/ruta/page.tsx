@@ -343,20 +343,25 @@ export default function RutaPage() {
         })}
       </div>
 
-      <nav className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-8 flex gap-3 max-w-lg mx-auto w-full sticky bottom-0 z-20">
-        <Link
-          href="/inicio"
-          className="flex-1 text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors"
-        >
-          {es.ruta.modificar}
-        </Link>
-        <Link
-          href="/pasaporte"
-          className="flex-[2] text-center py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100"
-        >
-          {es.ruta.verPasaporte}
-        </Link>
-      </nav>
+      <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 flex flex-col max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
+        <div className="flex gap-3 w-full">
+          <Link
+            href="/inicio"
+            className="flex-1 text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors"
+          >
+            {es.ruta.modificar}
+          </Link>
+          <Link
+            href="/pasaporte"
+            className="flex-[2] text-center py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100"
+          >
+            {es.ruta.verPasaporte}
+          </Link>
+        </div>
+        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
+          Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+        </p>
+      </footer>
     </main>
   );
 }

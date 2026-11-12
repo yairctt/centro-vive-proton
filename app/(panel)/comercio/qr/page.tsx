@@ -156,6 +156,7 @@ export default function ComercioQrPage() {
               <img src={dataUrl} alt={`${t.altQr} ${place.name}`} title={url} className="qr-img size-56 sm:size-64" />
               <p className="text-lg font-semibold">{t.lema}</p>
               <p className="font-mono text-[11px] break-all text-neutral-500">{token}</p>
+              <p className="text-[10px] font-medium text-neutral-400 pt-1">Powered by Protón</p>
             </article>
           ))}
         </div>
