@@ -11,6 +11,7 @@ import {
 } from "../datos-demo";
 import { buildRoute } from "../route";
 import { distanceM } from "../geo";
+import { eventosDemo } from "../datos-eventos";
 import { isOpenAt, readPlaceInfo } from "../place";
 import type { Place } from "../../types";
 
@@ -260,6 +261,27 @@ describe("el catálogo funciona con el motor", () => {
         0,
       );
       expect(consumido).toBeLessThanOrEqual(minutos);
+    }
+  });
+
+  it("los minutos totales nunca superan los pedidos, aunque haya eventos", () => {
+    for (const minutos of [60, 90, 120, 180]) {
+      const { stops, totalMin } = buildRoute(
+        CATALOGO_DEMO,
+        { minutes: minutos, interests: ["paseo", "cultura", "gastronomia"], budget: "alto" },
+        { now: MIERCOLES_13H, events: eventosDemo(MIERCOLES_13H) },
+      );
+
+      expect(totalMin).toBeLessThanOrEqual(minutos);
+      // Y coincide con la suma de las paradas (un evento solo suma el traslado).
+      const suma = stops.reduce(
+        (sum, s) =>
+          sum +
+          s.etaMin +
+          (s.kind === "evento" ? 0 : readPlaceInfo(s.place, 3).avgVisitMin),
+        0,
+      );
+      expect(totalMin).toBe(suma);
     }
   });
 });

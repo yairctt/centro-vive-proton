@@ -21,8 +21,31 @@ function comerciosAbiertos(hora: number): number {
   return 0;
 }
 
+/** Mismas reglas de puntos que /api/visits/validate. */
+const BASE_POINTS = 10;
+const NIGHT_BONUS_POINTS = 5;
+
+type MisionVisita = { title: string; points: number; night_bonus: boolean };
+
+/** Misión ligada a una visita (join `missions(title, points)`). */
+function misionDe(row: Record<string, unknown>): MisionVisita | null {
+  const m = row.missions as MisionVisita | MisionVisita[] | null;
+  return (Array.isArray(m) ? m[0] : m) ?? null;
+}
+
+/** Puntos de una visita: misión (o base) + bono si fue después de las 19:00 en Veracruz. */
+function puntosDe(mision: MisionVisita | null, createdAt: string): number {
+  if (!mision) return BASE_POINTS;
+  const horaMx = new Date(
+    new Date(createdAt).toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+  ).getHours();
+  const base = Number(mision.points) || BASE_POINTS;
+  return mision.night_bonus && horaMx >= 19 ? base + NIGHT_BONUS_POINTS : base;
+}
+
 /** Convierte una fila de `visits` al formato del feed reciente. */
 function toRecentVisit(row: Record<string, unknown>, idx: number) {
+  const mision = misionDe(row);
   const ago = Math.round(
     (Date.now() - new Date(row.created_at as string).getTime()) / 60_000,
   );
@@ -36,8 +59,9 @@ function toRecentVisit(row: Record<string, unknown>, idx: number) {
         ?.name ?? "Lugar desconocido",
     createdAt: agoLabel,
     method: (row.method as "qr" | "manual") ?? "qr",
-    pointsAwarded: (row.points_awarded as number) ?? 0,
-    missionTitle: undefined as string | undefined,
+    // `visits` no guarda los puntos: se recalculan con las reglas de validate.
+    pointsAwarded: puntosDe(mision, row.created_at as string),
+    missionTitle: mision?.title,
   };
 }
 
@@ -61,20 +85,21 @@ export async function GET() {
       await Promise.all([
         supabase
           .from("visits")
-          .select("id, place_id, created_at, method, points_awarded, places(name)")
+          .select("id, place_id, mission_id, created_at, method, places(name), missions(title, points, night_bonus)")
           .gte("created_at", todayStart.toISOString())
           .order("created_at", { ascending: false })
           .limit(200),
 
         supabase
-          .from("visits") // redemptions también son visits con misión
+          .from("redemptions") // canjes confirmados hoy por los comercios
           .select("id", { count: "exact", head: true })
-          .gte("created_at", todayStart.toISOString()),
+          .eq("status", "confirmado")
+          .gte("confirmed_at", todayStart.toISOString()),
 
         supabase
-          .from("missions")
-          .select("id, status", { count: "exact" })
-          .in("status", ["activa", "pausada", "vencida"]),
+          .from("mission_accepts") // misiones aceptadas hoy
+          .select("id", { count: "exact", head: true })
+          .gte("created_at", todayStart.toISOString()),
 
         supabase.from("places").select("id, name", { count: "exact" }),
       ]);
@@ -124,16 +149,12 @@ export async function GET() {
       openBusinesses: comerciosAbiertos(hour),
     }));
 
-    // Totales de misiones
-    const allMissions = missionsRes.data ?? [];
-    const missionsAccepted = allMissions.length;
-    const missionsCompleted = allMissions.filter(
-      (m: Record<string, unknown>) => m.status === "vencida",
-    ).length;
+    // Misiones: aceptadas hoy y completadas (visitas de hoy ligadas a misión)
+    const missionsAccepted = missionsRes.count ?? 0;
+    const missionsCompleted = visits.filter((v) => v.mission_id != null).length;
 
-    // Canjes (visits de hoy con points_awarded > 0 tras una misión – proxy)
-    const redemptions =
-      visits.filter((v) => (v.points_awarded as number) > 0).length;
+    // Canjes confirmados hoy
+    const redemptions = redemptionsRes.count ?? 0;
 
     // Totales de lugares activos
     const activePlaces = placesRes.count ?? MOCK_ADMIN_STATS.activePlaces;

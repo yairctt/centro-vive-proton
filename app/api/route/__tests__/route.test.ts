@@ -104,4 +104,15 @@ describe("POST /api/route", () => {
     // Sin base de datos configurada, la ruta usa el catálogo de respaldo.
     expect(["base", "respaldo"]).toContain(cuerpo.origen);
   });
+
+  it("devuelve los minutos totales estimados", async () => {
+    const respuesta = await POST(
+      peticion({ minutes: 120, interests: ["gastronomia", "historia"], budget: "bajo" }),
+    );
+    const cuerpo = await respuesta.json();
+
+    expect(typeof cuerpo.totalMin).toBe("number");
+    expect(cuerpo.totalMin).toBeGreaterThan(0);
+    expect(cuerpo.totalMin).toBeLessThanOrEqual(120);
+  });
 });
