@@ -26,6 +26,27 @@ export function enlaceLugar(punto: PuntoRuta): string {
   return `https://www.google.com/maps/search/?api=1&query=${consulta}`;
 }
 
+/** Coordenadas de referencia del Muelle Turístico de Cruceros y Malecón de Veracruz. */
+export const MUELLE_CRUCEROS: PuntoRuta = {
+  lat: 19.2025,
+  lng: -96.1345,
+  nombre: "Muelle Turístico de Cruceros y Malecón de Veracruz",
+};
+
+/**
+ * Enlace para retornar a pie desde una parada (ej. la última parada)
+ * hacia el Muelle de Cruceros o hacia el punto de origen (Garantía de Retorno Seguro).
+ */
+export function enlaceRetorno(desde: PuntoRuta, hacia: PuntoRuta = MUELLE_CRUCEROS): string {
+  const parametros = new URLSearchParams({
+    api: "1",
+    origin: `${desde.lat},${desde.lng}`,
+    destination: `${hacia.lat},${hacia.lng}`,
+    travelmode: "walking",
+  });
+  return `https://www.google.com/maps/dir/?${parametros.toString()}`;
+}
+
 /**
  * Enlace para abrir la ruta completa en Google Maps, con las paradas como
  * puntos intermedios en el orden en que se recomienda visitar.

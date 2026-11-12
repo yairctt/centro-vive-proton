@@ -40,6 +40,20 @@ export function PanelHeader() {
     ? { name: "Comercio Asociado", color: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800" }
     : null;
 
+  const handleRegresar = () => {
+    if (pathname === "/admin" || pathname === "/comercio") {
+      router.push("/");
+    } else if (pathname.startsWith("/admin/")) {
+      router.push("/admin");
+    } else if (pathname.startsWith("/comercio/")) {
+      router.push("/comercio");
+    } else if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/95 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -47,14 +61,8 @@ export function PanelHeader() {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => {
-              if (typeof window !== "undefined" && window.history.length > 1) {
-                router.back();
-              } else {
-                router.push("/");
-              }
-            }}
-            title="Regresar a la pantalla o pestaña anterior"
+            onClick={handleRegresar}
+            title="Regresar a la pantalla anterior"
             aria-label="Regresar"
             className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-100 hover:text-neutral-900 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
           >

@@ -10,7 +10,7 @@ import type { RouteStop } from "@/lib/types";
 import { GroupRouteWidget, JoinGroupCard } from "@/components/ui/GroupExperience";
 import { obtenerGrupo } from "@/lib/grupo";
 
-import { enlaceLugar, enlaceRutaCompleta, type PuntoRuta } from "@/components/visitante/enlaces-maps";
+import { enlaceLugar, enlaceRutaCompleta, enlaceRetorno, MUELLE_CRUCEROS, type PuntoRuta } from "@/components/visitante/enlaces-maps";
 import {
   ChevronDownIcon,
   GoogleMapsIcon,
@@ -121,6 +121,19 @@ export default function RutaPage() {
 
   const rutaEnMaps = useMemo(() => enlaceRutaCompleta(puntos), [puntos]);
 
+  const enlaceRetornoMuelle = useMemo(() => {
+    if (puntos.length === 0) return null;
+    const ultimaParada = puntos[puntos.length - 1];
+    return enlaceRetorno(ultimaParada, MUELLE_CRUCEROS);
+  }, [puntos]);
+
+  const enlaceRetornoOrigen = useMemo(() => {
+    if (puntos.length < 2) return null;
+    const ultimaParada = puntos[puntos.length - 1];
+    const primerPunto = puntos[0];
+    return enlaceRetorno(ultimaParada, primerPunto);
+  }, [puntos]);
+
   const minutosTotales = useMemo(
     () =>
       stops.reduce(
@@ -202,11 +215,10 @@ export default function RutaPage() {
             onClick={() => setMapaVisible((v) => !v)}
             aria-expanded={mapaVisible}
             aria-label={t.ruta.verMapa}
-            className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors cursor-pointer ${
-              mapaVisible
+            className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors cursor-pointer ${mapaVisible
                 ? "bg-teal-700 text-white border-teal-700 dark:bg-teal-600 dark:border-teal-600"
                 : "bg-white text-neutral-600 border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800"
-            }`}
+              }`}
           >
             <MapPinIcon className="w-5 h-5" />
           </button>
@@ -231,6 +243,17 @@ export default function RutaPage() {
             <LinkIcon className="w-4 h-4" />
             {enlaceCopiado ? t.ruta.enlaceCopiado : t.ruta.copiarEnlace}
           </button>
+          {enlaceRetornoMuelle && (
+            <a
+              href={enlaceRetornoMuelle}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-2.5 rounded-xl font-bold text-xs active:scale-[0.98] transition duration-100 cursor-pointer shadow-2xs"
+            >
+              <span>⚓</span>
+              <span>{t.cruise.returnToDock}</span>
+            </a>
+          )}
           {!rutaEnMaps.completa && (
             <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 dark:text-amber-200 dark:bg-amber-950/40 dark:border-amber-800 rounded-lg px-3 py-2">
               Google Maps admite hasta 9 destinos. Se enviaron los primeros{" "}
@@ -327,11 +350,10 @@ export default function RutaPage() {
             <div key={`${stop.place.id}-${index}`} className="relative z-10">
               <div className="flex items-start gap-4">
                 <div
-                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-xs mt-1 ${
-                    esEvento
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-xs mt-1 ${esEvento
                       ? "bg-amber-600 text-white"
                       : "bg-teal-700 text-white"
-                  }`}
+                    }`}
                 >
                   {index + 1}
                 </div>
@@ -348,9 +370,8 @@ export default function RutaPage() {
                         {stop.place.name.replace(/^\[DEMO\]\s*/i, "").trim()}
                       </h3>
                       <ChevronDownIcon
-                        className={`w-4 h-4 text-neutral-400 shrink-0 mt-1 transition-transform ${
-                          abierto ? "rotate-180" : ""
-                        }`}
+                        className={`w-4 h-4 text-neutral-400 shrink-0 mt-1 transition-transform ${abierto ? "rotate-180" : ""
+                          }`}
                       />
                     </div>
 
@@ -432,6 +453,50 @@ export default function RutaPage() {
             </div>
           );
         })}
+
+        {/* Retorno Seguro al Muelle de Cruceros o Punto de Partida */}
+        {enlaceRetornoMuelle && (
+          <div className="relative z-10 rounded-2xl border border-teal-200 dark:border-teal-800 bg-gradient-to-br from-teal-50 to-sky-50 dark:from-teal-950/40 dark:to-sky-950/30 p-4 shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-700 text-white font-bold text-sm shadow-2xs">
+                  ⚓
+                </span>
+                <div>
+                  <h4 className="text-xs font-black text-teal-900 dark:text-teal-200 uppercase tracking-wider">
+                    {t.cruise.guaranteeTitle}
+                  </h4>
+                  <p className="text-[11px] text-teal-700 dark:text-teal-300 font-medium">
+                    {t.cruise.guaranteeDesc}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <a
+                href={enlaceRetornoMuelle}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold py-2.5 px-3 transition shadow-2xs active:scale-[0.98] cursor-pointer"
+              >
+                <GoogleMapsIcon className="w-3.5 h-3.5" />
+                <span>{t.cruise.returnToDock}</span>
+              </a>
+              {enlaceRetornoOrigen && (
+                <a
+                  href={enlaceRetornoOrigen}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 text-xs font-semibold py-2.5 px-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition shadow-2xs cursor-pointer"
+                >
+                  <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+                  <span>{lang === "en" ? "Directions to Stop 1" : "Retornar al inicio"}</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 flex flex-col max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">

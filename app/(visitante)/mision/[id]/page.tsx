@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import type { Mission, Place } from "@/lib/types";
-import { CheckIcon, CompassIcon, MapPinIcon, MoonIcon, TargetIcon } from "@/components/paneles/icons";
+import { ArrowLeftIcon, CheckIcon, CompassIcon, MapPinIcon, MoonIcon, TargetIcon } from "@/components/paneles/icons";
 import { CameraIcon } from "@/components/ui/icons";
 import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 
@@ -82,7 +82,7 @@ function Mision() {
         <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{t.mision.noDisponibleTitulo}</h1>
         <p className="max-w-xs text-neutral-500 dark:text-neutral-400">{estado.mensaje}</p>
         <Link
-          href="/ruta"
+          href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
           className="rounded-xl bg-teal-700 px-6 py-3 font-bold text-white shadow-sm transition duration-100 hover:bg-teal-800 active:scale-[0.98]"
         >
           {t.mision.volverRuta}
@@ -97,6 +97,16 @@ function Mision() {
   return (
     <main className="flex min-h-dvh flex-col justify-center bg-neutral-50 p-6 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mx-auto w-full max-w-md rounded-3xl border border-neutral-200/80 bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900 relative">
+        <div className="absolute top-6 left-6">
+          <Link
+            href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition group py-1"
+            title={t.mision.volverRuta}
+          >
+            <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">{t.mision.volverRuta}</span>
+          </Link>
+        </div>
         <div className="absolute top-6 right-6">
           <LanguageSelector size="sm" />
         </div>
@@ -155,7 +165,7 @@ function Mision() {
               {t.mision.escanearQr}
             </Link>
             <Link
-              href="/ruta"
+              href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
               className="block w-full py-4 text-sm font-bold text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
               {t.mision.volverRuta}
@@ -174,8 +184,14 @@ function Mision() {
             </button>
             <button
               type="button"
-              onClick={() => router.back()}
-              className="w-full py-4 text-sm font-bold text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push(`/ruta${lang === "en" ? "?lang=en" : ""}`);
+                }
+              }}
+              className="w-full py-4 text-sm font-bold text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 cursor-pointer"
             >
               {t.mision.quizasLuego}
             </button>

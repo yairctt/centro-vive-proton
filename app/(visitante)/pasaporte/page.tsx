@@ -66,6 +66,7 @@ export default function PasaportePage() {
   const [canjeando, setCanjeando] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [esInvitado, setEsInvitado] = useState(false);
+  const [tieneRuta, setTieneRuta] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -95,6 +96,9 @@ export default function PasaportePage() {
 
   useEffect(() => {
     cargar();
+    if (typeof window !== "undefined") {
+      setTieneRuta(Boolean(sessionStorage.getItem("rutaGenerada")));
+    }
     fetch("/api/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((b) => setEsInvitado(Boolean(b?.profile?.esInvitado)))
@@ -160,11 +164,11 @@ export default function PasaportePage() {
     <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col font-sans selection:bg-teal-100 dark:selection:bg-teal-900">
       <header className="px-6 pt-8 pb-4 max-w-lg mx-auto w-full flex items-center justify-between">
         <Link
-          href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
+          href={tieneRuta ? `/ruta${lang === "en" ? "?lang=en" : ""}` : `/${lang === "en" ? "?lang=en" : ""}`}
           className="text-xs font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 flex items-center gap-1"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
-          <span>{t.pasaporte.volverRuta}</span>
+          <span>{tieneRuta ? t.pasaporte.volverRuta : (lang === "en" ? "Back to Home" : "Volver a la portada")}</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSelector size="sm" />

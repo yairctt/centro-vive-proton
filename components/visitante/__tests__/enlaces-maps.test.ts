@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { MAXIMO_WAYPOINTS, enlaceLugar, enlaceRutaCompleta } from "../enlaces-maps";
+import { MAXIMO_WAYPOINTS, enlaceLugar, enlaceRutaCompleta, enlaceRetorno, MUELLE_CRUCEROS } from "../enlaces-maps";
 
 const punto = (lat: number, lng: number, nombre = "Lugar") => ({ lat, lng, nombre });
 
@@ -104,5 +104,28 @@ describe("enlace de la ruta completa", () => {
 
     expect(resultado.completa).toBe(true);
     expect(resultado.omitidas).toBe(0);
+  });
+});
+
+describe("enlace de retorno a pie", () => {
+  it("genera la ruta de retorno al Muelle de Cruceros por defecto", () => {
+    const parada = punto(19.2001, -96.1384, "Zócalo");
+    const url = new URL(enlaceRetorno(parada));
+
+    expect(url.pathname).toBe("/maps/dir/");
+    expect(url.searchParams.get("origin")).toBe("19.2001,-96.1384");
+    expect(url.searchParams.get("destination")).toBe(`${MUELLE_CRUCEROS.lat},${MUELLE_CRUCEROS.lng}`);
+    expect(url.searchParams.get("travelmode")).toBe("walking");
+  });
+
+  it("permite especificar un destino de retorno personalizado (ej. parada 1)", () => {
+    const ultima = punto(19.2018, -96.1338, "Faro");
+    const primera = punto(19.2001, -96.1384, "Zócalo");
+    const url = new URL(enlaceRetorno(ultima, primera));
+
+    expect(url.pathname).toBe("/maps/dir/");
+    expect(url.searchParams.get("origin")).toBe("19.2018,-96.1338");
+    expect(url.searchParams.get("destination")).toBe("19.2001,-96.1384");
+    expect(url.searchParams.get("travelmode")).toBe("walking");
   });
 });

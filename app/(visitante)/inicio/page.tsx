@@ -182,7 +182,7 @@ export default function InicioPage() {
         <div className="max-w-lg mx-auto w-full space-y-3">
           <div className="flex items-center justify-between">
             <Link
-              href="/"
+              href={`/${lang === "en" ? "?lang=en" : ""}`}
               className="inline-flex items-center gap-2 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1"
               title={lang === "en" ? "Return to home" : "Regresar a la portada"}
             >

@@ -68,7 +68,7 @@ export default function HoyEnElCentroPage() {
                     <div className="flex items-center gap-3">
                         <LanguageSelector size="sm" />
                         <Link
-                            href="/inicio"
+                            href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
                             className="inline-flex items-center gap-1 text-sm font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
                         >
                             <XIcon className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function HoyEnElCentroPage() {
                         <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">{t.hoy.diaTranquiloTitulo}</h2>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-5">{t.hoy.diaTranquiloDesc}</p>
                         <Link
-                            href="/inicio"
+                            href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
                             className="bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-sm active:scale-[0.98] transition duration-100"
                         >
                             {t.hoy.disenarRuta}

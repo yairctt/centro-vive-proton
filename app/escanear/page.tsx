@@ -85,9 +85,16 @@ function Escaner() {
   });
   const [tokenManual, setTokenManual] = useState("");
   const [errorManual, setErrorManual] = useState<string | null>(null);
+  const [tieneRuta, setTieneRuta] = useState(false);
   const lectorRef = useRef<Html5Qrcode | null>(null);
   const leidoRef = useRef(false);
   const urlProcesadaRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setTieneRuta(Boolean(sessionStorage.getItem("rutaGenerada")));
+    }
+  }, []);
 
   const validar = useCallback((token: string) => {
     setEstado({ fase: "validando" });
@@ -182,11 +189,11 @@ function Escaner() {
       <style>{CSS_ANIMACIONES}</style>
       <header className="flex items-center justify-between">
         <Link
-          href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
+          href={tieneRuta ? `/ruta${lang === "en" ? "?lang=en" : ""}` : `/${lang === "en" ? "?lang=en" : ""}`}
           className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 dark:text-teal-400"
         >
           <ArrowLeftIcon className="h-3.5 w-3.5" />
-          {t.volverRuta}
+          {tieneRuta ? t.volverRuta : (lang === "en" ? "Back to Home" : "Volver a la portada")}
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSelector size="sm" />
