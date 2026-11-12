@@ -80,7 +80,7 @@ export default function RutaPage() {
       stops.map((stop) => ({
         lat: stop.place.lat,
         lng: stop.place.lng,
-        nombre: stop.place.name,
+        nombre: stop.place.name.replace(/^\[DEMO\]\s*/i, "").trim(),
       })),
     [stops],
   );
@@ -249,7 +249,7 @@ export default function RutaPage() {
                   >
                     <div className="flex justify-between items-start gap-3 mb-2">
                       <h3 className="font-bold text-neutral-900 dark:text-neutral-100 leading-snug">
-                        {stop.place.name}
+                        {stop.place.name.replace(/^\[DEMO\]\s*/i, "").trim()}
                       </h3>
                       <ChevronDownIcon
                         className={`w-4 h-4 text-neutral-400 shrink-0 mt-1 transition-transform ${
@@ -297,7 +297,7 @@ export default function RutaPage() {
                         href={enlaceLugar({
                           lat: stop.place.lat,
                           lng: stop.place.lng,
-                          nombre: stop.place.name,
+                          nombre: stop.place.name.replace(/^\[DEMO\]\s*/i, "").trim(),
                         })}
                         target="_blank"
                         rel="noopener noreferrer"

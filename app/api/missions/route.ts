@@ -7,14 +7,14 @@
 import { NextRequest, NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { requireProfile } from "@/lib/db/auth";
-import { toMission } from "@/lib/db/mappers";
+import { cleanPlaceName, toMission } from "@/lib/db/mappers";
 import { misionSchema, misionAFila, errorDeValidacion } from "@/app/api/_lib/esquemas";
 
 function conLugar(row: Record<string, unknown>) {
   const placeRow = (Array.isArray(row.places) ? row.places[0] : row.places) as
     | Record<string, unknown>
     | null;
-  return { ...toMission(row), placeName: placeRow ? String(placeRow.name ?? "") : "" };
+  return { ...toMission(row), placeName: placeRow ? cleanPlaceName(placeRow.name) : "" };
 }
 
 export async function GET() {

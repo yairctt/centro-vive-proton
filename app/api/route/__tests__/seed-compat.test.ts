@@ -136,6 +136,7 @@ describe("el motor entiende las filas del seed", () => {
 
   it("respeta el distintivo abreDeNoche del seed", () => {
     const lugar = toPlace(filaNocturno);
+    expect(lugar.name).toBe("Café y Toritos La Bamba Nocturna");
     const breakdown = scorePlace(lugar, {
       interests: ["gastronomia"],
       now: new Date("2026-11-11T20:00:00-06:00"),

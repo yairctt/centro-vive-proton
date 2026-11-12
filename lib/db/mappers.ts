@@ -49,6 +49,12 @@ export function toIsoStringOrNull(val: unknown): string | null {
   }
 }
 
+/** Limpia prefijos como "[DEMO]" del nombre de un lugar o comercio. */
+export function cleanPlaceName(name: unknown): string {
+  if (!name) return "";
+  return String(name).replace(/^\[DEMO\]\s*/i, "").trim();
+}
+
 // ---------------------------------------------------------------------------
 // Mappers principales
 // ---------------------------------------------------------------------------
@@ -93,7 +99,7 @@ export function toPlace(row: Record<string, unknown>): Place {
 
   return {
     id:          String(row.id ?? ""),
-    name:        String(row.name ?? ""),
+    name:        cleanPlaceName(row.name),
     category:    String(row.category ?? "historia"),
     lat:         Number(row.lat ?? row.latitude ?? 0),
     lng:         Number(row.lng ?? row.longitude ?? 0),
@@ -134,7 +140,7 @@ export function toEvent(row: Record<string, unknown>): Event {
     }
   }
 
-  const name   = String(row.name ?? row.title ?? "");
+  const name   = cleanPlaceName(row.name ?? row.title ?? "");
   const lat    = Number(row.lat ?? row.latitude ?? (place ? place.lat : 0));
   const lng    = Number(row.lng ?? row.longitude ?? (place ? place.lng : 0));
   const endsAt = toIsoStringOrNull(row.ends_at ?? row.endsAt);
@@ -206,7 +212,7 @@ export function toBusiness(row: Record<string, unknown>): Business {
     id:       String(row.id ?? ""),
     placeId:  String(row.place_id ?? row.placeId ?? ""),
     ownerId,
-    name:     String(rawName ?? ""),
+    name:     cleanPlaceName(rawName),
     contact,
     active:   Boolean(row.active   ?? true),
     verified: Boolean(row.verified ?? true),

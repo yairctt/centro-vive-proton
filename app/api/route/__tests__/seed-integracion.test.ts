@@ -32,12 +32,12 @@ const LUGARES = [
 
 // Los 6 comercios ficticios del seed (2 nocturnos).
 const COMERCIOS = [
-  P("013", "[DEMO] Antojitos La Jarocha Alegre", "gastronomia", 19.2008, -96.1378, { opportunity: 0.85, avg_visit_min: 25 }),
-  P("014", "[DEMO] Café y Toritos La Bamba Nocturna", "gastronomia", 19.2012, -96.1368, { closes_at: "22:00:00", opportunity: 0.9, avg_visit_min: 35, price_level: "medio", meta: { abreDeNoche: true } }),
-  P("015", "[DEMO] Mariscos El Puerto Bravo", "gastronomia", 19.2019, -96.1352, { closes_at: "22:00:00", opportunity: 0.85, avg_visit_min: 40, price_level: "medio", meta: { abreDeNoche: true } }),
-  P("016", "[DEMO] Artesanías El Coral Blanco", "compras", 19.2022, -96.1358, { opportunity: 0.75, avg_visit_min: 20 }),
-  P("017", "[DEMO] Guayaberas y Sombreros El Danzón", "compras", 19.1994, -96.138, { opportunity: 0.7, avg_visit_min: 25, price_level: "medio" }),
-  P("018", "[DEMO] Dulcería y Nieves Doña Gloria", "gastronomia", 19.1991, -96.1387, { opportunity: 0.8, avg_visit_min: 15 }),
+  P("013", "Antojitos La Jarocha Alegre", "gastronomia", 19.2008, -96.1378, { opportunity: 0.85, avg_visit_min: 25 }),
+  P("014", "Café y Toritos La Bamba Nocturna", "gastronomia", 19.2012, -96.1368, { closes_at: "22:00:00", opportunity: 0.9, avg_visit_min: 35, price_level: "medio", meta: { abreDeNoche: true } }),
+  P("015", "Mariscos El Puerto Bravo", "gastronomia", 19.2019, -96.1352, { closes_at: "22:00:00", opportunity: 0.85, avg_visit_min: 40, price_level: "medio", meta: { abreDeNoche: true } }),
+  P("016", "Artesanías El Coral Blanco", "compras", 19.2022, -96.1358, { opportunity: 0.75, avg_visit_min: 20 }),
+  P("017", "Guayaberas y Sombreros El Danzón", "compras", 19.1994, -96.138, { opportunity: 0.7, avg_visit_min: 25, price_level: "medio" }),
+  P("018", "Dulcería y Nieves Doña Gloria", "gastronomia", 19.1991, -96.1387, { opportunity: 0.8, avg_visit_min: 15 }),
 ];
 
 describe("el seed completo de I3 genera una ruta útil", () => {

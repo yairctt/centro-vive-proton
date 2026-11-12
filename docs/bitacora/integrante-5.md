@@ -199,3 +199,33 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se verificó que al cargar `/` no quede retenida la sesión de invitado, mostrando la bienvenida limpia con acceso a los roles, y que los botones de regreso operen correctamente entre pestañas.
 - **Commit:** `fix(navegacion): limpiar sesion de invitado al iniciar portada y botones de regresar entre pestanas`
+
+---
+
+### 02:10 · Fase 8: Eliminación de prefijo [DEMO] en nombres de lugares y enlaces a Google Maps
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Eliminar el prefijo `[DEMO]` al visualizar los lugares individualmente en la ruta, mapa y misiones, garantizando que los enlaces de búsqueda a Google Maps abran la ubicación exacta de manera limpia y sin errores de geolocalización.
+- **Prompt (resumen):** «Ahora se debe corregir el error de cuando se quiere ver la ubicacion de los lugares por individual este se visualiza con el nombre de [DEMO] al inicio de este. Esto no esta correcto solo debe mostrar el nombre de la ubicacion. Ya que asi no muestra la ubicacion en el google maps cuando se intenta visualizar.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Saneamiento a nivel base de datos (`lib/db/mappers.ts`):** Creación de la función `cleanPlaceName` para remover de raíz el prefijo `^\[DEMO\]\s*` en `toPlace`, `toEvent` y `toBusiness`. Cualquier entidad que provenga de Supabase entrega siempre un nombre limpio al frontend y a la API.
+  - **Construcción de enlaces robustos (`components/visitante/enlaces-maps.ts`):** `enlaceLugar` y `enlaceRutaCompleta` limpian cualquier prefijo residual del nombre antes de codificar los parámetros de búsqueda de Google Maps, asegurando que `google.com/maps/search/?api=1&query=` ubique el lugar sin interferencias sintácticas ni búsquedas literales fallidas.
+  - **Salvaguardas en vistas y mapa:** En `app/(visitante)/ruta/page.tsx`, `app/(visitante)/mision/[id]/page.tsx` y `components/mapa/MapaCentro.tsx`, se garantiza que los nombres renderizados en tarjetas, marcadores de Leaflet y popups se presenten 100% limpios.
+  - **Limpieza de seed y tests (`supabase/seed.sql`, `app/api/route/__tests__`):** Se eliminó el prefijo `[DEMO] ` de los 6 comercios sembrados en `supabase/seed.sql` y se añadieron pruebas unitarias en Vitest para certificar la limpieza de nombres tanto en mappers como en enlaces de Google Maps.
+- **Resultado:**
+  - `lib/db/mappers.ts`
+  - `components/visitante/enlaces-maps.ts`
+  - `components/visitante/__tests__/enlaces-maps.test.ts`
+  - `app/(visitante)/ruta/page.tsx`
+  - `components/mapa/MapaCentro.tsx`
+  - `app/(visitante)/mision/[id]/page.tsx`
+  - `app/api/missions/route.ts`
+  - `app/api/stats/route.ts`
+  - `app/api/me/passport/route.ts`
+  - `supabase/seed.sql`
+  - `app/api/route/__tests__/seed-compat.test.ts`
+  - `app/api/route/__tests__/seed-integracion.test.ts`
+  - `lib/engine/__tests__/independencia-zona.test.ts`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó que ningún lugar contenga `[DEMO]`, que los enlaces a Google Maps abran con éxito la búsqueda geográfica exacta y que los 126 tests de Vitest y la compilación con TypeScript pasen sin advertencias.
+- **Commit:** `fix(lugares): eliminar prefijo [DEMO] en nombres y corregir enlace a Google Maps`

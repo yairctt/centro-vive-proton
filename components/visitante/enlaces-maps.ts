@@ -18,9 +18,11 @@ export interface PuntoRuta {
  * Enlace para abrir un solo lugar en Google Maps.
  * Usa `search` con coordenadas y el nombre, para que encuentre el lugar
  * aunque Google no tenga ese punto exacto en su base.
+ * Limpia automáticamente cualquier prefijo residual como [DEMO] para no romper la búsqueda.
  */
 export function enlaceLugar(punto: PuntoRuta): string {
-  const consulta = encodeURIComponent(`${punto.nombre} ${punto.lat},${punto.lng}`);
+  const nombreLimpio = punto.nombre.replace(/^\[DEMO\]\s*/i, "").trim();
+  const consulta = encodeURIComponent(`${nombreLimpio} ${punto.lat},${punto.lng}`);
   return `https://www.google.com/maps/search/?api=1&query=${consulta}`;
 }
 

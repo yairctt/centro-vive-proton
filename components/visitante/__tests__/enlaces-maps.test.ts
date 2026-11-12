@@ -15,6 +15,17 @@ describe("enlace de un lugar", () => {
     expect(url.searchParams.get("query")).toContain("Zócalo");
     expect(url.searchParams.get("query")).toContain("19.2002,-96.1385");
   });
+
+  it("elimina el prefijo [DEMO] del nombre para no romper la búsqueda de Google Maps", () => {
+    const url = new URL(
+      enlaceLugar(punto(19.2008, -96.1378, "[DEMO] Antojitos La Jarocha Alegre")),
+    );
+    const query = url.searchParams.get("query") ?? "";
+    expect(query).not.toContain("[DEMO]");
+    expect(query).not.toContain("DEMO");
+    expect(query).toContain("Antojitos La Jarocha Alegre");
+    expect(query).toContain("19.2008,-96.1378");
+  });
 });
 
 describe("enlace de la ruta completa", () => {

@@ -31,11 +31,11 @@ function rutaEnZona(tz: string): string {
       [vitest, "run", "lib/engine/__tests__/score.test.ts", "lib/engine/__tests__/route.test.ts"],
       {
         cwd: raiz,
-        env: { ...process.env, TZ: tz, PULSO_ZONA_PRUEBA: "1" },
+        env: { ...process.env, TZ: tz, PULSO_ZONA_PRUEBA: "1", NO_COLOR: "1" },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       },
-    ).trim();
+    ).replace(/\x1b\[[0-9;]*m/g, "").trim();
   } catch {
     return "";
   }

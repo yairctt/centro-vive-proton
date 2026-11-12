@@ -59,9 +59,10 @@ function AjustarVista({ puntos }: { puntos: LatLng[] }) {
 }
 
 function FichaLugar({ place, onSelectPlace }: { place: Place; onSelectPlace?: (p: Place) => void }) {
+  const nombreLimpio = place.name.replace(/^\[DEMO\]\s*/i, "").trim();
   return (
     <div className="min-w-40 space-y-1">
-      <p className="text-sm font-semibold">{place.name}</p>
+      <p className="text-sm font-semibold">{nombreLimpio}</p>
       <p className="text-xs text-neutral-600">
         {place.category} · {place.verified ? t.verificado : t.porConfirmar}
       </p>
@@ -80,9 +81,10 @@ function FichaLugar({ place, onSelectPlace }: { place: Place; onSelectPlace?: (p
 }
 
 function FichaEvento({ event }: { event: Event }) {
+  const nombreLimpio = event.name.replace(/^\[DEMO\]\s*/i, "").trim();
   return (
     <div className="min-w-40 space-y-1">
-      <p className="text-sm font-semibold">{event.name}</p>
+      <p className="text-sm font-semibold">{nombreLimpio}</p>
       <p className="text-xs text-neutral-600">
         {event.category} · {formatHora(event.startsAt)} · {event.verified ? t.verificado : t.porConfirmar}
       </p>

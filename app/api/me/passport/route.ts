@@ -14,7 +14,7 @@
 import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { requireProfile } from "@/lib/db/auth";
-import { toProfile, toVisit, toReward } from "@/lib/db/mappers";
+import { toProfile, toVisit, toReward, cleanPlaceName } from "@/lib/db/mappers";
 import { puntosDeVisita, unoDe, type MisionDeVisita } from "@/lib/db/puntos";
 
 export async function GET(): Promise<NextResponse> {
@@ -82,7 +82,7 @@ export async function GET(): Promise<NextResponse> {
         return {
           ...toVisit(row),
           pointsAwarded: puntosDeVisita(mision, String(row.created_at)),
-          placeName: lugar?.name ?? "Lugar del Centro",
+          placeName: cleanPlaceName(lugar?.name ?? "Lugar del Centro"),
           missionTitle: mision?.title ?? null,
         };
       }),
@@ -114,7 +114,7 @@ export async function GET(): Promise<NextResponse> {
       profile: mockProfile,
       visits: mockVisits.map((v) => ({
         ...v,
-        placeName: mockPlaces.find((p) => p.id === v.placeId)?.name ?? "Lugar del Centro",
+        placeName: cleanPlaceName(mockPlaces.find((p) => p.id === v.placeId)?.name ?? "Lugar del Centro"),
         missionTitle: null,
       })),
       rewards: mockRewards.map((r) => ({ ...r, canjeable: false })),
