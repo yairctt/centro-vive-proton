@@ -409,3 +409,46 @@
   - `components/ui/CruiseExperience.tsx` (eliminado)
 - **Revisión humana:** Se confirmó la compilación con `npx tsc --noEmit` con 0 errores, la ejecución exitosa de los 145 tests de Vitest, la navegación intuitiva en dispositivos móviles y la consistencia en el tablero de administración.
 - **Commit:** `feat(grupos): rutas en grupos pequenos medianos y grandes contingentes con tamano personalizado y recompensas colectivas`
+
+### 08:25 · Fase 15: Traducción Integral al Inglés, Selector Bilingüe Universal y Soporte para Cruceristas Extranjeros
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Cumplir el requerimiento del giro del reto para visitantes que no hablan español (cruceristas extranjeros y turistas internacionales): traducir el proyecto completamente al inglés desde el inicio, con selector de idioma accesible desde la portada y en todas las pantallas principales, reactividad instantánea y persistencia.
+- **Prompt (resumen):** «Me agrada la idea, pero recuerda que es un crucero donde no hablan español, entonces recuerda que posiblemente usen el idioma ingles. Debes traducir el proyecto para estas personas. Debe estar traducido completamente desde el inicio y poder escoger el lenguaje de preferencia.»
+- **Decisiones técnicas y de diseño tomadas por la IA:**
+  - **Selector universal bilingüe (`components/ui/LanguageSelector.tsx`):**
+    - Componente UI elegante y compacto con diseño interactivo: `[ 🇲🇽 ES | 🇺🇸 EN ]`.
+    - Hook reactivo `useIdioma()` con listener de eventos `pulso_lang_changed` y `storage`, permitiendo alternar idioma en caliente sin recarga de página y sin tocar archivos protegidos (`app/layout.tsx`).
+    - Persistencia en `localStorage` y `sessionStorage`.
+  - **Traducción simétrica y universal en `lib/i18n/`:**
+    - `lib/i18n/es.ts` y `lib/i18n/en.ts` completamente sincronizados:
+      - **Portada (`app/page.tsx`):** Lema institucional, tarjeta de Rutas Grupales, pie de página y selector en cabecera.
+      - **Menú por rol (`components/auth/MenuPorRol.tsx`):** Opciones para visitante, comercio y admin, botones de sesión y bienvenida.
+      - **Personalizador (`app/(visitante)/inicio/page.tsx`):** Tiempos (1h, 1.5h, 2h, 3+h, 4+h), modo solo vs. grupo, sugerencias (Small, Medium, Contingent), slider libre, categorías de interés y presupuesto.
+      - **Ruta inteligente (`app/(visitante)/ruta/page.tsx`):** Paradas, tiempos de caminata, categorías traducidas, mapa y botones de acción.
+      - **Pasaporte digital (`app/(visitante)/pasaporte/page.tsx`):** Sellos, puntos, vales individuales y bote colaborativo grupal.
+      - **Lector QR (`app/escanear/page.tsx`):** Guía de cámara, validación de sellos y pantalla de éxito.
+      - **Login (`app/(auth)/login/page.tsx` & `components/auth/ui.tsx`):** Hero split-screen traducido, campos, recuperación y accesos demo de evaluación.
+      - **Agenda viva (`app/(visitante)/hoy/page.tsx`):** Lista de eventos, botón "Notify me" / "Notified" y vista de día sin eventos.
+      - **Misión urbana (`app/(visitante)/mision/[id]/page.tsx`):** Detalles de misión, recompensas y botón para escanear QR.
+  - **Pruebas unitarias de internacionalización (`lib/i18n/__tests__/i18n.test.ts`):**
+    - 7 pruebas con Vitest verificando simetría de esquemas, opciones de duración y grupos, diccionario y fallback seguro de almacenamiento.
+- **Resultado:**
+  - `lib/i18n/index.ts`
+  - `lib/i18n/es.ts`
+  - `lib/i18n/en.ts`
+  - `lib/i18n/__tests__/i18n.test.ts`
+  - `components/ui/LanguageSelector.tsx`
+  - `components/auth/ui.tsx`
+  - `app/page.tsx`
+  - `components/auth/MenuPorRol.tsx`
+  - `components/auth/BotonSalir.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `app/(visitante)/pasaporte/page.tsx`
+  - `app/escanear/page.tsx`
+  - `app/(auth)/login/page.tsx`
+  - `app/(visitante)/hoy/page.tsx`
+  - `app/(visitante)/mision/[id]/page.tsx`
+- **Revisión humana:** Se ejecutó `npx tsc --noEmit` (0 errores) y `npm test` (152/152 pruebas aprobadas). Se verificó el flujo completo en inglés y español.
+- **Commit:** `feat(i18n): traduccion completa al ingles selector de idioma universal y soporte bilingue para cruceristas`

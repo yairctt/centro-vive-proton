@@ -16,9 +16,11 @@ export function getSavedLanguage(): Idioma {
   return saved === "en" ? "en" : "es";
 }
 
-/** Guarda el idioma preferido */
+/** Guarda el idioma preferido y notifica a los componentes activos */
 export function setSavedLanguage(lang: Idioma) {
   if (typeof window === "undefined") return;
   localStorage.setItem("pulso_lang", lang);
+  sessionStorage.setItem("pulsoLang", lang);
+  window.dispatchEvent(new CustomEvent("pulso_lang_changed", { detail: lang }));
 }
 

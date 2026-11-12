@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import type { Mission, Place } from "@/lib/types";
 import { CheckIcon, CompassIcon, MapPinIcon, MoonIcon, TargetIcon } from "@/components/paneles/icons";
 import { CameraIcon } from "@/components/ui/icons";
+import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 
 type Estado =
   | { fase: "cargando" }
@@ -15,6 +16,7 @@ type Estado =
   | { fase: "error"; mensaje: string };
 
 function Mision() {
+  const { lang, t } = useIdioma();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>({ fase: "cargando" });
@@ -77,13 +79,13 @@ function Mision() {
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400">
           <CompassIcon className="h-9 w-9" />
         </div>
-        <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">Misión no disponible</h1>
+        <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{t.mision.noDisponibleTitulo}</h1>
         <p className="max-w-xs text-neutral-500 dark:text-neutral-400">{estado.mensaje}</p>
         <Link
           href="/ruta"
           className="rounded-xl bg-teal-700 px-6 py-3 font-bold text-white shadow-sm transition duration-100 hover:bg-teal-800 active:scale-[0.98]"
         >
-          Volver a mi ruta
+          {t.mision.volverRuta}
         </Link>
       </main>
     );
@@ -94,9 +96,13 @@ function Mision() {
 
   return (
     <main className="flex min-h-dvh flex-col justify-center bg-neutral-50 p-6 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
-      <div className="mx-auto w-full max-w-md rounded-3xl border border-neutral-200/80 bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mx-auto w-full max-w-md rounded-3xl border border-neutral-200/80 bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900 relative">
+        <div className="absolute top-6 right-6">
+          <LanguageSelector size="sm" />
+        </div>
+
         <span
-          className={`mb-6 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold ${
+          className={`mb-6 mt-2 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold ${
             aceptada
               ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
               : mission.nightBonus
@@ -111,7 +117,7 @@ function Mision() {
           ) : (
             <TargetIcon className="h-3.5 w-3.5" />
           )}
-          {aceptada ? "Misión aceptada" : mission.nightBonus ? "Misión nocturna" : "Misión especial"}
+          {aceptada ? t.mision.aceptada : mission.nightBonus ? t.mision.nocturna : t.mision.especial}
         </span>
 
         <h1 className="mb-3 text-3xl leading-tight font-black">{mission.title}</h1>
@@ -123,34 +129,36 @@ function Mision() {
         )}
 
         <p className="mb-8 text-base leading-relaxed text-neutral-600 dark:text-neutral-400">
-          {mission.rules || mission.description || "Visita el lugar y escanea su código QR."}
+          {mission.rules || mission.description || (lang === "en" ? "Visit the place and scan its QR code." : "Visita el lugar y escanea su código QR.")}
         </p>
 
         <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/30">
-          <p className="mb-2 text-sm font-bold text-amber-800 dark:text-amber-300">Recompensa</p>
+          <p className="mb-2 text-sm font-bold text-amber-800 dark:text-amber-300">{t.mision.recompensa}</p>
           <div className="flex items-baseline justify-center gap-2 text-4xl font-black text-amber-700 dark:text-amber-400">
             <span>+{mission.points}</span>
-            <span className="text-xl">pts</span>
+            <span className="text-xl">{t.mision.pts}</span>
           </div>
         </div>
 
         {aceptada ? (
           <div className="space-y-3">
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              Al llegar{place ? ` a ${place.name.replace(/^\[DEMO\]\s*/i, "").trim()}` : ""}, busca el código QR y escanéalo para sumar tus puntos.
+              {place
+                ? `${lang === "en" ? "Upon arrival at" : "Al llegar a"} ${place.name.replace(/^\[DEMO\]\s*/i, "").trim()}, ${lang === "en" ? "locate the QR code and scan it to claim your points." : "busca el código QR y escanéalo para sumar tus puntos."}`
+                : t.mision.alLlegar}
             </p>
             <Link
               href="/escanear"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 py-4 text-lg font-black text-white shadow-sm transition duration-100 hover:bg-teal-800 active:scale-[0.98]"
             >
               <CameraIcon className="h-5 w-5" />
-              Escanear QR
+              {t.mision.escanearQr}
             </Link>
             <Link
               href="/ruta"
               className="block w-full py-4 text-sm font-bold text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
-              Volver a mi ruta
+              {t.mision.volverRuta}
             </Link>
           </div>
         ) : (
@@ -162,19 +170,19 @@ function Mision() {
               disabled={estado.fase === "aceptando"}
               className="w-full rounded-xl bg-teal-700 py-4 text-lg font-black text-white shadow-sm transition duration-100 hover:bg-teal-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {estado.fase === "aceptando" ? "Aceptando…" : "Aceptar misión"}
+              {estado.fase === "aceptando" ? t.mision.aceptando : t.mision.aceptarMision}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
               className="w-full py-4 text-sm font-bold text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
-              Quizás luego
+              {t.mision.quizasLuego}
             </button>
           </div>
         )}
 
-        <footer className="mt-8 text-center text-xs text-neutral-400 dark:text-neutral-500 pb-8">
+        <footer className="mt-8 text-center text-xs text-neutral-400 dark:text-neutral-500 pb-2">
           <p>
             Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
           </p>

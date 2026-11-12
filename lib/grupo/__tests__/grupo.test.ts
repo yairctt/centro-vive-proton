@@ -83,3 +83,4 @@ describe("Módulo de Rutas en Grupo (lib/grupo)", () => {
     expect(g2?.puntosBoteGrupal).toBe(grupo.puntosBoteGrupal + 150 * 2);
   });
 });
+

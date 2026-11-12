@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { ReactNode, InputHTMLAttributes } from "react";
 import { es } from "@/lib/i18n/es";
+import { en } from "@/lib/i18n/en";
+import type { Idioma } from "@/lib/i18n";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import { ArrowLeftIcon } from "@/components/paneles/icons";
 
@@ -13,13 +15,19 @@ export function AuthShell({
   children,
   pie,
   mostrarVolver = true,
+  headerRight,
+  lang = "es",
 }: {
   titulo: string;
   subtitulo?: ReactNode;
   children: ReactNode;
   pie?: ReactNode;
   mostrarVolver?: boolean;
+  headerRight?: ReactNode;
+  lang?: Idioma;
 }) {
+  const dict = lang === "en" ? en : es;
+
   return (
     <div className="min-h-screen w-full bg-white dark:bg-neutral-950 flex flex-col lg:grid lg:grid-cols-12">
       {/* Columna Izquierda (Showcase Visual Hero al estilo del boceto) */}
@@ -58,7 +66,9 @@ export function AuthShell({
             </div>
             <div className="flex flex-col text-left">
               <span className="font-black text-lg text-white leading-tight">Pulso Jarocho</span>
-              <span className="text-[11px] font-semibold text-teal-300">Centro Histórico · Veracruz</span>
+              <span className="text-[11px] font-semibold text-teal-300">
+                {lang === "en" ? "Historic Downtown · Veracruz" : "Centro Histórico · Veracruz"}
+              </span>
             </div>
           </Link>
         </div>
@@ -76,23 +86,23 @@ export function AuthShell({
           </div>
 
           <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tight text-white leading-[1.15]">
-            ¡Hola, <br />
+            {dict.auth.heroHola} <br />
             <span className="text-teal-300">Pulso Jarocho!</span>
           </h1>
 
           <p className="mt-4 text-sm sm:text-base text-teal-100/90 leading-relaxed font-normal">
-            La ciudad se activa contigo. Recorre el Centro Histórico a tu propio ritmo con rutas inteligentes, misiones urbanas, sellos digitales y beneficios en comercios locales.
+            {dict.auth.heroDesc}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-teal-200">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              12 Puntos emblemáticos
+              {dict.auth.heroBadgeLugares}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              Comercios locales
+              {dict.auth.heroBadgeComercios}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              Canjes en mostrador
+              {dict.auth.heroBadgeCanjes}
             </span>
           </div>
         </div>
@@ -107,22 +117,25 @@ export function AuthShell({
       {/* Columna Derecha (Formulario y Contenido interactivo) */}
       <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-14 xl:px-20 py-8 lg:py-12 bg-white dark:bg-neutral-950">
         <div className="w-full max-w-md mx-auto">
-          {/* Botón superior para volver a la portada */}
-          {mostrarVolver && (
-            <div className="mb-6 flex items-center justify-between">
+          {/* Barra superior de navegación y selector de idioma */}
+          <div className="mb-6 flex items-center justify-between gap-3">
+            {mostrarVolver ? (
               <Link
                 href="/"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition py-1.5 px-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800"
-                title="Volver a la portada principal"
+                title={dict.auth.volverPortada}
               >
                 <ArrowLeftIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" />
-                <span>Volver a la portada</span>
+                <span>{dict.auth.volverPortada}</span>
               </Link>
+            ) : <div />}
+            <div className="flex items-center gap-2">
+              {headerRight}
               <div className="lg:hidden">
                 <PulsoLogo size="xs" conTexto={false} />
               </div>
             </div>
-          )}
+          </div>
 
           {/* Marca en la parte superior del formulario al estilo del boceto */}
           <div className="mb-6">

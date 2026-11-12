@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { es } from "@/lib/i18n/es";
+import { getDictionary, type Idioma } from "@/lib/i18n";
+import { useIdioma } from "@/components/ui/LanguageSelector";
 import type { Role } from "@/lib/types";
 import { useSesion } from "./sesion";
 import { BotonSalir } from "./BotonSalir";
@@ -27,89 +28,94 @@ interface OpcionItem {
   color: string;
 }
 
-/** Opciones de la portada según el rol con iconos y subtítulos amigables. */
-const OPCIONES: Record<Role, OpcionItem[]> = {
-  visitante: [
-    {
-      href: "/inicio",
-      label: es.menu.explorar,
-      subtitulo: "Personaliza tu tiempo, intereses y presupuesto",
-      icon: CompassIcon,
-      color: "bg-teal-700 text-white",
-    },
-    {
-      href: "/ruta",
-      label: es.menu.rutas,
-      subtitulo: "Tu ruta inteligente con paradas y mapas",
-      icon: RouteIcon,
-      color: "bg-teal-600 text-white",
-    },
-    {
-      href: "/pasaporte",
-      label: es.menu.pasaporte,
-      subtitulo: "Tus sellos digitales, puntos y recompensas",
-      icon: CoinsIcon,
-      color: "bg-amber-600 text-white",
-    },
-    {
-      href: "/escanear",
-      label: es.menu.escanear,
-      subtitulo: "Escanea el código QR en los comercios",
-      icon: QrCodeIcon,
-      color: "bg-neutral-800 text-white",
-    },
-  ],
-  comercio: [
-    {
-      href: "/comercio",
-      label: es.menu.panelComercio,
-      subtitulo: "Tu vitrina comercial, promociones y canjes",
-      icon: StoreIcon,
-      color: "bg-amber-600 text-white",
-    },
-    {
-      href: "/comercio/qr",
-      label: es.menu.qrImprimibles,
-      subtitulo: "Tokens QR para mostrar en tu mostrador",
-      icon: QrCodeIcon,
-      color: "bg-teal-700 text-white",
-    },
-  ],
-  admin: [
-    {
-      href: "/admin",
-      label: es.menu.panelAdmin,
-      subtitulo: "Tablero en vivo de afluencia e impacto digital",
-      icon: BarChartIcon,
-      color: "bg-teal-800 text-white",
-    },
-    {
-      href: "/comercio",
-      label: es.menu.panelComercio,
-      subtitulo: "Vista y gestión de comercios asociados",
-      icon: StoreIcon,
-      color: "bg-amber-600 text-white",
-    },
-    {
-      href: "/comercio/qr",
-      label: es.menu.qrImprimibles,
-      subtitulo: "Códigos QR imprimibles para el jurado",
-      icon: QrCodeIcon,
-      color: "bg-neutral-800 text-white",
-    },
-    {
-      href: "/inicio",
-      label: es.menu.explorar,
-      subtitulo: "Probar experiencia de turista en el centro",
-      icon: CompassIcon,
-      color: "bg-teal-600 text-white",
-    },
-  ],
-};
+function getOpcionesPorRol(t: ReturnType<typeof getDictionary>, lang: Idioma): Record<Role, OpcionItem[]> {
+  const query = lang === "en" ? "?lang=en" : "";
+  return {
+    visitante: [
+      {
+        href: `/inicio${query}`,
+        label: t.menu.explorar,
+        subtitulo: t.portada.menuSubtitulos.explorar,
+        icon: CompassIcon,
+        color: "bg-teal-700 text-white",
+      },
+      {
+        href: `/ruta${query}`,
+        label: t.menu.rutas,
+        subtitulo: t.portada.menuSubtitulos.rutas,
+        icon: RouteIcon,
+        color: "bg-teal-600 text-white",
+      },
+      {
+        href: `/pasaporte${query}`,
+        label: t.menu.pasaporte,
+        subtitulo: t.portada.menuSubtitulos.pasaporte,
+        icon: CoinsIcon,
+        color: "bg-amber-600 text-white",
+      },
+      {
+        href: `/escanear${query}`,
+        label: t.menu.escanear,
+        subtitulo: t.portada.menuSubtitulos.escanear,
+        icon: QrCodeIcon,
+        color: "bg-neutral-800 text-white",
+      },
+    ],
+    comercio: [
+      {
+        href: "/comercio",
+        label: t.menu.panelComercio,
+        subtitulo: t.portada.menuSubtitulos.panelComercio,
+        icon: StoreIcon,
+        color: "bg-amber-600 text-white",
+      },
+      {
+        href: "/comercio/qr",
+        label: t.menu.qrImprimibles,
+        subtitulo: t.portada.menuSubtitulos.qrImprimibles,
+        icon: QrCodeIcon,
+        color: "bg-teal-700 text-white",
+      },
+    ],
+    admin: [
+      {
+        href: "/admin",
+        label: t.menu.panelAdmin,
+        subtitulo: t.portada.menuSubtitulos.panelAdmin,
+        icon: BarChartIcon,
+        color: "bg-teal-800 text-white",
+      },
+      {
+        href: "/comercio",
+        label: t.menu.panelComercio,
+        subtitulo: t.portada.menuSubtitulos.panelComercio,
+        icon: StoreIcon,
+        color: "bg-amber-600 text-white",
+      },
+      {
+        href: "/comercio/qr",
+        label: t.menu.qrImprimibles,
+        subtitulo: t.portada.menuSubtitulos.qrImprimibles,
+        icon: QrCodeIcon,
+        color: "bg-neutral-800 text-white",
+      },
+      {
+        href: `/inicio${query}`,
+        label: t.menu.explorar,
+        subtitulo: t.portada.menuSubtitulos.probarTurista,
+        icon: CompassIcon,
+        color: "bg-teal-600 text-white",
+      },
+    ],
+  };
+}
 
-export function MenuPorRol() {
+export function MenuPorRol({ lang: propLang }: { lang?: Idioma } = {}) {
+  const { lang: hookLang, t } = useIdioma();
+  const lang = propLang || hookLang;
   const perfil = useSesion();
   const [cerrandoInvitado, setCerrandoInvitado] = useState(false);
+  const opciones = getOpcionesPorRol(t, lang);
 
   useEffect(() => {
     // Al iniciar o abrir la portada (/), las sesiones anónimas de invitado
@@ -134,7 +140,7 @@ export function MenuPorRol() {
     return (
       <div className="flex flex-col items-center justify-center py-6 text-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-700 border-t-transparent mb-2"></div>
-        <p className="text-xs font-semibold text-neutral-500">{es.menu.cargando}</p>
+        <p className="text-xs font-semibold text-neutral-500">{t.menu.cargando}</p>
       </div>
     );
   }
@@ -144,7 +150,7 @@ export function MenuPorRol() {
     return (
       <nav className="flex flex-col gap-3">
         <Link
-          href="/login"
+          href={`/login${lang === "en" ? "?lang=en" : ""}`}
           className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-teal-600 bg-teal-700 p-4 text-white shadow-sm transition hover:bg-teal-800 active:scale-[0.99]"
         >
           <div className="flex items-center gap-3.5">
@@ -152,15 +158,15 @@ export function MenuPorRol() {
               <SparklesIcon className="h-5 w-5" />
             </div>
             <div className="text-left">
-              <p className="text-base font-bold leading-tight">{es.auth.entrar}</p>
-              <p className="text-xs text-teal-100 font-medium">Turista · Comercio · Jurado / Admin</p>
+              <p className="text-base font-bold leading-tight">{t.auth.entrar}</p>
+              <p className="text-xs text-teal-100 font-medium">{t.portada.menuSubtitulos.loginRoles}</p>
             </div>
           </div>
           <ChevronRightIcon className="h-5 w-5 text-white/80 transition-transform group-hover:translate-x-1" />
         </Link>
 
         <Link
-          href="/registro"
+          href={`/registro${lang === "en" ? "?lang=en" : ""}`}
           className="group flex items-center justify-between rounded-2xl border border-neutral-300 bg-white p-4 text-neutral-800 shadow-2xs transition hover:bg-neutral-50 hover:border-neutral-400 active:scale-[0.99] dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-neutral-100 dark:hover:bg-neutral-800"
         >
           <div className="flex items-center gap-3.5">
@@ -168,8 +174,8 @@ export function MenuPorRol() {
               <UserCheckIcon className="h-5 w-5" />
             </div>
             <div className="text-left">
-              <p className="text-base font-bold leading-tight">{es.auth.crearCuenta}</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Crea tu pasaporte jarocho</p>
+              <p className="text-base font-bold leading-tight">{t.auth.crearCuenta}</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{t.portada.menuSubtitulos.crearPasaporte}</p>
             </div>
           </div>
           <ChevronRightIcon className="h-5 w-5 text-neutral-400 transition-transform group-hover:translate-x-1" />
@@ -188,33 +194,33 @@ export function MenuPorRol() {
           </div>
           <div>
             <p className="text-sm font-black text-neutral-900 dark:text-neutral-100 leading-tight">
-              {es.menu.hola}, {perfil.alias}
+              {t.menu.hola}, {perfil.alias}
             </p>
             <p className="text-xs text-neutral-500 font-medium">
-              {perfil.esInvitado ? es.menu.invitado : es.menu.rol[perfil.role]}
+              {perfil.esInvitado ? t.menu.invitado : t.menu.rol[perfil.role]}
               {perfil.role === "visitante" && (
                 <span className="ml-1.5 font-bold text-amber-700 dark:text-amber-400">
-                  · {perfil.points} pts
+                  · {perfil.points} {t.qr.puntos}
                 </span>
               )}
             </p>
           </div>
         </div>
-        <BotonSalir />
+        <BotonSalir lang={lang} />
       </div>
 
       {perfil.esInvitado && (
         <Link
-          href="/registro"
+          href={`/registro${lang === "en" ? "?lang=en" : ""}`}
           className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-center text-xs font-bold text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100 transition hover:bg-amber-100"
         >
-          {es.menu.guardarCuenta}
+          {t.menu.guardarCuenta}
         </Link>
       )}
 
       {/* Lista de accesos por rol con estilo premium */}
       <nav className="flex flex-col gap-2.5">
-        {OPCIONES[perfil.role].map((o) => {
+        {opciones[perfil.role].map((o) => {
           const Icon = o.icon;
           return (
             <Link

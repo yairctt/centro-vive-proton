@@ -8,6 +8,7 @@ import { puntosDemo } from "@/lib/qr/mock";
 import { CheckIcon } from "@/components/paneles/icons";
 import { ArrowLeftIcon, CameraIcon, TrophyIcon } from "@/components/ui/icons";
 import { GroupPassportSection } from "@/components/ui/GroupExperience";
+import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 
 /** Respuesta de GET /api/me/passport (datos del usuario de la sesión). */
 interface Pasaporte {
@@ -60,6 +61,7 @@ function pasaporteDemo(): Pasaporte {
 }
 
 export default function PasaportePage() {
+  const { lang, t } = useIdioma();
   const [estado, setEstado] = useState<Estado>({ fase: "cargando" });
   const [canjeando, setCanjeando] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -81,7 +83,7 @@ export default function PasaportePage() {
         return;
       }
       if (!res.ok || !body?.profile) {
-        setEstado({ fase: "error", mensaje: body?.error ?? "No pudimos cargar tu pasaporte." });
+        setEstado({ fase: "error", mensaje: body?.error ?? (lang === "en" ? "Could not load passport." : "No pudimos cargar tu pasaporte.") });
         return;
       }
       setEstado({ fase: "listo", datos: body as Pasaporte, demo: false });
@@ -89,7 +91,7 @@ export default function PasaportePage() {
       // Sin servidor: modo demo.
       setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     cargar();
@@ -110,13 +112,13 @@ export default function PasaportePage() {
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
-        setAviso(body?.error ?? "No se pudo solicitar el canje.");
+        setAviso(body?.error ?? (lang === "en" ? "Could not request redemption." : "No se pudo solicitar el canje."));
       } else {
-        setAviso(`Muestra el código ${body.redemption.code} en el comercio para recibir tu recompensa.`);
+        setAviso(lang === "en" ? `Show code ${body.redemption.code} at the counter to claim your reward.` : `Muestra el código ${body.redemption.code} en el comercio para recibir tu recompensa.`);
         await cargar();
       }
     } catch {
-      setAviso("Sin conexión. Intenta de nuevo.");
+      setAviso(lang === "en" ? "Offline mode. Please try again." : "Sin conexión. Intenta de nuevo.");
     } finally {
       setCanjeando(null);
     }
@@ -126,7 +128,9 @@ export default function PasaportePage() {
     return (
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center gap-4 px-6 text-center">
         {estado.fase === "cargando" ? (
-          <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Cargando tu pasaporte…</p>
+          <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            {lang === "en" ? "Loading your passport…" : "Cargando tu pasaporte…"}
+          </p>
         ) : (
           <>
             <p className="text-base font-bold text-neutral-800 dark:text-neutral-200">{estado.mensaje}</p>
@@ -136,9 +140,9 @@ export default function PasaportePage() {
                 setEstado({ fase: "cargando" });
                 cargar();
               }}
-              className="rounded-xl bg-teal-700 hover:bg-teal-800 px-6 py-3 text-sm font-bold text-white transition-colors"
+              className="rounded-xl bg-teal-700 hover:bg-teal-800 px-6 py-3 text-sm font-bold text-white transition-colors cursor-pointer"
             >
-              Reintentar
+              {lang === "en" ? "Retry" : "Reintentar"}
             </button>
           </>
         )}
@@ -156,17 +160,18 @@ export default function PasaportePage() {
     <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col font-sans selection:bg-teal-100 dark:selection:bg-teal-900">
       <header className="px-6 pt-8 pb-4 max-w-lg mx-auto w-full flex items-center justify-between">
         <Link
-          href="/ruta"
+          href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
           className="text-xs font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 flex items-center gap-1"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
-          <span>Volver a la ruta</span>
+          <span>{t.pasaporte.volverRuta}</span>
         </Link>
         <div className="flex items-center gap-2">
+          <LanguageSelector size="sm" />
           <span className="text-xs bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800 font-bold px-2.5 py-1 rounded-full">
-            Pasaporte digital
+            {t.pasaporte.insigniaDigital}
           </span>
-          <BotonSalir />
+          <BotonSalir lang={lang} />
         </div>
       </header>
 
@@ -178,7 +183,7 @@ export default function PasaportePage() {
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <span className="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
-                {esInvitado ? "Invitado" : "Explorador Jarocho"}
+                {esInvitado ? (lang === "en" ? "Guest" : "Invitado") : (lang === "en" ? "Veracruz Explorer" : "Explorador Jarocho")}
               </span>
               <div className="shrink-0 size-9 rounded-xl overflow-hidden border border-white/30 shadow-xs bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -190,7 +195,7 @@ export default function PasaportePage() {
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-teal-200 text-xs font-bold mb-1">
-                  Puntos acumulados
+                  {t.pasaporte.puntosAcumulados}
                 </p>
                 <p className="text-5xl font-black text-amber-300">{profile.points}</p>
               </div>
@@ -201,7 +206,7 @@ export default function PasaportePage() {
 
             {modoDemo && (
               <p className="text-[11px] text-teal-200/90 mt-3 font-medium">
-                Modo demostración: los puntos se guardan en este navegador.
+                {t.pasaporte.modoDemoAviso}
               </p>
             )}
           </div>
@@ -209,10 +214,10 @@ export default function PasaportePage() {
 
         {esInvitado && !modoDemo && (
           <Link
-            href="/registro?next=/pasaporte"
+            href={`/registro?next=/pasaporte&lang=${lang}`}
             className="mt-3 block rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
           >
-            Crea tu cuenta para no perder tus puntos
+            {lang === "en" ? "Create an account to keep your points" : "Crea tu cuenta para no perder tus puntos"}
           </Link>
         )}
       </div>
@@ -220,17 +225,23 @@ export default function PasaportePage() {
       <div className="px-6 flex-1 space-y-6 max-w-lg mx-auto w-full pb-32">
         {/* Acciones principales */}
         <div>
-          <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">Acciones</h3>
+          <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">
+            {lang === "en" ? "Actions" : "Acciones"}
+          </h3>
           <Link
-            href="/escanear"
+            href={`/escanear${lang === "en" ? "?lang=en" : ""}`}
             className="group flex items-center p-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-xs border border-neutral-200/80 dark:border-neutral-800 active:scale-[0.98] transition duration-100"
           >
             <div className="w-12 h-12 bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400 rounded-xl flex items-center justify-center mr-3 group-active:bg-teal-100 dark:group-active:bg-teal-950/60 transition-colors shrink-0">
               <CameraIcon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-neutral-900 dark:text-neutral-100 text-sm">Escanear QR de visita</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Suma puntos en los comercios participantes</p>
+              <p className="font-bold text-neutral-900 dark:text-neutral-100 text-sm">
+                {lang === "en" ? "Scan visit QR" : "Escanear QR de visita"}
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                {lang === "en" ? "Earn points at participating venues" : "Suma puntos en los comercios participantes"}
+              </p>
             </div>
           </Link>
         </div>
@@ -238,13 +249,17 @@ export default function PasaportePage() {
         {/* Sellos de visitas */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-black text-neutral-800 dark:text-neutral-200 text-base">Sellos de Visita ({visits.length})</h3>
-            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Verificados por QR</span>
+            <h3 className="font-black text-neutral-800 dark:text-neutral-200 text-base">
+              {t.pasaporte.sellosRecorrido} ({visits.length})
+            </h3>
+            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+              {lang === "en" ? "QR Verified" : "Verificados por QR"}
+            </span>
           </div>
 
           {visits.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 text-center text-sm text-neutral-500 dark:text-neutral-400">
-              Aún no tienes sellos. Escanea el QR de un lugar del centro para ganar tu primero.
+              {t.pasaporte.sinSellos} {t.pasaporte.sinSellosAyuda}
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -267,7 +282,9 @@ export default function PasaportePage() {
         {/* Mis canjes */}
         {redemptions.length > 0 && (
           <div>
-            <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">Mis canjes</h3>
+            <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">
+              {lang === "en" ? "My Redemptions" : "Mis canjes"}
+            </h3>
             <div className="space-y-2.5">
               {redemptions.map((r) => (
                 <div
@@ -285,7 +302,7 @@ export default function PasaportePage() {
                         : "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
                     }`}
                   >
-                    {r.status === "pendiente" ? "Muéstralo en el comercio" : "Entregado"}
+                    {r.status === "pendiente" ? (lang === "en" ? "Show to merchant" : "Muéstralo en el comercio") : (lang === "en" ? "Delivered" : "Entregado")}
                   </span>
                 </div>
               ))}
@@ -294,11 +311,13 @@ export default function PasaportePage() {
         )}
 
         {/* Recompensas Grupales y Colectivas */}
-        <GroupPassportSection />
+        <GroupPassportSection lang={lang} />
 
         {/* Recompensas */}
         <div>
-          <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">Recompensas para canjear</h3>
+          <h3 className="font-black text-neutral-800 dark:text-neutral-200 mb-3 text-base">
+            {t.pasaporte.recompensasTitulo}
+          </h3>
           {aviso && (
             <p role="status" className="mb-3 rounded-2xl bg-teal-50 border border-teal-200 dark:bg-teal-950/40 dark:border-teal-800 p-3 text-sm font-semibold text-teal-900 dark:text-teal-200">
               {aviso}
@@ -326,13 +345,13 @@ export default function PasaportePage() {
                       type="button"
                       onClick={() => canjear(reward.id)}
                       disabled={canjeando !== null}
-                      className="shrink-0 rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2.5 text-xs font-bold text-white active:scale-[0.98] transition duration-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="shrink-0 rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2.5 text-xs font-bold text-white active:scale-[0.98] transition duration-100 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      {canjeando === reward.id ? "Canjeando…" : "Canjear"}
+                      {canjeando === reward.id ? t.pasaporte.canjeando : t.pasaporte.botonCanjear}
                     </button>
                   ) : (
                     <span className="shrink-0 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">
-                      Te faltan {reward.pointsCost - profile.points} pts
+                      {lang === "en" ? `Need ${reward.pointsCost - profile.points} more pts` : `Te faltan ${reward.pointsCost - profile.points} pts`}
                     </span>
                   )}
                 </div>
@@ -344,10 +363,10 @@ export default function PasaportePage() {
 
       <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
         <Link
-          href="/inicio"
+          href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
           className="block w-full text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors text-sm"
         >
-          Generar Nueva Ruta
+          {lang === "en" ? "Generate New Route" : "Generar Nueva Ruta"}
         </Link>
         <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
           Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
