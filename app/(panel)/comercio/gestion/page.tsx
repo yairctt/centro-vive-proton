@@ -5,25 +5,40 @@
  * sus eventos de la agenda y sus recompensas canjeables.
  */
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "@/components/paneles";
 import { GestionEventos } from "@/components/paneles/gestion/GestionEventos";
 import { GestionRecompensas } from "@/components/paneles/gestion/GestionRecompensas";
 
 type Pestana = "eventos" | "recompensas";
 
 export default function ComercioGestionPage() {
+  const router = useRouter();
   const [pestana, setPestana] = useState<Pestana>("eventos");
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs font-semibold tracking-wider text-amber-800 uppercase dark:text-amber-400">
-          Panel del Establecimiento
-        </span>
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Mis eventos y recompensas</h1>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-          Publica eventos en la agenda «Hoy en el centro» y administra los beneficios que tus
-          clientes canjean con puntos.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <span className="text-xs font-semibold tracking-wider text-amber-800 uppercase dark:text-amber-400">
+            Panel del Establecimiento
+          </span>
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Mis eventos y recompensas</h1>
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            Publica eventos en la agenda «Hoy en el centro» y administra los beneficios que tus
+            clientes canjean con puntos.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => router.push("/comercio")}
+          className="inline-flex cursor-pointer shrink-0 items-center gap-1.5 self-start rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          title="Regresar a Mi Comercio"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          <span>Regresar a Mi Comercio</span>
+        </button>
       </div>
 
       <div className="flex gap-1 overflow-x-auto border-b border-neutral-200/80 pb-1 dark:border-neutral-800">

@@ -1,10 +1,12 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { es } from "@/lib/i18n/es";
 import type { Role } from "@/lib/types";
 import { useSesion } from "./sesion";
 import { BotonSalir } from "./BotonSalir";
+import { getBrowserClient } from "@/lib/db/browser";
 
 /** Opciones de la portada según el rol (mismas reglas que proxy.ts). */
 const OPCIONES: Record<Role, { href: string; label: string }[]> = {
@@ -31,12 +33,33 @@ const estiloOpcion =
 
 export function MenuPorRol() {
   const perfil = useSesion();
+  const [cerrandoInvitado, setCerrandoInvitado] = useState(false);
+
+  useEffect(() => {
+    // Al iniciar o abrir la portada (/), las sesiones anónimas de invitado
+    // no deben mantenerse iniciadas. Se cierran para que el usuario pueda
+    // elegir cómo ingresar (como visitante, comercio o admin en /login).
+    if (perfil?.esInvitado && !cerrandoInvitado) {
+      setCerrandoInvitado(true);
+      try {
+        const supabase = getBrowserClient();
+        supabase.auth.signOut().finally(() => {
+          fetch("/auth/salir", { method: "POST" }).finally(() => {
+            window.location.reload();
+          });
+        });
+      } catch {
+        // En caso de que no haya cliente disponible
+      }
+    }
+  }, [perfil, cerrandoInvitado]);
 
   if (perfil === undefined) {
     return <p className="text-center text-sm text-neutral-500">{es.menu.cargando}</p>;
   }
 
-  if (perfil === null) {
+  // Si no hay sesión o si era una sesión de invitado (que se limpia al llegar a la portada)
+  if (perfil === null || perfil.esInvitado) {
     return (
       <nav className="flex flex-col gap-3">
         <Link href="/login" className={`${estiloOpcion} border-teal-700 bg-teal-700 font-bold text-white hover:bg-teal-800`}>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   KpiCard,
   ScansByPlaceChart,
@@ -16,6 +17,7 @@ import {
   PlayIcon,
   RefreshCwIcon,
   DownloadIcon,
+  ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
 import type { Stats } from "@/lib/types";
@@ -23,6 +25,7 @@ import type { Stats } from "@/lib/types";
 type TimeRange = "hoy" | "ayer" | "semana";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<ExtendedStats>(MOCK_ADMIN_STATS);
   const [isLive, setIsLive] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("hoy");
@@ -153,6 +156,22 @@ export default function AdminDashboardPage() {
 
         {/* Action Controls & Filters */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            title="Regresar a la pantalla o pestaña anterior"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5 text-neutral-500" />
+            <span className="hidden sm:inline">Regresar</span>
+          </button>
+
           {/* Time Range Selector */}
           <div className="inline-flex rounded-xl border border-neutral-200/80 bg-neutral-100/80 p-0.5 text-xs dark:border-neutral-800 dark:bg-neutral-800/80">
             {(["hoy", "ayer", "semana"] as TimeRange[]).map((range) => (

@@ -16,6 +16,7 @@ import {
   GiftIcon,
   ClockIcon,
   SparklesIcon,
+  ArrowLeftIcon,
   type ComercioMockData,
 } from "@/components/paneles";
 
@@ -168,7 +169,19 @@ export default function ComercioPage() {
       </div>
 
       {/* Navigation View Tabs for Mobile-First UX */}
-      <div className="flex border-b border-neutral-200/80 pb-1 gap-1 overflow-x-auto dark:border-neutral-800">
+      <div className="flex items-center gap-1.5 border-b border-neutral-200/80 pb-1.5 overflow-x-auto dark:border-neutral-800">
+        {currentTab !== "general" && (
+          <button
+            type="button"
+            onClick={() => setCurrentTab("general")}
+            className="inline-flex cursor-pointer shrink-0 items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 active:scale-95 transition dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
+            title="Regresar a la pestaña Vista General"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
+            <span>Regresar a Vista General</span>
+          </button>
+        )}
+
         {[
           { id: "general", label: "Vista General" },
           {

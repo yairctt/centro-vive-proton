@@ -171,3 +171,31 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se confirmó que las interfaces transmitan calidez, legibilidad y facilidad inmediata de uso para cualquier perfil de usuario.
 - **Commit:** `feat(paneles): diseno calido, amigable para todos los usuarios y enriquecimiento visual`
+
+---
+
+### 01:50 · Fase 7: Corrección de sesión de invitado en portada y botones de regresar entre pestañas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Corregir la persistencia de sesión de invitado al iniciar la portada y añadir botones de navegación hacia atrás ("Regresar") entre pestañas y vistas de paneles y del visitante.
+- **Prompt (resumen):** «Necesito que se corriga el error de que al iniciar la pagina mantiene la sesion de invitado iniciada, eso no deberi estar correcto. Tambien un boton de regresar entre pestañas. Ya que no cuenta con ello.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Limpieza de sesión de invitado en portada (`MenuPorRol.tsx`):** Al cargar la portada (`/`), si existe una sesión anónima temporal de invitado (`esInvitado === true`), se cierra automáticamente vía `supabase.auth.signOut()` y `/auth/salir` para que la página de inicio siempre arranque limpia mostrando las opciones de [Entrar] (con los 3 accesos diferenciados: Visitante, Comercio, Admin) y [Crear cuenta].
+  - **Botón universal de regresar en `PanelHeader`:** Incorporación de botón `Regresar` con `ArrowLeftIcon` y fallback seguro con `router.back()`.
+  - **Navegación de retorno en pestañas de `/comercio`:** Botón destacado `Regresar a Vista General` cuando el comercio navega por las pestañas de "Canjes en Caja", "Vitrina & Promociones" o "Afluencia & Métricas".
+  - **Botones de regreso en `/admin/gestion` y `/comercio/gestion`:** Botones de `Regresar al Tablero` y `Regresar a Mi Comercio` para transicionar fluidamente entre gestión y dashboard.
+  - **Botón de regreso en `/admin` y vistas del visitante (`/inicio`, `/ruta`):** Enlaces con flecha hacia atrás para volver a la pantalla anterior sin depender de los controles del navegador.
+  - **Icono SVG `ArrowLeftIcon`:** Icono vectorial homogéneo añadido a `components/paneles/icons.tsx`.
+- **Resultado:**
+  - `components/auth/MenuPorRol.tsx`
+  - `components/paneles/icons.tsx`
+  - `components/paneles/PanelHeader.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/admin/gestion/page.tsx`
+  - `app/(panel)/comercio/gestion/page.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se verificó que al cargar `/` no quede retenida la sesión de invitado, mostrando la bienvenida limpia con acceso a los roles, y que los botones de regreso operen correctamente entre pestañas.
+- **Commit:** `fix(navegacion): limpiar sesion de invitado al iniciar portada y botones de regresar entre pestanas`

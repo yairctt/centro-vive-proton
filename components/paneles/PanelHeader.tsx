@@ -2,8 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BarChartIcon, StoreIcon, QrCodeIcon, HomeIcon, LayersIcon, CalendarIcon } from "./icons";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  BarChartIcon,
+  StoreIcon,
+  QrCodeIcon,
+  HomeIcon,
+  LayersIcon,
+  CalendarIcon,
+  ArrowLeftIcon,
+} from "./icons";
 import { useSesion } from "@/components/auth/sesion";
 import { BotonSalir } from "@/components/auth/BotonSalir";
 import type { Role } from "@/lib/types";
@@ -20,6 +28,7 @@ const LINKS = [
 
 export function PanelHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const perfil = useSesion();
   // Mientras carga la sesión (o en modo demo sin sesión) se muestran todas.
   const navLinks = perfil ? LINKS.filter((l) => l.roles.includes(perfil.role)) : LINKS;
@@ -33,8 +42,25 @@ export function PanelHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/95 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
+        {/* Brand & Botón Regresar */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            title="Regresar a la pantalla o pestaña anterior"
+            aria-label="Regresar"
+            className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-100 hover:text-neutral-900 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            <ArrowLeftIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+            <span className="hidden sm:inline">Regresar</span>
+          </button>
+
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs transition group-hover:scale-105">
               <span className="text-sm font-black tracking-wider">PJ</span>

@@ -20,6 +20,7 @@ import {
   CompassIcon,
   MapPinIcon,
   TargetIcon,
+  ArrowLeftIcon,
 } from "@/components/paneles/icons";
 
 /**
@@ -134,7 +135,17 @@ export default function RutaPage() {
 
   return (
     <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col font-sans selection:bg-teal-100 dark:selection:bg-teal-900">
-      <header className="bg-white dark:bg-neutral-900 px-5 py-4 border-b border-neutral-200/80 dark:border-neutral-800 z-20 sticky top-0">
+      <header className="bg-white dark:bg-neutral-900 px-5 py-3 border-b border-neutral-200/80 dark:border-neutral-800 z-20 sticky top-0">
+        <div className="mb-2 flex items-center justify-between">
+          <Link
+            href="/inicio"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition"
+            title="Regresar a personalizar recorrido"
+          >
+            <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+            <span>Volver a preferencias</span>
+          </Link>
+        </div>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
