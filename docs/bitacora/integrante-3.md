@@ -17,3 +17,17 @@
 - **Resultado:** Archivo `supabase/seed.sql` listo y probado contra la base de datos de Supabase.
 - **Revisión humana:** Se validó la compatibilidad con el esquema real de Supabase (tablas `places`, `businesses`, `events`, `missions`, `rewards`, `qr_tokens`, `profiles`), garantizando sintaxis válida para UUIDs hexadecimales y expresiones de fecha relativas a `America/Mexico_City`.
 - **Commit:** `feat(db): datos semilla de la demo`.
+
+### 18:34 · Endpoints críticos y schema.sql
+
+- **Herramienta:** Antigravity (Gemini 2.5 Pro)
+- **Objetivo:** Crear `supabase/schema.sql`, `POST /api/visits/validate`, `POST /api/missions/accept`, `GET /api/me/passport` y `GET /api/stats`. Commit de `seed.sql` que faltaba.
+- **Prompt (resumen):** «Ruta crítica: Faltan commitear schema.sql/seed.sql y crear los endpoints: POST /api/visits/validate, POST /api/missions/accept, GET /api/me/passport y GET /api/stats.»
+- **Resultado:** 5 archivos nuevos:
+  - `supabase/schema.sql` — DDL completo con RLS y función `increment_points()`.
+  - `app/api/visits/validate/route.ts` — valida token QR, registra visita, otorga puntos (cálculo servidor).
+  - `app/api/missions/accept/route.ts` — inserta en `mission_accepts`, idempotente.
+  - `app/api/me/passport/route.ts` — devuelve perfil + visitas + recompensas canjeables.
+  - `app/api/stats/route.ts` — agrega actividad registrada en la app (scansByPlace, activityByHour, etc.).
+- **Revisión humana:** Se corrigieron 4 errores TS: `ZodError.errors` → `.issues`, shape de `Stats.scansByPlace` (`placeName` no `name`) y `activityByHour` (`count` no `interactions`). Build confirmado en 0 errores.
+- **Commit:** `feat(backend): schema.sql, validate, accept, passport y stats`
