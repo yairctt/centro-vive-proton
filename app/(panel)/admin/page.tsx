@@ -36,11 +36,17 @@ export default function AdminDashboardPage() {
           totalInteractions:
             data.totalInteractions ??
             (data.scansByPlace?.reduce((acc, s) => acc + s.scans, 0) || prev.totalInteractions),
+          activePlaces: data.activePlaces ?? prev.activePlaces,
+          activeBusinesses: data.activeBusinesses ?? prev.activeBusinesses,
           scansByPlace:
             data.scansByPlace && data.scansByPlace.length > 0
               ? data.scansByPlace
               : prev.scansByPlace,
           activityByHour: data.activityByHour ?? prev.activityByHour,
+          activityByHourWithBusinesses:
+            data.activityByHourWithBusinesses && data.activityByHourWithBusinesses.length > 0
+              ? data.activityByHourWithBusinesses
+              : prev.activityByHourWithBusinesses,
           recentVisits:
             data.recentVisits && data.recentVisits.length > 0
               ? data.recentVisits
