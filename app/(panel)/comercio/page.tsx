@@ -10,6 +10,11 @@ import {
   ComercioConversionChart,
   PublishEventModal,
   MOCK_COMERCIO,
+  CalendarIcon,
+  MapPinIcon,
+  CompassIcon,
+  GiftIcon,
+  ClockIcon,
   type ComercioMockData,
 } from "@/components/paneles";
 
@@ -95,10 +100,10 @@ export default function ComercioPage() {
           {/* Quick Publish Event button */}
           <button
             onClick={() => setIsEventModalOpen(true)}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-amber-700 active:scale-95"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-amber-700 active:scale-95 transition"
           >
-            <span>📅</span>
-            Publicar Evento
+            <CalendarIcon className="h-4 w-4" />
+            <span>Publicar Evento</span>
           </button>
         </div>
       </div>
@@ -114,7 +119,7 @@ export default function ComercioPage() {
           subtitle="Escaneos presenciales validados"
           badge="+6 hoy"
           badgeType="positive"
-          icon={<span className="text-sm">📍</span>}
+          icon={<MapPinIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Vinculadas"
@@ -122,7 +127,7 @@ export default function ComercioPage() {
           subtitle="Rutas que traen visitantes aquí"
           badge="Activas"
           badgeType="brand"
-          icon={<span className="text-sm">🧭</span>}
+          icon={<CompassIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Canjes Confirmados"
@@ -130,7 +135,7 @@ export default function ComercioPage() {
           subtitle="Beneficios entregados a clientes"
           badge="Efectivos"
           badgeType="warning"
-          icon={<span className="text-sm">🎁</span>}
+          icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Canjes Pendientes"
@@ -138,7 +143,7 @@ export default function ComercioPage() {
           subtitle="Clientes esperando validación"
           badge={comercio.stats.pendingRedemptions > 0 ? "Por validar" : "Al día"}
           badgeType={comercio.stats.pendingRedemptions > 0 ? "warning" : "neutral"}
-          icon={<span className="text-sm">⏳</span>}
+          icon={<ClockIcon className="h-5 w-5" />}
         />
       </div>
 

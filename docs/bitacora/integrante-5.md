@@ -72,3 +72,36 @@
   - `app/(panel)/admin/page.tsx` — `fetchStats` actualizado para mapear `activityByHourWithBusinesses`, `activePlaces` y `activeBusinesses` desde la respuesta real.
 - **Revisión humana:** Se ejecutó `tsc --noEmit` y no se encontraron errores de tipos. El branch fue pusheado a `origin/feat/paneles`.
 - **Commit:** `feat(paneles): conectar graficas a /api/stats real con fallback mock`
+
+---
+
+### 20:10 · Fase 4: Rediseño visual sin emojis e iconografía SVG homogénea
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Eliminar todos los emojis de los paneles (`/admin` y `/comercio`), reemplazándolos por una biblioteca de iconos SVG homogénea, profesional y estilizada; elevar la calidad visual de las tarjetas KPI, aviso metodológico de Regla 9, feed de escaneos, vitrina comercial y gráficas Recharts.
+- **Prompt (resumen):** «Mi parte necesita verse mejor, no genericas. Elimina los emojis que tenga y hazlas mejor graficamente utilizando iconos y que se vea bonito y homogéneo.»
+- **Decisiones de diseño tomadas por la IA:**
+  - Creación de `components/paneles/icons.tsx` con más de 20 iconos SVG monocromáticos con trazos limpios (`strokeWidth="2"` o `"2.5"`), adaptables mediante props (`className`, `size`).
+  - Sustitución de todos los emojis (📊, 🏪, 📷, 🏠, ⚡, 🎯, 🎁, 📍, 🧭, ⏳, 🏷️, 🪙, 📅, ✓, ✕) por iconos vectoriales consistentes.
+  - Rediseño de las tarjetas KPI con bordes translúcidos, hover con microinteracción (`hover:-translate-y-0.5`), contenedores de iconos armónicos teñidos según el tipo de métrica y tipografía `tabular-nums`.
+  - Pulido del aviso metodológico de Regla 9 con degradado suave, icono de información y jerarquía clara.
+  - Indicador de estado en vivo con animación de radar/ping concéntrico.
+  - Gráficas Recharts enriquecidas con microbadges en cabeceras y footers con datos clave e iconos de tendencia.
+- **Resultado:**
+  - `components/paneles/icons.tsx` (nuevo)
+  - `components/paneles/index.ts`
+  - `components/paneles/PanelHeader.tsx`
+  - `components/paneles/KpiCard.tsx`
+  - `components/paneles/LiveVisitsFeed.tsx`
+  - `components/paneles/ActivityByHourChart.tsx`
+  - `components/paneles/ScansByPlaceChart.tsx`
+  - `components/paneles/ComercioFicha.tsx`
+  - `components/paneles/ComercioPromos.tsx`
+  - `components/paneles/ComercioCanjesList.tsx`
+  - `components/paneles/ComercioHourlyChart.tsx`
+  - `components/paneles/ComercioConversionChart.tsx`
+  - `components/paneles/PublishEventModal.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+- **Revisión humana:** Se validó que ningún componente conserve emojis de texto, que todos los iconos mantengan el mismo grosor de trazo y alineación visual, y que el diseño sea mobile-first y armónico.
+- **Commit:** `style(paneles): reemplazo de emojis por iconografia svg pulida y mejora visual de tableros`

@@ -12,6 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { MoonIcon, ClockIcon } from "./icons";
 
 interface HourlyPoint {
   hour: number;
@@ -26,25 +27,25 @@ interface ActivityByHourChartProps {
 
 export function ActivityByHourChart({ data }: ActivityByHourChartProps) {
   return (
-    <div className="flex h-full flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="flex h-full flex-col justify-between rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-4 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
               Actividad vs. Comercios Abiertos
             </h3>
-            <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+            <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
               Brecha de Horario
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
             Compara la actividad registrada en la app con la oferta comercial activa
           </p>
         </div>
 
         <div className="mt-2 sm:mt-0">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-100 px-2.5 py-1 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-            <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200/70 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/80 dark:text-neutral-300">
+            <MoonIcon className="h-3 w-3 text-amber-500" />
             Centro de noche (19:00+)
           </span>
         </div>
@@ -101,9 +102,10 @@ export function ActivityByHourChart({ data }: ActivityByHourChartProps) {
                           {hourData.openBusinesses} comercios abiertos
                         </p>
                         {isNightGap && (
-                          <p className="mt-1.5 rounded-md bg-rose-50 px-1.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                            ⚡ Brecha de noche: Alta afluencia digital con comercios cerrados
-                          </p>
+                          <div className="mt-1.5 flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                            <MoonIcon className="h-3 w-3 shrink-0 text-rose-500" />
+                            <span>Brecha de noche: Alta afluencia digital con oferta cerrada</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -143,7 +145,7 @@ export function ActivityByHourChart({ data }: ActivityByHourChartProps) {
 
       <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-full bg-teal-600"></span>
+          <ClockIcon className="h-3.5 w-3.5 text-teal-600" />
           Pico registrado: 18:00–20:00 hrs
         </span>
         <span className="font-medium text-amber-700 dark:text-amber-400">

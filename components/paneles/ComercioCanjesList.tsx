@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import type { ComercioMockData } from "./mock-data";
+import { CheckIcon, CoinsIcon } from "./icons";
 
 interface ComercioCanjesListProps {
   initialRedemptions: ComercioMockData["recentRedemptions"];
@@ -41,20 +42,21 @@ export function ComercioCanjesList({ initialRedemptions }: ComercioCanjesListPro
   };
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="mb-4 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+    <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
             Validación de Canjes de Recompensas
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
             Confirma cuando un visitante presente su código digital de recompensa en el local
           </p>
         </div>
 
         {feedbackMsg && (
-          <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 animate-fade-in dark:bg-emerald-950 dark:text-emerald-300">
-            ✓ {feedbackMsg}
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300">
+            <CheckIcon className="h-3.5 w-3.5 text-emerald-600" />
+            <span>{feedbackMsg}</span>
           </span>
         )}
       </div>
@@ -73,7 +75,7 @@ export function ComercioCanjesList({ initialRedemptions }: ComercioCanjesListPro
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {redemptions.map((item) => (
-              <tr key={item.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+              <tr key={item.id} className="hover:bg-neutral-50/50 transition-colors dark:hover:bg-neutral-800/40">
                 <td className="py-3 font-mono font-bold text-neutral-900 dark:text-white">
                   {item.code}
                 </td>
@@ -83,8 +85,11 @@ export function ComercioCanjesList({ initialRedemptions }: ComercioCanjesListPro
                 <td className="py-3 text-neutral-600 dark:text-neutral-400">
                   {item.rewardTitle}
                 </td>
-                <td className="py-3 font-semibold text-amber-600 dark:text-amber-400">
-                  {item.costPoints} pts
+                <td className="py-3">
+                  <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+                    <CoinsIcon className="h-3 w-3" />
+                    {item.costPoints} pts
+                  </span>
                 </td>
                 <td className="py-3 text-neutral-400">{item.timestamp}</td>
                 <td className="py-3 text-right">
@@ -92,13 +97,14 @@ export function ComercioCanjesList({ initialRedemptions }: ComercioCanjesListPro
                     <button
                       disabled={confirmingId === item.id}
                       onClick={() => handleConfirm(item.id, item.code)}
-                      className="cursor-pointer rounded-lg bg-emerald-700 px-3 py-1 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-800 active:scale-95 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                      className="cursor-pointer rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-800 active:scale-95 disabled:opacity-50 transition dark:bg-emerald-600 dark:hover:bg-emerald-700"
                     >
                       {confirmingId === item.id ? "Validando…" : "Confirmar canje"}
                     </button>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                      ✓ Entregado
+                      <CheckIcon className="h-3 w-3 text-emerald-600" />
+                      Entregado
                     </span>
                   )}
                 </td>
