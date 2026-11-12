@@ -16,6 +16,7 @@ import {
   GiftIcon,
   ClockIcon,
   SparklesIcon,
+  ArrowLeftIcon,
   type ComercioMockData,
 } from "@/components/paneles";
 
@@ -112,6 +113,33 @@ export default function ComercioPage() {
         </div>
       </div>
 
+      {/* Banner de bienvenida comercial con isotipo */}
+      <div className="relative overflow-hidden rounded-3xl border border-amber-200/90 bg-gradient-to-r from-amber-700 via-amber-800 to-amber-950 p-5 sm:p-6 text-white shadow-sm dark:border-amber-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 size-14 rounded-2xl overflow-hidden border-2 border-white/20 shadow-xs bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-pulso-jarocho.jpg" alt="Pulso Jarocho" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-200">
+                  Comercio Aliado
+                </span>
+                <span className="text-white/40">•</span>
+                <span className="text-xs text-amber-100">Centro Histórico de Veracruz</span>
+              </div>
+              <h2 className="text-lg font-black tracking-tight text-white mt-0.5">
+                {comercio.name}
+              </h2>
+              <p className="text-xs text-amber-100/90 mt-1 max-w-xl">
+                Conecta con visitantes mediante ofertas exclusivas, eventos vivos y validación rápida de canjes en mostrador.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Guía visual paso a paso para el cajero o encargado */}
       <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/90 via-orange-50/50 to-amber-50/80 p-5 shadow-xs dark:border-amber-900/60 dark:from-amber-950/40 dark:via-orange-950/20 dark:to-amber-950/30">
         <div className="mb-3 flex items-center justify-between">
@@ -168,7 +196,19 @@ export default function ComercioPage() {
       </div>
 
       {/* Navigation View Tabs for Mobile-First UX */}
-      <div className="flex border-b border-neutral-200/80 pb-1 gap-1 overflow-x-auto dark:border-neutral-800">
+      <div className="flex items-center gap-1.5 border-b border-neutral-200/80 pb-1.5 overflow-x-auto dark:border-neutral-800">
+        {currentTab !== "general" && (
+          <button
+            type="button"
+            onClick={() => setCurrentTab("general")}
+            className="inline-flex cursor-pointer shrink-0 items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 active:scale-95 transition dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
+            title="Regresar a la pestaña Vista General"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
+            <span>Regresar a Vista General</span>
+          </button>
+        )}
+
         {[
           { id: "general", label: "Vista General" },
           {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   KpiCard,
   ScansByPlaceChart,
@@ -16,6 +17,7 @@ import {
   PlayIcon,
   RefreshCwIcon,
   DownloadIcon,
+  ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
 import type { Stats } from "@/lib/types";
@@ -23,6 +25,7 @@ import type { Stats } from "@/lib/types";
 type TimeRange = "hoy" | "ayer" | "semana";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<ExtendedStats>(MOCK_ADMIN_STATS);
   const [isLive, setIsLive] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("hoy");
@@ -153,6 +156,22 @@ export default function AdminDashboardPage() {
 
         {/* Action Controls & Filters */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            title="Regresar a la pantalla o pestaña anterior"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5 text-neutral-500" />
+            <span className="hidden sm:inline">Regresar</span>
+          </button>
+
           {/* Time Range Selector */}
           <div className="inline-flex rounded-xl border border-neutral-200/80 bg-neutral-100/80 p-0.5 text-xs dark:border-neutral-800 dark:bg-neutral-800/80">
             {(["hoy", "ayer", "semana"] as TimeRange[]).map((range) => (
@@ -218,6 +237,39 @@ export default function AdminDashboardPage() {
           <p className="text-teal-800/90 dark:text-teal-300/90 leading-relaxed">
             Las métricas presentadas corresponden a <strong className="font-semibold underline">actividad registrada en la app</strong> (escaneos QR, rutas generadas y misiones completadas); no representan un conteo peatonal total ni facturación comercial.
           </p>
+        </div>
+      </div>
+
+      {/* Banner decorativo institucional con isotipo oficial */}
+      <div className="relative overflow-hidden rounded-3xl border border-teal-200/90 bg-gradient-to-r from-teal-900 via-teal-800 to-teal-950 p-5 sm:p-6 text-white shadow-sm dark:border-teal-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 size-14 rounded-2xl overflow-hidden border-2 border-white/20 shadow-xs bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-pulso-jarocho.jpg" alt="Pulso Jarocho" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-300">
+                  Dinamización Urbana
+                </span>
+                <span className="text-white/40">•</span>
+                <span className="text-xs text-teal-200">Reto 6 · Centro Vivo</span>
+              </div>
+              <h2 className="text-lg font-black tracking-tight text-white mt-0.5">
+                Centro Histórico de Veracruz
+              </h2>
+              <p className="text-xs text-teal-100/90 mt-1 max-w-xl">
+                Monitoreo digital en tiempo real: flujo de visitantes, participación en comercios locales y activación del programa Centro de Noche.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-white border border-white/15">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Sistema Operativo
+            </span>
+          </div>
         </div>
       </div>
 

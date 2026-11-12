@@ -171,3 +171,109 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se confirmó que las interfaces transmitan calidez, legibilidad y facilidad inmediata de uso para cualquier perfil de usuario.
 - **Commit:** `feat(paneles): diseno calido, amigable para todos los usuarios y enriquecimiento visual`
+
+---
+
+### 01:50 · Fase 7: Corrección de sesión de invitado en portada y botones de regresar entre pestañas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Corregir la persistencia de sesión de invitado al iniciar la portada y añadir botones de navegación hacia atrás ("Regresar") entre pestañas y vistas de paneles y del visitante.
+- **Prompt (resumen):** «Necesito que se corriga el error de que al iniciar la pagina mantiene la sesion de invitado iniciada, eso no deberi estar correcto. Tambien un boton de regresar entre pestañas. Ya que no cuenta con ello.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Limpieza de sesión de invitado en portada (`MenuPorRol.tsx`):** Al cargar la portada (`/`), si existe una sesión anónima temporal de invitado (`esInvitado === true`), se cierra automáticamente vía `supabase.auth.signOut()` y `/auth/salir` para que la página de inicio siempre arranque limpia mostrando las opciones de [Entrar] (con los 3 accesos diferenciados: Visitante, Comercio, Admin) y [Crear cuenta].
+  - **Botón universal de regresar en `PanelHeader`:** Incorporación de botón `Regresar` con `ArrowLeftIcon` y fallback seguro con `router.back()`.
+  - **Navegación de retorno en pestañas de `/comercio`:** Botón destacado `Regresar a Vista General` cuando el comercio navega por las pestañas de "Canjes en Caja", "Vitrina & Promociones" o "Afluencia & Métricas".
+  - **Botones de regreso en `/admin/gestion` y `/comercio/gestion`:** Botones de `Regresar al Tablero` y `Regresar a Mi Comercio` para transicionar fluidamente entre gestión y dashboard.
+  - **Botón de regreso en `/admin` y vistas del visitante (`/inicio`, `/ruta`):** Enlaces con flecha hacia atrás para volver a la pantalla anterior sin depender de los controles del navegador.
+  - **Icono SVG `ArrowLeftIcon`:** Icono vectorial homogéneo añadido a `components/paneles/icons.tsx`.
+- **Resultado:**
+  - `components/auth/MenuPorRol.tsx`
+  - `components/paneles/icons.tsx`
+  - `components/paneles/PanelHeader.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/admin/gestion/page.tsx`
+  - `app/(panel)/comercio/gestion/page.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se verificó que al cargar `/` no quede retenida la sesión de invitado, mostrando la bienvenida limpia con acceso a los roles, y que los botones de regreso operen correctamente entre pestañas.
+- **Commit:** `fix(navegacion): limpiar sesion de invitado al iniciar portada y botones de regresar entre pestanas`
+
+---
+
+### 02:10 · Fase 8: Eliminación de prefijo [DEMO] en nombres de lugares y enlaces a Google Maps
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Eliminar el prefijo `[DEMO]` al visualizar los lugares individualmente en la ruta, mapa y misiones, garantizando que los enlaces de búsqueda a Google Maps abran la ubicación exacta de manera limpia y sin errores de geolocalización.
+- **Prompt (resumen):** «Ahora se debe corregir el error de cuando se quiere ver la ubicacion de los lugares por individual este se visualiza con el nombre de [DEMO] al inicio de este. Esto no esta correcto solo debe mostrar el nombre de la ubicacion. Ya que asi no muestra la ubicacion en el google maps cuando se intenta visualizar.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Saneamiento a nivel base de datos (`lib/db/mappers.ts`):** Creación de la función `cleanPlaceName` para remover de raíz el prefijo `^\[DEMO\]\s*` en `toPlace`, `toEvent` y `toBusiness`. Cualquier entidad que provenga de Supabase entrega siempre un nombre limpio al frontend y a la API.
+  - **Construcción de enlaces robustos (`components/visitante/enlaces-maps.ts`):** `enlaceLugar` y `enlaceRutaCompleta` limpian cualquier prefijo residual del nombre antes de codificar los parámetros de búsqueda de Google Maps, asegurando que `google.com/maps/search/?api=1&query=` ubique el lugar sin interferencias sintácticas ni búsquedas literales fallidas.
+  - **Salvaguardas en vistas y mapa:** En `app/(visitante)/ruta/page.tsx`, `app/(visitante)/mision/[id]/page.tsx` y `components/mapa/MapaCentro.tsx`, se garantiza que los nombres renderizados en tarjetas, marcadores de Leaflet y popups se presenten 100% limpios.
+  - **Limpieza de seed y tests (`supabase/seed.sql`, `app/api/route/__tests__`):** Se eliminó el prefijo `[DEMO] ` de los 6 comercios sembrados en `supabase/seed.sql` y se añadieron pruebas unitarias en Vitest para certificar la limpieza de nombres tanto en mappers como en enlaces de Google Maps.
+- **Resultado:**
+  - `lib/db/mappers.ts`
+  - `components/visitante/enlaces-maps.ts`
+  - `components/visitante/__tests__/enlaces-maps.test.ts`
+  - `app/(visitante)/ruta/page.tsx`
+  - `components/mapa/MapaCentro.tsx`
+  - `app/(visitante)/mision/[id]/page.tsx`
+  - `app/api/missions/route.ts`
+  - `app/api/stats/route.ts`
+  - `app/api/me/passport/route.ts`
+  - `supabase/seed.sql`
+  - `app/api/route/__tests__/seed-compat.test.ts`
+  - `app/api/route/__tests__/seed-integracion.test.ts`
+  - `lib/engine/__tests__/independencia-zona.test.ts`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó que ningún lugar contenga `[DEMO]`, que los enlaces a Google Maps abran con éxito la búsqueda geográfica exacta y que los 126 tests de Vitest y la compilación con TypeScript pasen sin advertencias.
+- **Commit:** `fix(lugares): eliminar prefijo [DEMO] en nombres y corregir enlace a Google Maps`
+
+---
+
+### 02:30 · Fase 9: Decoración de interfaces, inclusión de logotipo oficial y rediseño de login
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Decorar todas las interfaces para que sean llamativas, cálidas y elegantes para todo tipo de usuarios; incorporar el logotipo oficial de Pulso Jarocho (faro, mar y atardecer jarocho) provisto en imágenes, y rediseñar la vista de login con accesos claros y estética profesional.
+- **Prompt (resumen):** «Ahora debemos decorar todas las interfaces, para que estan sean llamativas y elegantes para todos los tipos de usuarios. Este seria el logo de nuestro sitio. Necesitamos mejorar la vista del login e incluir el logo que te proporciono en las imagenes en algun pequeño lugar.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Asset del logotipo oficial:** Copia y optimización del logotipo en `public/logo-pulso-jarocho.jpg` y `public/logo.jpg`.
+  - **Componente reutilizable `<PulsoLogo />` (`components/ui/PulsoLogo.tsx`):** Soporta múltiples tamaños (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`), bordes estilizados, modo resplandor, variante como enlace y etiquetas complementarias.
+  - **Rediseño integral del Login y `AuthShell` (`components/auth/ui.tsx`, `app/(auth)/login/page.tsx`):**
+    - Cabecera con el logotipo oficial centrado y destacado.
+    - Botón superior de retorno hacia la portada.
+    - Campos de correo y contraseña con iconos vectoriales (`MailIcon`, `LockIcon`) y foco suave en verde mar (`teal-600`).
+    - Tarjeta de acceso instantáneo para turistas ("Entrar como invitado") destacada con `SparklesIcon` y `CompassIcon`.
+    - Selector interactivo de 3 tarjetas de demostración para el jurado (Visitante, Comercio, Admin) con iconos y paletas temáticas.
+    - Sello de seguridad y confianza institucional.
+  - **Portada principal estilizada (`app/page.tsx`, `components/auth/MenuPorRol.tsx`):** Logotipo oficial a gran escala con distintivo `Reto 6 · Centro Vivo`, lema oficial *"La ciudad se activa contigo"* y menú con tarjetas enriquecidas con iconos y subtítulos explicativos para cada opción.
+  - **Decoración armónica en paneles y vistas del visitante:**
+    - `PanelHeader`: sustitución del placeholder por el logotipo oficial en tamaño compacto.
+    - `PanelLayout`: pie de página institucional enriquecido con el sello de Pulso Jarocho.
+    - `/admin` y `/comercio`: banners decorativos con el logotipo oficial, identificando la dinamización urbana y el programa de comercio aliado.
+    - `/comercio/qr`: tarjetas imprimibles con el logotipo oficial para que los códigos QR físicos luzcan como distintivos oficiales ante el jurado.
+    - `/inicio`, `/ruta`, `/pasaporte`, `/hoy`, `/escanear`: inclusión del logotipo en cabeceras y tarjeta de identidad del pasaporte digital.
+  - **Nuevos iconos SVG en `components/paneles/icons.tsx`:** `MailIcon`, `LockIcon`, `UserCheckIcon`, `ShieldCheckIcon`.
+- **Resultado:**
+  - `public/logo.jpg`
+  - `public/logo-pulso-jarocho.jpg`
+  - `components/ui/PulsoLogo.tsx` (nuevo)
+  - `components/auth/ui.tsx`
+  - `app/(auth)/login/page.tsx`
+  - `app/page.tsx`
+  - `components/auth/MenuPorRol.tsx`
+  - `components/paneles/PanelHeader.tsx`
+  - `components/paneles/icons.tsx`
+  - `app/(panel)/layout.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/comercio/qr/page.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `app/(visitante)/pasaporte/page.tsx`
+  - `app/(visitante)/hoy/page.tsx`
+  - `app/escanear/page.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se confirmó la apariencia atractiva y homogénea del logo y de la interfaz en todas las resoluciones, así como la correcta compilación con TypeScript y paso de las 126 pruebas en Vitest.
+- **Commit:** `feat(ui): decoracion de interfaces, logo oficial pulso jarocho y rediseno de login`

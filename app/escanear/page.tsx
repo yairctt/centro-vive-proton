@@ -17,6 +17,7 @@ import {
   CameraIcon,
   TrophyIcon,
 } from "@/components/ui/icons";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 const t = es.qr;
 const LECTOR_ID = "lector-qr";
@@ -185,13 +186,16 @@ function Escaner() {
           <ArrowLeftIcon className="h-3.5 w-3.5" />
           {t.volverRuta}
         </Link>
-        <Link
-          href="/pasaporte"
-          className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300"
-        >
-          <TrophyIcon className="h-3.5 w-3.5" />
-          {t.verPasaporte}
-        </Link>
+        <div className="flex items-center gap-2">
+          <PulsoLogo size="xs" conTexto={false} />
+          <Link
+            href="/pasaporte"
+            className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300"
+          >
+            <TrophyIcon className="h-3.5 w-3.5" />
+            {t.verPasaporte}
+          </Link>
+        </div>
       </header>
       <h1 className="text-3xl font-black tracking-tight">{t.titulo}</h1>
 

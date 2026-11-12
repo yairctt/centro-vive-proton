@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Event as AppEvent, Place } from "@/lib/types";
 import { es } from "@/lib/i18n/es";
 import { CalendarIcon, MapPinIcon, XIcon } from "@/components/paneles/icons";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 // Usamos el apodo AppEvent y agregamos title?: string
 type EventoConLugar = AppEvent & { place?: Place; name?: string; title?: string };
@@ -43,10 +44,13 @@ export default function HoyEnElCentroPage() {
         <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col font-sans selection:bg-teal-100 dark:selection:bg-teal-900">
             <header className="bg-white dark:bg-neutral-900 px-6 py-8 border-b border-neutral-200/80 dark:border-neutral-800 z-10 sticky top-0">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 dark:text-amber-300 dark:bg-amber-950/40 dark:border-amber-800 px-2.5 py-1 rounded-full">
-                        <CalendarIcon className="w-3.5 h-3.5" />
-                        Agenda viva
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <PulsoLogo size="xs" conTexto={false} />
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 dark:text-amber-300 dark:bg-amber-950/40 dark:border-amber-800 px-2.5 py-1 rounded-full">
+                            <CalendarIcon className="w-3.5 h-3.5" />
+                            Agenda viva
+                        </span>
+                    </div>
                     <Link
                         href="/inicio"
                         className="inline-flex items-center gap-1 text-sm font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"

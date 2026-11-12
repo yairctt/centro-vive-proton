@@ -118,7 +118,7 @@ function Mision() {
         {place && (
           <p className="mb-4 inline-flex items-center justify-center gap-1.5 text-sm font-bold text-teal-700 dark:text-teal-400">
             <MapPinIcon className="h-4 w-4" />
-            {place.name}
+            {place.name.replace(/^\[DEMO\]\s*/i, "").trim()}
           </p>
         )}
 
@@ -137,7 +137,7 @@ function Mision() {
         {aceptada ? (
           <div className="space-y-3">
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              Al llegar{place ? ` a ${place.name}` : ""}, busca el código QR y escanéalo para sumar tus puntos.
+              Al llegar{place ? ` a ${place.name.replace(/^\[DEMO\]\s*/i, "").trim()}` : ""}, busca el código QR y escanéalo para sumar tus puntos.
             </p>
             <Link
               href="/escanear"

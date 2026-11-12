@@ -7,6 +7,7 @@ import { fetchQrTarjetas } from "@/lib/qr/tokens";
 import type { QrTarjeta } from "@/lib/qr/types";
 import { buildQrUrl } from "@/lib/qr/url";
 import { PrinterIcon } from "@/components/ui/icons";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 const t = es.qrAdmin;
 
@@ -140,6 +141,13 @@ export default function ComercioQrPage() {
                   {t.marcaDemo}
                 </span>
               )}
+              <div className="flex items-center gap-2 mb-0.5">
+                <PulsoLogo size="sm" conTexto={false} />
+                <div className="text-left">
+                  <p className="text-xs font-black text-neutral-900 leading-tight">Pulso Jarocho</p>
+                  <p className="text-[10px] font-semibold text-teal-700 leading-tight">Centro Histórico</p>
+                </div>
+              </div>
               <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold tracking-wide text-teal-800 uppercase">
                 {t.categorias[place.category] ?? place.category}
               </span>

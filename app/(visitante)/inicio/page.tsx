@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Budget } from "@/lib/types";
 import { CalendarIcon } from "@/components/paneles/icons";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   BookOpenIcon,
   CoffeeIcon,
@@ -85,9 +87,15 @@ export default function InicioPage() {
       <header className="bg-white dark:bg-neutral-900 px-6 py-6 border-b border-neutral-200/80 dark:border-neutral-800">
         <div className="max-w-lg mx-auto w-full">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold tracking-tight text-teal-700 dark:text-teal-400">
-              Pulso Jarocho
-            </span>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1"
+              title="Regresar a la portada"
+            >
+              <ArrowLeftIcon className="w-4 h-4 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
+              <PulsoLogo size="xs" conTexto={false} />
+              <span>Pulso Jarocho</span>
+            </Link>
             <div className="flex gap-2">
               <Link
                 href="/hoy"

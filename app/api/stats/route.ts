@@ -9,6 +9,7 @@
 import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { requireProfile } from "@/lib/db/auth";
+import { cleanPlaceName } from "@/lib/db/mappers";
 import { puntosDeVisita, unoDe, type MisionDeVisita } from "@/lib/db/puntos";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
@@ -39,9 +40,10 @@ function toRecentVisit(row: Record<string, unknown>, idx: number) {
   return {
     id: (row.id as string) ?? `v-${idx}`,
     placeId: (row.place_id as string) ?? "",
-    placeName:
+    placeName: cleanPlaceName(
       (row as Record<string, unknown> & { places?: { name: string } }).places
         ?.name ?? "Lugar desconocido",
+    ),
     createdAt: agoLabel,
     method: (row.method as "qr" | "manual") ?? "qr",
     // `visits` no guarda los puntos: se recalculan con las reglas de validate.
@@ -104,9 +106,10 @@ export async function GET() {
     const countByPlace = new Map<string, { placeName: string; scans: number }>();
     for (const v of visits) {
       const pid = (v.place_id as string) ?? "unknown";
-      const pname =
+      const pname = cleanPlaceName(
         (v as Record<string, unknown> & { places?: { name: string } }).places
-          ?.name ?? pid;
+          ?.name ?? pid,
+      );
       const prev = countByPlace.get(pid) ?? { placeName: pname, scans: 0 };
       countByPlace.set(pid, { ...prev, scans: prev.scans + 1 });
     }

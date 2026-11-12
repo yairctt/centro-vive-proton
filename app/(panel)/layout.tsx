@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { PanelHeader } from "@/components/paneles";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 export default function PanelLayout({
   children,
@@ -17,13 +18,16 @@ export default function PanelLayout({
       {/* Pie de página cálido e informativo para comerciantes y jurado */}
       <footer className="mt-12 border-t border-neutral-200/80 bg-white/80 py-8 text-xs text-neutral-500 backdrop-blur-xs dark:border-neutral-800 dark:bg-neutral-900/80 dark:text-neutral-400">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <p className="font-bold text-neutral-800 dark:text-neutral-200">
-              Pulso Jarocho · Centro Vivo
-            </p>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              Iniciativa para la dinamización urbana y comercial del Centro Histórico de Veracruz.
-            </p>
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <PulsoLogo size="sm" conTexto={false} />
+            <div className="space-y-0.5">
+              <p className="font-bold text-neutral-800 dark:text-neutral-200">
+                Pulso Jarocho · Centro Vivo
+              </p>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                Iniciativa para la dinamización urbana y comercial del Centro Histórico de Veracruz.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px]">

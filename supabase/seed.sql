@@ -57,12 +57,12 @@ INSERT INTO places (id, name, category, lat, lng, description, opens_at, closes_
 
   -- 6 Comercios FICTICIOS (alta oportunidad, categorías gastronomía y compras)
   -- 2 con abreDeNoche = true y closes_at = '22:00:00'
-  ('00000000-0000-0000-0000-000000000013', '[DEMO] Antojitos La Jarocha Alegre', 'gastronomia', 19.2008, -96.1378, 'Picadas con salsa de chile comapeño, gorditas negras de frijol y café de olla en cazuela de barro.', NULL, NULL, 25, 'bajo', 0.85, FALSE, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000014', '[DEMO] Café y Toritos La Bamba Nocturna', 'gastronomia', 19.2012, -96.1368, 'Bebidas espirituosas artesanales (toritos de cacahuate y guanábana) y café de especialidad con son en vivo.', NULL, '22:00:00', 35, 'medio', 0.90, FALSE, '{"abreDeNoche": true}'::jsonb),
-  ('00000000-0000-0000-0000-000000000015', '[DEMO] Mariscos El Puerto Bravo', 'gastronomia', 19.2019, -96.1352, 'Ceviches jarochos, vuelve a la vida y cazuelas de mariscos recién capturados por pescadores locales.', NULL, '22:00:00', 40, 'medio', 0.85, FALSE, '{"abreDeNoche": true}'::jsonb),
-  ('00000000-0000-0000-0000-000000000016', '[DEMO] Artesanías El Coral Blanco', 'compras', 19.2022, -96.1358, 'Figuras talladas en madera, conchas marinas, abanicos pintados a mano y textiles de la Cuenca.', NULL, NULL, 20, 'bajo', 0.75, FALSE, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000017', '[DEMO] Guayaberas y Sombreros El Danzón', 'compras', 19.1994, -96.1380, 'Tradicionales prendas de lino para lucir en las plazas y sombreros de jipi tejidos artesanalmente.', NULL, NULL, 25, 'medio', 0.70, FALSE, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000018', '[DEMO] Dulcería y Nieves Doña Gloria', 'gastronomia', 19.1991, -96.1387, 'Nieves de garrafa (guanábana, zapote, coco) y dulces típicos veracruzanos (duquesas y glorias).', NULL, NULL, 15, 'bajo', 0.80, FALSE, '{}'::jsonb)
+  ('00000000-0000-0000-0000-000000000013', 'Antojitos La Jarocha Alegre', 'gastronomia', 19.2008, -96.1378, 'Picadas con salsa de chile comapeño, gorditas negras de frijol y café de olla en cazuela de barro.', NULL, NULL, 25, 'bajo', 0.85, FALSE, '{}'::jsonb),
+  ('00000000-0000-0000-0000-000000000014', 'Café y Toritos La Bamba Nocturna', 'gastronomia', 19.2012, -96.1368, 'Bebidas espirituosas artesanales (toritos de cacahuate y guanábana) y café de especialidad con son en vivo.', NULL, '22:00:00', 35, 'medio', 0.90, FALSE, '{"abreDeNoche": true}'::jsonb),
+  ('00000000-0000-0000-0000-000000000015', 'Mariscos El Puerto Bravo', 'gastronomia', 19.2019, -96.1352, 'Ceviches jarochos, vuelve a la vida y cazuelas de mariscos recién capturados por pescadores locales.', NULL, '22:00:00', 40, 'medio', 0.85, FALSE, '{"abreDeNoche": true}'::jsonb),
+  ('00000000-0000-0000-0000-000000000016', 'Artesanías El Coral Blanco', 'compras', 19.2022, -96.1358, 'Figuras talladas en madera, conchas marinas, abanicos pintados a mano y textiles de la Cuenca.', NULL, NULL, 20, 'bajo', 0.75, FALSE, '{}'::jsonb),
+  ('00000000-0000-0000-0000-000000000017', 'Guayaberas y Sombreros El Danzón', 'compras', 19.1994, -96.1380, 'Tradicionales prendas de lino para lucir en las plazas y sombreros de jipi tejidos artesanalmente.', NULL, NULL, 25, 'medio', 0.70, FALSE, '{}'::jsonb),
+  ('00000000-0000-0000-0000-000000000018', 'Dulcería y Nieves Doña Gloria', 'gastronomia', 19.1991, -96.1387, 'Nieves de garrafa (guanábana, zapote, coco) y dulces típicos veracruzanos (duquesas y glorias).', NULL, NULL, 15, 'bajo', 0.80, FALSE, '{}'::jsonb)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   category = EXCLUDED.category,
