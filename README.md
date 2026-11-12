@@ -130,6 +130,62 @@ Bitácoras por integrante:
 - **Revisión humana:** PENDIENTE: Confirmar visualización de ruta real con base de datos.
 - **Commit:** `e5a9b42` — feat(visitante): conecta preferencias con POST /api/route real
 
+16:43 · Fase 1: Esqueleto de vistas y mock de datos (CP1)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Completar la estructura de carpetas y pantallas base para el rol Visitante con datos simulados antes del corte del Punto de Control 1.
+
+Prompt (resumen): «Revisión de estructura para la rama feat/visitante y creación de vistas base (inicio, ruta, misión, pasaporte) utilizando datos de prueba (mock).»
+
+Resultado: Creación y maquetación de app/(visitante)/inicio/page.tsx, ruta/page.tsx, mision/[id]/page.tsx, y pasaporte/page.tsx. UI mobile-first implementada y funcional para navegación.
+
+Revisión humana: Completada.
+
+Commit: feat(visitante): vistas del esqueleto vivo CP1 completas
+
+17:12 · Integración del motor de rutas y API (/api/route)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Dejar atrás los datos mock y conectar el formulario de preferencias del usuario con el motor de IA real (backend), pasando los datos entre pantallas de forma persistente.
+
+Prompt (resumen): «Actualiza inicio/page.tsx para hacer un POST a /api/route con minutos, intereses y presupuesto, y guarda el resultado para leerlo en ruta/page.tsx.»
+
+Resultado: Modificación de handleStartRoute en inicio usando fetch y sessionStorage. Actualización de la pantalla de ruta para iterar sobre las paradas reales devueltas por la base de datos (Supabase).
+
+Revisión humana: Completada.
+
+Commit: feat(visitante): integración de api/route con sessionStorage
+
+19:49 · Fix de renderizado en cascada y Flujo de Oro (CP2)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Resolver la advertencia crítica de React/Next.js ("Calling setState synchronously within an effect can trigger cascading renders") para estabilizar la app antes del límite de las 19:50 hrs.
+
+Prompt (resumen): «Me da error de cascada de renders al intentar leer la ruta guardada. ¿Cómo lo soluciono para cumplir con el CP2?»
+
+Resultado: Refactorización de ruta/page.tsx aislando la lectura de sessionStorage dentro de un setTimeout asíncrono para evitar el bloqueo del renderizado, e inclusión de un estado de cargando. El "Flujo de oro" quedó 100% conectado.
+
+Revisión humana: Completada (validado en red local/celular).
+
+Commit: feat(visitante): resuelve error de renderizado e integra API para CP2
+
+23:20 · Agenda Viva, formateo de UI y resolución de conflictos Git (Post-CP2)
+
+Herramienta: Asistente IA
+
+Objetivo: Construir la vista "Hoy en el centro" (Agenda Viva) conectada al endpoint /api/events, arreglar desbordamientos de UI por fechas ISO, resolver el conflicto de tipos en TypeScript y gestionar conflictos de fusión de Git en VS Code.
+
+Prompt (resumen): «Crea el page de hoy, corrige el error de "Property 'title' does not exist" y ayúdame a subir los cambios ignorando los conflictos de inicio/page.tsx.»
+
+Resultado: Creación de app/(visitante)/hoy/page.tsx con función formatTime() para parsear fechas de la DB. Alias de AppEvent para evitar colisión con el Event nativo del DOM y extensión del tipo (EventoConLugar). Limpieza exitosa de conflictos (Migrate Changes y preparación selectiva Stage).
+
+Revisión humana: Completada.
+
+Commit: feat(visitante): agrega vista de agenda de hoy
+
 ### Bitácora de IA — Integrante 2 (Mapa, QR, integración y despliegue)
 
 ##### 14:48 · Fase 0: estructura inicial, dependencias y tipos
