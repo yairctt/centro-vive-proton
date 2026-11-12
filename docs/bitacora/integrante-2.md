@@ -71,3 +71,12 @@
 - **Resultado:** cuentas reales creadas con `scripts/crear-cuenta.mjs`: `comercio@pulsojarocho.mx` → perfil `comercio-demo` (dueño de los 6 negocios del seed) y `admin@pulsojarocho.mx` → perfil `admin-demo`; el visitante entra como invitado (auth anónima). En `/login`, sección «Accesos de demostración» con 3 botones (Visitante/Comercio/Admin) tras el flag nuevo `flags.accesosDemo` (se apaga con `NEXT_PUBLIC_ACCESOS_DEMO=false`); credenciales rotables por `NEXT_PUBLIC_DEMO_*`. Textos nuevos en `es.auth`.
 - **Revisión humana:** probé el inicio de sesión real de ambas cuentas contra Supabase y verifiqué que el perfil ligado trae el rol correcto (`comercio-demo/comercio`, `admin-demo/admin`); `npm run build` sin errores. Pendiente operativo: poner `NEXT_PUBLIC_MODO_DEMO=false` en Vercel para que el candado de roles aplique en producción.
 - **Commit:** pendiente en `feat/ux-visitante`
+
+### 05:10 · Marca «Powered by Protón» en todos los footers
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** incluir de forma consistente y estilizada la leyenda «Powered by Protón» en los pies de página de todas las vistas de la aplicación.
+- **Prompt (resumen):** «pon en todos los footers powered by Protón»
+- **Resultado:** se integró la leyenda con acento de color de la identidad en `app/page.tsx` (portada), `app/(panel)/layout.tsx` (tableros admin y comercio), `components/auth/ui.tsx` (flujo de autenticación), `app/(visitante)/inicio/page.tsx`, `app/(visitante)/ruta/page.tsx`, `app/(visitante)/pasaporte/page.tsx`, `app/(visitante)/hoy/page.tsx`, `app/(visitante)/mision/[id]/page.tsx`, `app/escanear/page.tsx` y `app/(panel)/comercio/qr/page.tsx` (tarjetas QR imprimibles).
+- **Revisión humana:** `npm run build` ejecutado y validado con 0 errores (37 rutas compiladas correctamente).
+- **Commit:** `4673be5` — footer powered by proton
