@@ -140,3 +140,34 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se probó la navegación responsive en anchos móviles (375 px), la descarga del archivo CSV y la búsqueda instantánea en tablas y feed sin retardos.
 - **Commit:** `feat(paneles): perfeccionamiento integral de UX y UI, filtros y exportacion`
+
+---
+
+### 20:45 · Fase 6: Diseño cálido, amigable para todo tipo de usuarios y enriquecimiento visual
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Superar el minimalismo plano y frío para crear una interfaz humana, cálida y accesible para todo tipo de usuarios (comerciantes tradicionales, encargados de caja, jurado y directores de turismo), con explicaciones claras, guías paso a paso, diferenciación cromática veracruzana y componentes con personalidad.
+- **Prompt (resumen):** «Necesito mejorar aun las cosas,, trata de que sean amigables para todos los tipos de usuarios. Sean diseños no tan minimalistas y homogeneos.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Diferenciación visual en tarjetas KPI (`KpiCard`):** Bordes superiores de acento cromático temático (esmeralda para actividad, teal para misiones, ámbar dorado para canjes, azul para red urbana), barras de progreso visuales con porcentaje del día y subtítulos explicativos.
+  - **Banner institucional y narrativo en `/admin`:** Cabecera con fondo degradado veracruzano que explica en lenguaje llano qué sucede en el Centro Histórico y cómo opera el programa Centro de Noche.
+  - **Guía paso a paso para el cajero en `/comercio`:** Panel ilustrado de 3 pasos ("Pide el código" → "Búscalo en la lista" → "Pulsa Confirmar") que elimina la fricción operativa para comerciantes que no son nativos digitales.
+  - **Ficha comercial enriquecida (`ComercioFicha`):** Diseño de escaparate cálido con banner superior tricolor veracruzano, botón para compartir vitrina pública y badge de puntos otorgados al visitante (+50 pts).
+  - **Promociones estilo cupón recortable (`ComercioPromos`):** Tarjetas con estética de cupón real, puntos dorados destacados y botones de activación/pausa amigables.
+  - **Consejo contextual ("Tip Jarocho"):** Mensaje de ayuda que explica a qué horas se concentra la afluencia nocturna en el Centro para incentivar aperturas tardías.
+  - **Plantillas rápidas jarochas (1 clic) en `PublishEventModal` y `ComercioPromos`:** Botones de un solo toque ("Música de Marimba y Danzón", "Degustación de Toritos y Café", "15% de descuento en café") que rellenan automáticamente los formularios, ahorrando tiempo y esfuerzo a comerciantes tradicionales.
+  - **Simulación interactiva de cliente en caja en `ComercioCanjesList`:** Botón para inyectar un cupón en tiempo real y probar la validación en vivo frente al jurado.
+  - **Cajas de interpretación en lenguaje natural bajo cada gráfica:** Explicaciones claras para directores de turismo y dueños de negocios sobre cómo interpretar los datos y tomar decisiones (ej. redistribución hacia el Baluarte de Santiago y aprovechamiento del pico nocturno a las 19:00 hrs).
+  - **Layout general con footer cálido (`app/(panel)/layout.tsx`):** Pie de página con identidad institucional de Veracruz, enlaces directos y recordatorio metodológico de Regla 9.
+- **Resultado:**
+  - `components/paneles/KpiCard.tsx`
+  - `components/paneles/ComercioFicha.tsx`
+  - `components/paneles/ComercioPromos.tsx`
+  - `components/paneles/ComercioCanjesList.tsx`
+  - `components/paneles/PublishEventModal.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/layout.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se confirmó que las interfaces transmitan calidez, legibilidad y facilidad inmediata de uso para cualquier perfil de usuario.
+- **Commit:** `feat(paneles): diseno calido, amigable para todos los usuarios y enriquecimiento visual`

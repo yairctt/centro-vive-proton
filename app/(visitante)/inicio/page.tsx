@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Budget } from "@/lib/types";
+import { CalendarIcon } from "@/components/paneles/icons";
 import {
   ArrowRightIcon,
   BookOpenIcon,
@@ -87,13 +88,22 @@ export default function InicioPage() {
             <span className="text-sm font-bold tracking-tight text-teal-700 dark:text-teal-400">
               Pulso Jarocho
             </span>
-            <Link
-              href="/pasaporte"
-              className="text-xs bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors"
-            >
-              <BookOpenIcon className="w-3.5 h-3.5" />
-              Pasaporte
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/hoy"
+                className="text-xs bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors"
+              >
+                <CalendarIcon className="w-3.5 h-3.5" />
+                Hoy
+              </Link>
+              <Link
+                href="/pasaporte"
+                className="text-xs bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors"
+              >
+                <BookOpenIcon className="w-3.5 h-3.5" />
+                Pasaporte
+              </Link>
+            </div>
           </div>
           <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 mt-2">
             Diseña tu recorrido
