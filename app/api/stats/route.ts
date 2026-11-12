@@ -6,7 +6,7 @@
  * Query: ?from=ISO8601&to=ISO8601  (opcional; defecto: últimas 24 h)
  * Response: Stats
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
