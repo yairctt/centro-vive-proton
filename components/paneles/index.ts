@@ -9,5 +9,6 @@ export * from "./ComercioHourlyChart";
 export * from "./ComercioConversionChart";
 export * from "./PanelHeader";
 export * from "./PublishEventModal";
+export * from "./icons";
 export * from "./mock-data";
 

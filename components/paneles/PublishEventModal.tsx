@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { CalendarIcon, CheckIcon } from "./icons";
 
 interface PublishEventModalProps {
   isOpen: boolean;
@@ -82,29 +83,37 @@ export function PublishEventModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-md rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-              Publicar Evento en la Agenda
-            </h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Quedará marcado como «por confirmar» hasta revisión del administrador
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50">
+              <CalendarIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                Publicar Evento en la Agenda
+              </h3>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                Se enviará con estatus «por confirmar» para validación
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="cursor-pointer text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+            aria-label="Cerrar modal"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition"
           >
-            ✕
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
         {isSuccess ? (
           <div className="py-8 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300">
-              ✓
+              <CheckIcon className="h-6 w-6" />
             </div>
             <h4 className="mt-3 text-base font-bold text-neutral-900 dark:text-white">
               ¡Evento enviado a revisión!

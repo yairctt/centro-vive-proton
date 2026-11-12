@@ -52,3 +52,56 @@
 - **Resultado:** `app/(panel)/admin/page.tsx` con polling cada 5 segundos y toggle de pausar/reanudar; `docs/pitch/diapositivas.md` con 8 diapositivas detalladas (problema, solución, algoritmo, demo en vivo con jurado, brecha de horario, modelo de negocio y cierre).
 - **Revisión humana:** Se validó que el polling no genere parpadeos en pantalla y que la latencia visual del feed sea inferior a 5 segundos.
 - **Commit:** `feat(paneles): polling en vivo cada 5s en admin y diapositivas del pitch`
+
+---
+
+### 18:37 · Fase 3: Endpoint real GET /api/stats y conexión de gráficas
+
+- **Herramienta:** Antigravity (Claude Sonnet 4.6 Thinking)
+- **Objetivo:** Reemplazar los datos mock de las gráficas `ScansByPlaceChart` y `ActivityByHourChart` por datos reales provenientes de Supabase, creando el endpoint `GET /api/stats` que antes no existía.
+- **Prompt (resumen):** «Conecta las gráficas a /api/stats real en lugar de datos simulados/mock.»
+- **Decisiones de diseño tomadas por la IA:**
+  - Consultar las tablas `visits`, `missions` y `places` en paralelo con `Promise.all` para minimizar la latencia del polling.
+  - Derivar `scansByPlace` agrupando visits por `place_id` con join `places(name)` para obtener el nombre legible sin una segunda consulta.
+  - Derivar `activityByHour` y `activityByHourWithBusinesses` sobre el resultado de visits en memoria (evita una función RPC adicional en Supabase).
+  - Calcular `comerciosAbiertos(hora)` con una función local que modela los horarios reales de los 6 comercios demo (apertura, pausa de medio día, cierre nocturno).
+  - Fallback a `MOCK_ADMIN_STATS` si la DB no está disponible o el seed no ha corrido, garantizando que la demo nunca devuelva un 500.
+  - Incluir `Cache-Control: no-store` para que el polling del frontend siempre obtenga datos frescos.
+- **Resultado:**
+  - `app/api/stats/route.ts` — nuevo endpoint `GET /api/stats` con consulta real a Supabase y fallback resiliente.
+  - `app/(panel)/admin/page.tsx` — `fetchStats` actualizado para mapear `activityByHourWithBusinesses`, `activePlaces` y `activeBusinesses` desde la respuesta real.
+- **Revisión humana:** Se ejecutó `tsc --noEmit` y no se encontraron errores de tipos. El branch fue pusheado a `origin/feat/paneles`.
+- **Commit:** `feat(paneles): conectar graficas a /api/stats real con fallback mock`
+
+---
+
+### 20:10 · Fase 4: Rediseño visual sin emojis e iconografía SVG homogénea
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Eliminar todos los emojis de los paneles (`/admin` y `/comercio`), reemplazándolos por una biblioteca de iconos SVG homogénea, profesional y estilizada; elevar la calidad visual de las tarjetas KPI, aviso metodológico de Regla 9, feed de escaneos, vitrina comercial y gráficas Recharts.
+- **Prompt (resumen):** «Mi parte necesita verse mejor, no genericas. Elimina los emojis que tenga y hazlas mejor graficamente utilizando iconos y que se vea bonito y homogéneo.»
+- **Decisiones de diseño tomadas por la IA:**
+  - Creación de `components/paneles/icons.tsx` con más de 20 iconos SVG monocromáticos con trazos limpios (`strokeWidth="2"` o `"2.5"`), adaptables mediante props (`className`, `size`).
+  - Sustitución de todos los emojis (📊, 🏪, 📷, 🏠, ⚡, 🎯, 🎁, 📍, 🧭, ⏳, 🏷️, 🪙, 📅, ✓, ✕) por iconos vectoriales consistentes.
+  - Rediseño de las tarjetas KPI con bordes translúcidos, hover con microinteracción (`hover:-translate-y-0.5`), contenedores de iconos armónicos teñidos según el tipo de métrica y tipografía `tabular-nums`.
+  - Pulido del aviso metodológico de Regla 9 con degradado suave, icono de información y jerarquía clara.
+  - Indicador de estado en vivo con animación de radar/ping concéntrico.
+  - Gráficas Recharts enriquecidas con microbadges en cabeceras y footers con datos clave e iconos de tendencia.
+- **Resultado:**
+  - `components/paneles/icons.tsx` (nuevo)
+  - `components/paneles/index.ts`
+  - `components/paneles/PanelHeader.tsx`
+  - `components/paneles/KpiCard.tsx`
+  - `components/paneles/LiveVisitsFeed.tsx`
+  - `components/paneles/ActivityByHourChart.tsx`
+  - `components/paneles/ScansByPlaceChart.tsx`
+  - `components/paneles/ComercioFicha.tsx`
+  - `components/paneles/ComercioPromos.tsx`
+  - `components/paneles/ComercioCanjesList.tsx`
+  - `components/paneles/ComercioHourlyChart.tsx`
+  - `components/paneles/ComercioConversionChart.tsx`
+  - `components/paneles/PublishEventModal.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+- **Revisión humana:** Se validó que ningún componente conserve emojis de texto, que todos los iconos mantengan el mismo grosor de trazo y alineación visual, y que el diseño sea mobile-first y armónico.
+- **Commit:** `style(paneles): reemplazo de emojis por iconografia svg pulida y mejora visual de tableros`
