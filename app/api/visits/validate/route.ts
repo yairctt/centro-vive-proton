@@ -14,7 +14,7 @@ import type { ValidateResponse } from "@/lib/types";
 
 const bodySchema = z.object({
   token: z.string().min(1),
-  profileId: z.string().uuid().optional(),
+  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 // Puntos base por visita con QR

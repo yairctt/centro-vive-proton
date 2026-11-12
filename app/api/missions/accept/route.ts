@@ -11,8 +11,8 @@ import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
 
 const bodySchema = z.object({
-  missionId: z.string().uuid(),
-  profileId: z.string().uuid().optional(),
+  missionId: z.guid({ message: "missionId inválido" }),
+  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
