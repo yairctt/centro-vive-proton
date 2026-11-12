@@ -175,10 +175,16 @@ export default function PasaportePage() {
           <div className="absolute -right-10 -top-10 w-40 h-40 border-[20px] border-white/10 rounded-full opacity-50 pointer-events-none"></div>
 
           <div className="relative z-10">
-            <span className="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
-              {esInvitado ? "Invitado" : "Explorador Jarocho"}
-            </span>
-            <h2 className="text-3xl font-black mt-4 mb-6 truncate">{profile.alias}</h2>
+            <div className="flex items-center justify-between">
+              <span className="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
+                {esInvitado ? "Invitado" : "Explorador Jarocho"}
+              </span>
+              <div className="shrink-0 size-9 rounded-xl overflow-hidden border border-white/30 shadow-xs bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-pulso-jarocho.jpg" alt="Pulso Jarocho" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-black mt-3 mb-6 truncate">{profile.alias}</h2>
 
             <div className="flex justify-between items-end">
               <div>

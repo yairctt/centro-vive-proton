@@ -229,3 +229,51 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se validó que ningún lugar contenga `[DEMO]`, que los enlaces a Google Maps abran con éxito la búsqueda geográfica exacta y que los 126 tests de Vitest y la compilación con TypeScript pasen sin advertencias.
 - **Commit:** `fix(lugares): eliminar prefijo [DEMO] en nombres y corregir enlace a Google Maps`
+
+---
+
+### 02:30 · Fase 9: Decoración de interfaces, inclusión de logotipo oficial y rediseño de login
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Decorar todas las interfaces para que sean llamativas, cálidas y elegantes para todo tipo de usuarios; incorporar el logotipo oficial de Pulso Jarocho (faro, mar y atardecer jarocho) provisto en imágenes, y rediseñar la vista de login con accesos claros y estética profesional.
+- **Prompt (resumen):** «Ahora debemos decorar todas las interfaces, para que estan sean llamativas y elegantes para todos los tipos de usuarios. Este seria el logo de nuestro sitio. Necesitamos mejorar la vista del login e incluir el logo que te proporciono en las imagenes en algun pequeño lugar.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Asset del logotipo oficial:** Copia y optimización del logotipo en `public/logo-pulso-jarocho.jpg` y `public/logo.jpg`.
+  - **Componente reutilizable `<PulsoLogo />` (`components/ui/PulsoLogo.tsx`):** Soporta múltiples tamaños (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`), bordes estilizados, modo resplandor, variante como enlace y etiquetas complementarias.
+  - **Rediseño integral del Login y `AuthShell` (`components/auth/ui.tsx`, `app/(auth)/login/page.tsx`):**
+    - Cabecera con el logotipo oficial centrado y destacado.
+    - Botón superior de retorno hacia la portada.
+    - Campos de correo y contraseña con iconos vectoriales (`MailIcon`, `LockIcon`) y foco suave en verde mar (`teal-600`).
+    - Tarjeta de acceso instantáneo para turistas ("Entrar como invitado") destacada con `SparklesIcon` y `CompassIcon`.
+    - Selector interactivo de 3 tarjetas de demostración para el jurado (Visitante, Comercio, Admin) con iconos y paletas temáticas.
+    - Sello de seguridad y confianza institucional.
+  - **Portada principal estilizada (`app/page.tsx`, `components/auth/MenuPorRol.tsx`):** Logotipo oficial a gran escala con distintivo `Reto 6 · Centro Vivo`, lema oficial *"La ciudad se activa contigo"* y menú con tarjetas enriquecidas con iconos y subtítulos explicativos para cada opción.
+  - **Decoración armónica en paneles y vistas del visitante:**
+    - `PanelHeader`: sustitución del placeholder por el logotipo oficial en tamaño compacto.
+    - `PanelLayout`: pie de página institucional enriquecido con el sello de Pulso Jarocho.
+    - `/admin` y `/comercio`: banners decorativos con el logotipo oficial, identificando la dinamización urbana y el programa de comercio aliado.
+    - `/comercio/qr`: tarjetas imprimibles con el logotipo oficial para que los códigos QR físicos luzcan como distintivos oficiales ante el jurado.
+    - `/inicio`, `/ruta`, `/pasaporte`, `/hoy`, `/escanear`: inclusión del logotipo en cabeceras y tarjeta de identidad del pasaporte digital.
+  - **Nuevos iconos SVG en `components/paneles/icons.tsx`:** `MailIcon`, `LockIcon`, `UserCheckIcon`, `ShieldCheckIcon`.
+- **Resultado:**
+  - `public/logo.jpg`
+  - `public/logo-pulso-jarocho.jpg`
+  - `components/ui/PulsoLogo.tsx` (nuevo)
+  - `components/auth/ui.tsx`
+  - `app/(auth)/login/page.tsx`
+  - `app/page.tsx`
+  - `components/auth/MenuPorRol.tsx`
+  - `components/paneles/PanelHeader.tsx`
+  - `components/paneles/icons.tsx`
+  - `app/(panel)/layout.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/comercio/qr/page.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `app/(visitante)/pasaporte/page.tsx`
+  - `app/(visitante)/hoy/page.tsx`
+  - `app/escanear/page.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se confirmó la apariencia atractiva y homogénea del logo y de la interfaz en todas las resoluciones, así como la correcta compilación con TypeScript y paso de las 126 pruebas en Vitest.
+- **Commit:** `feat(ui): decoracion de interfaces, logo oficial pulso jarocho y rediseno de login`

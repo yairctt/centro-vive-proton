@@ -240,6 +240,39 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Banner decorativo institucional con isotipo oficial */}
+      <div className="relative overflow-hidden rounded-3xl border border-teal-200/90 bg-gradient-to-r from-teal-900 via-teal-800 to-teal-950 p-5 sm:p-6 text-white shadow-sm dark:border-teal-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 size-14 rounded-2xl overflow-hidden border-2 border-white/20 shadow-xs bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-pulso-jarocho.jpg" alt="Pulso Jarocho" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-300">
+                  Dinamización Urbana
+                </span>
+                <span className="text-white/40">•</span>
+                <span className="text-xs text-teal-200">Reto 6 · Centro Vivo</span>
+              </div>
+              <h2 className="text-lg font-black tracking-tight text-white mt-0.5">
+                Centro Histórico de Veracruz
+              </h2>
+              <p className="text-xs text-teal-100/90 mt-1 max-w-xl">
+                Monitoreo digital en tiempo real: flujo de visitantes, participación en comercios locales y activación del programa Centro de Noche.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-white border border-white/15">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Sistema Operativo
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard

@@ -22,6 +22,7 @@ import {
   TargetIcon,
   ArrowLeftIcon,
 } from "@/components/paneles/icons";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 /**
  * Parada tal como la devuelve el motor.
@@ -139,12 +140,16 @@ export default function RutaPage() {
         <div className="mb-2 flex items-center justify-between">
           <Link
             href="/inicio"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1"
             title="Regresar a personalizar recorrido"
           >
-            <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+            <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
             <span>Volver a preferencias</span>
           </Link>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
+            <PulsoLogo size="xs" conTexto={false} />
+            <span className="hidden sm:inline">Pulso Jarocho</span>
+          </div>
         </div>
         <div className="flex items-start justify-between gap-3">
           <div>

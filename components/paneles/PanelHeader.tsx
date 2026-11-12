@@ -14,6 +14,7 @@ import {
 } from "./icons";
 import { useSesion } from "@/components/auth/sesion";
 import { BotonSalir } from "@/components/auth/BotonSalir";
+import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import type { Role } from "@/lib/types";
 
 /** Pestañas por rol (mismas reglas que proxy.ts / lib/auth/roles.ts). */
@@ -62,9 +63,7 @@ export function PanelHeader() {
           </button>
 
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs transition group-hover:scale-105">
-              <span className="text-sm font-black tracking-wider">PJ</span>
-            </div>
+            <PulsoLogo size="sm" conTexto={false} className="transition group-hover:scale-105" />
             <div>
               <span className="text-base font-black tracking-tight text-neutral-900 dark:text-white">
                 Pulso Jarocho
