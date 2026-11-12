@@ -2,11 +2,12 @@ import { es } from "@/lib/i18n/es";
 import { MenuPorRol } from "@/components/auth/MenuPorRol";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import { MapPinIcon } from "@/components/paneles/icons";
+import { CruiseBanner } from "@/components/ui/CruiseExperience";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-8 relative">
-      <header className="flex flex-col items-center text-center space-y-3 mb-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-8 relative space-y-5">
+      <header className="flex flex-col items-center text-center space-y-3">
         <div className="relative">
           <PulsoLogo size="2xl" resaltado={true} className="transition-transform duration-300 hover:scale-105" />
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-teal-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-full shadow-xs border border-teal-600">
@@ -28,12 +29,15 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Giro del Reto: Atraco de Crucero (3,000 cruceristas · 5 horas) */}
+      <CruiseBanner />
+
       {/* Las opciones dependen del rol: visitante, comercio o admin. */}
       <div className="rounded-3xl border border-neutral-200/90 bg-white/95 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/90 backdrop-blur-xs">
         <MenuPorRol />
       </div>
 
-      <footer className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500 space-y-1">
+      <footer className="text-center text-xs text-neutral-400 dark:text-neutral-500 space-y-1">
         <p>Turismo, reactivación comercial y afluencia viva</p>
         <p className="text-[11px] font-medium text-neutral-400/90 dark:text-neutral-500/90">
           Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>

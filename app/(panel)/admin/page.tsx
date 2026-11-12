@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   KpiCard,
@@ -20,6 +20,7 @@ import {
   ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
+import { ShipIcon, SparklesIcon } from "@/components/paneles/icons";
 import type { Stats } from "@/lib/types";
 
 type TimeRange = "hoy" | "ayer" | "semana";
@@ -32,6 +33,46 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<string>("Recién cargado");
   const [isFetching, setIsFetching] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [isCruiseSimulated, setIsCruiseSimulated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("cruise") === "1" || params.get("cruise") === "simulated") {
+        setIsCruiseSimulated(true);
+      }
+    }
+  }, []);
+
+  const displayStats: ExtendedStats = useMemo(() => {
+    if (!isCruiseSimulated) return stats;
+
+    const cruiseScans = [
+      { placeId: "mercado-artesanias", placeName: "Mercado de Artesanías del Malecón", scans: 540 },
+      { placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", scans: 490 },
+      { placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", scans: 420 },
+      { placeId: "malecon-veracruz", placeName: "Malecón de Veracruz", scans: 390 },
+      { placeId: "museo-naval", placeName: "Museo Naval México", scans: 310 },
+      { placeId: "toritos-la-chata", placeName: "Toritos La Chata", scans: 270 },
+    ];
+
+    const cruiseFeed: ExtendedStats["recentVisits"] = [
+      { id: "c1", placeId: "mercado-artesanias", placeName: "Mercado de Artesanías", createdAt: new Date(Date.now() - 20000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #142 (USA)" },
+      { id: "c2", placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", createdAt: new Date(Date.now() - 50000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #89 (Canada)" },
+      { id: "c3", placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", createdAt: new Date(Date.now() - 90000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #312 (UK)" },
+      { id: "c4", placeId: "toritos-la-chata", placeName: "Toritos La Chata", createdAt: new Date(Date.now() - 140000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #405 (USA)" },
+    ];
+
+    return {
+      ...stats,
+      totalInteractions: (stats.totalInteractions || 420) + 2420,
+      missionsAccepted: (stats.missionsAccepted || 210) + 1650,
+      missionsCompleted: (stats.missionsCompleted || 180) + 1240,
+      redemptions: (stats.redemptions || 89) + 590,
+      scansByPlace: cruiseScans,
+      recentVisits: [...cruiseFeed, ...(stats.recentVisits || []).slice(0, 3)],
+    };
+  }, [isCruiseSimulated, stats]);
 
   // Consulta a GET /api/stats cada 5 segundos (Requisito CP2: actualización < 10s)
   const fetchStats = useCallback(async () => {
@@ -227,6 +268,72 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Banner de Simulación de Crucero (Giro del Reto: 3,000 cruceristas) */}
+      <div className={`p-4 rounded-3xl border transition-all ${
+        isCruiseSimulated
+          ? "bg-gradient-to-r from-teal-950 via-teal-900 to-sky-950 border-teal-500/50 text-white shadow-md"
+          : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 ${
+              isCruiseSimulated ? "bg-amber-400 text-neutral-950 shadow-xs" : "bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400"
+            }`}>
+              <ShipIcon className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
+                  Giro del Reto
+                </span>
+                <span className={`text-xs font-bold ${isCruiseSimulated ? "text-teal-200" : "text-neutral-700 dark:text-neutral-300"}`}>
+                  Operativo Crucero en Puerto (3,000 Visitantes · 5 Horas)
+                </span>
+              </div>
+              <p className={`text-xs mt-0.5 ${isCruiseSimulated ? "text-teal-100/90" : "text-neutral-500 dark:text-neutral-400"}`}>
+                {isCruiseSimulated
+                  ? "Simulación activa: 2,420 turistas guiados con la app en inglés hacia comercios locales del centro con retorno seguro al muelle."
+                  : "Presiona el botón para simular en vivo la llegada de 3,000 pasajeros de crucero y su derrama comercial."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsCruiseSimulated((v) => !v)}
+            className={`cursor-pointer px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 ${
+              isCruiseSimulated
+                ? "bg-amber-400 hover:bg-amber-300 text-neutral-950"
+                : "bg-teal-700 hover:bg-teal-800 text-white"
+            }`}
+          >
+            <ShipIcon className="w-4 h-4" />
+            <span>{isCruiseSimulated ? "Desactivar Simulación" : "Simular Impacto (3,000 Pax)"}</span>
+          </button>
+        </div>
+
+        {isCruiseSimulated && (
+          <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-amber-300 font-black block text-sm">~$485,000 MXN</span>
+              <span className="text-[10px] text-teal-200">Derrama comercial estimada</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-emerald-300 font-black block text-sm">590 Canjes</span>
+              <span className="text-[10px] text-teal-200">Consumos en caja en comercios</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-sky-300 font-black block text-sm">8 min a pie</span>
+              <span className="text-[10px] text-teal-200">Distancia máxima al muelle</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-teal-300 font-black block text-sm">100% Bilingüe</span>
+              <span className="text-[10px] text-teal-200">Turistas guiados en inglés</span>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Regla 9 Aviso Metodológico */}
       <div className="flex items-start gap-3 rounded-2xl border border-teal-200/70 bg-gradient-to-r from-teal-50/80 to-teal-50/30 p-4 text-xs text-teal-900 shadow-2xs dark:border-teal-900/50 dark:from-teal-950/30 dark:to-teal-950/10 dark:text-teal-200">
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
@@ -277,18 +384,18 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Actividad en la App"
-          value={stats.totalInteractions}
+          value={displayStats.totalInteractions}
           subtitle="Escaneos y validaciones registradas hoy"
-          badge={isLive ? "En vivo" : "En pausa"}
-          badgeType={isLive ? "positive" : "neutral"}
+          badge={isLive ? (isCruiseSimulated ? "+2,420 Cruceristas" : "En vivo") : "En pausa"}
+          badgeType={isCruiseSimulated ? "positive" : isLive ? "positive" : "neutral"}
           icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Completadas"
-          value={`${stats.missionsCompleted}/${stats.missionsAccepted}`}
+          value={`${displayStats.missionsCompleted}/${displayStats.missionsAccepted}`}
           subtitle={
-            stats.missionsAccepted > 0
-              ? `${Math.round((stats.missionsCompleted / stats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
+            displayStats.missionsAccepted > 0
+              ? `${Math.round((displayStats.missionsCompleted / displayStats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
               : "Aún no hay misiones aceptadas"
           }
           badge="Completadas / aceptadas"
@@ -297,15 +404,16 @@ export default function AdminDashboardPage() {
         />
         <KpiCard
           title="Canjes en Comercio"
-          value={stats.redemptions}
+          value={displayStats.redemptions}
           subtitle="Beneficios validados presencialmente"
+          badge={isCruiseSimulated ? "+590 en comercios" : undefined}
           badgeType="warning"
           icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Puntos Conectados"
-          value={`${stats.activePlaces} / ${stats.activeBusinesses}`}
-          subtitle={`${stats.activePlaces} lugares y ${stats.activeBusinesses} comercios participantes`}
+          value={`${displayStats.activePlaces} / ${displayStats.activeBusinesses}`}
+          subtitle={`${displayStats.activePlaces} lugares y ${displayStats.activeBusinesses} comercios participantes`}
           badge="Verificados"
           badgeType="neutral"
           icon={<BuildingIcon className="h-5 w-5" />}
@@ -314,12 +422,12 @@ export default function AdminDashboardPage() {
 
       {/* 2 Gráficas con Recharts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ScansByPlaceChart data={stats.scansByPlace} />
-        <ActivityByHourChart data={stats.activityByHourWithBusinesses} />
+        <ScansByPlaceChart data={displayStats.scansByPlace} />
+        <ActivityByHourChart data={displayStats.activityByHourWithBusinesses} />
       </div>
 
       {/* Feed en Vivo de Escaneos (< 10s para demo de jurado) */}
-      <LiveVisitsFeed initialVisits={stats.recentVisits} />
+      <LiveVisitsFeed initialVisits={displayStats.recentVisits} />
     </div>
   );
 }

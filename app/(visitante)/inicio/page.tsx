@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Budget } from "@/lib/types";
-import { CalendarIcon } from "@/components/paneles/icons";
+import { CalendarIcon, ShipIcon, GlobeIcon, SparklesIcon } from "@/components/paneles/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
+import { getDictionary, getSavedLanguage, setSavedLanguage, type Idioma } from "@/lib/i18n";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -24,6 +25,7 @@ const DURATION_OPTIONS = [
   { value: 60, label: "1 hora", desc: "Rápido y al punto" },
   { value: 120, label: "2 horas", desc: "Equilibrado y ameno" },
   { value: 180, label: "3+ horas", desc: "Experiencia completa" },
+  { value: 300, label: "5 horas (Crucero)", desc: "Escala con comercios locales" },
 ];
 
 const INTEREST_OPTIONS = [
@@ -42,6 +44,8 @@ const BUDGET_OPTIONS: { id: Budget; label: string; desc: string; symbol: string 
 
 export default function InicioPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Idioma>("es");
+  const [isCruise, setIsCruise] = useState(false);
   const [minutes, setMinutes] = useState<number>(120);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([
     "gastronomia",
@@ -49,6 +53,41 @@ export default function InicioPage() {
   ]);
   const [budget, setBudget] = useState<Budget>("medio");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryLang = searchParams.get("lang");
+    const queryMode = searchParams.get("mode");
+
+    const activeLang: Idioma = queryLang === "en" || queryLang === "es" ? (queryLang as Idioma) : getSavedLanguage();
+    setLang(activeLang);
+
+    if (queryMode === "cruise") {
+      setIsCruise(true);
+      setMinutes(300); // 5 horas
+      setSelectedInterests(["gastronomia", "paseo", "compras", "historia"]);
+      setBudget("medio");
+    }
+  }, []);
+
+  const toggleLanguage = (newLang: Idioma) => {
+    setLang(newLang);
+    setSavedLanguage(newLang);
+  };
+
+  const toggleCruiseMode = () => {
+    setIsCruise((prev) => {
+      const next = !prev;
+      if (next) {
+        setMinutes(300);
+        setSelectedInterests(["gastronomia", "paseo", "compras", "historia"]);
+      } else {
+        setMinutes(120);
+      }
+      return next;
+    });
+  };
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
@@ -65,7 +104,9 @@ export default function InicioPage() {
         body: JSON.stringify({
           minutes,
           interests: selectedInterests,
-          budget
+          budget,
+          lat: isCruise ? 19.201 : undefined,
+          lng: isCruise ? -96.134 : undefined,
         })
       });
 
@@ -73,7 +114,9 @@ export default function InicioPage() {
 
       const data = await res.json();
       sessionStorage.setItem('rutaGenerada', JSON.stringify(data.stops));
-      router.push("/ruta");
+      sessionStorage.setItem('isCruiseMode', isCruise ? 'true' : 'false');
+      sessionStorage.setItem('pulsoLang', lang);
+      router.push(`/ruta?lang=${lang}${isCruise ? '&mode=cruise' : ''}`);
     } catch (error) {
       console.error(error);
       alert("Hubo un error al conectar con el motor. Avisa al Integrante 3.");
@@ -85,40 +128,91 @@ export default function InicioPage() {
   return (
     <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col font-sans selection:bg-teal-100 dark:selection:bg-teal-900">
       <header className="bg-white dark:bg-neutral-900 px-6 py-6 border-b border-neutral-200/80 dark:border-neutral-800">
-        <div className="max-w-lg mx-auto w-full">
+        <div className="max-w-lg mx-auto w-full space-y-3">
           <div className="flex items-center justify-between">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1"
-              title="Regresar a la portada"
+              title={lang === "en" ? "Return to home" : "Regresar a la portada"}
             >
               <ArrowLeftIcon className="w-4 h-4 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
               <PulsoLogo size="xs" conTexto={false} />
               <span>Pulso Jarocho</span>
             </Link>
-            <div className="flex gap-2">
-              <Link
-                href="/hoy"
-                className="text-xs bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors"
+
+            {/* Selector de idioma */}
+            <div className="inline-flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-0.5 border border-neutral-200 dark:border-neutral-700 text-xs">
+              <button
+                type="button"
+                onClick={() => toggleLanguage("es")}
+                className={`px-2 py-1 rounded-lg font-bold transition-all ${
+                  lang === "es"
+                    ? "bg-white dark:bg-neutral-700 text-teal-800 dark:text-teal-200 shadow-2xs"
+                    : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400"
+                }`}
               >
-                <CalendarIcon className="w-3.5 h-3.5" />
-                Hoy
-              </Link>
-              <Link
-                href="/pasaporte"
-                className="text-xs bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors"
+                🇲🇽 ES
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLanguage("en")}
+                className={`px-2 py-1 rounded-lg font-bold transition-all ${
+                  lang === "en"
+                    ? "bg-white dark:bg-neutral-700 text-teal-800 dark:text-teal-200 shadow-2xs"
+                    : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400"
+                }`}
               >
-                <BookOpenIcon className="w-3.5 h-3.5" />
-                Pasaporte
-              </Link>
+                🇺🇸 EN
+              </button>
             </div>
           </div>
-          <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 mt-2">
-            Diseña tu recorrido
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 font-medium text-sm mt-1">
-            Personaliza tu tiempo, gustos y presupuesto en el Centro Histórico.
-          </p>
+
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100">
+                {lang === "en" ? "Design your tour" : "Diseña tu recorrido"}
+              </h1>
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium text-sm mt-1">
+                {lang === "en"
+                  ? "Tailored stops, time, and budget in Historic Downtown Veracruz."
+                  : "Personaliza tu tiempo, gustos y presupuesto en el Centro Histórico."}
+              </p>
+            </div>
+
+            {/* Toggle de Modo Crucero */}
+            <button
+              type="button"
+              onClick={toggleCruiseMode}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black border transition-all shadow-2xs ${
+                isCruise
+                  ? "bg-amber-500 text-neutral-950 border-amber-600 ring-2 ring-amber-400/30"
+                  : "bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800"
+              }`}
+              title={lang === "en" ? "5-hour Cruise Excursion preset" : "Configuración de excursión de crucero de 5 horas"}
+            >
+              <ShipIcon className="w-4 h-4" />
+              <span>{isCruise ? (lang === "en" ? "Cruise 5h ✓" : "Crucero 5h ✓") : (lang === "en" ? "Cruise Mode" : "Modo Crucero")}</span>
+            </button>
+          </div>
+
+          {/* Banner visual cuando está activo el Modo Crucero */}
+          {isCruise && (
+            <div className="rounded-2xl bg-gradient-to-r from-teal-950 to-sky-950 p-4 text-white border border-teal-500/30 shadow-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400/20 text-amber-300">
+                  <ShipIcon className="w-3.5 h-3.5" />
+                </span>
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                  {lang === "en" ? "Cruise Excursion Preset (5 Hours)" : "Preset de Crucero (5 Horas en Tierra)"}
+                </span>
+              </div>
+              <p className="text-xs text-teal-100/90 leading-relaxed">
+                {lang === "en"
+                  ? "Optimized starting from Veracruz Cruise Dock (Malecón). Direct access to local cafes, craft markets, and authentic shops with guaranteed 8-minute walk back to ship."
+                  : "Ruta optimizada saliendo del Muelle Turístico del Malecón. Te lleva al Gran Café de la Parroquia, Mercado de Artesanías y Portales con regreso a pie en 8 minutos."}
+              </p>
+            </div>
+          )}
         </div>
       </header>
 

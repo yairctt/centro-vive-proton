@@ -5,7 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Mapa } from "@/components/mapa";
 import { es } from "@/lib/i18n/es";
+import { getDictionary, type Idioma } from "@/lib/i18n";
 import type { RouteStop } from "@/lib/types";
+import { CruiseCountdownWidget } from "@/components/ui/CruiseExperience";
 
 import { enlaceLugar, enlaceRutaCompleta, type PuntoRuta } from "@/components/visitante/enlaces-maps";
 import {
@@ -21,6 +23,8 @@ import {
   MapPinIcon,
   TargetIcon,
   ArrowLeftIcon,
+  ShipIcon,
+  SparklesIcon,
 } from "@/components/paneles/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
@@ -55,6 +59,8 @@ export default function RutaPage() {
   const [detalleAbierto, setDetalleAbierto] = useState<string | null>(null);
   const [mapaVisible, setMapaVisible] = useState(false);
   const [enlaceCopiado, setEnlaceCopiado] = useState(false);
+  const [isCruise, setIsCruise] = useState(false);
+  const [lang, setLang] = useState<Idioma>("es");
 
   useEffect(() => {
     // El setTimeout saca la actualización de estado del flujo síncrono del efecto,
@@ -68,12 +74,28 @@ export default function RutaPage() {
           setStops([]);
         }
       }
+
+      if (typeof window !== "undefined") {
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryCruise = searchParams.get("mode") === "cruise";
+        const savedCruise = sessionStorage.getItem("isCruiseMode") === "true";
+        setIsCruise(queryCruise || savedCruise);
+
+        const queryLang = searchParams.get("lang") as Idioma;
+        const savedLang = sessionStorage.getItem("pulsoLang") as Idioma;
+        if (queryLang === "en" || savedLang === "en") {
+          setLang("en");
+        }
+      }
+
       setCargando(false);
     }, 0);
 
     // Limpieza del efecto
     return () => clearTimeout(timer);
   }, []);
+
+  const t = getDictionary(lang);
 
   /** Puntos de la ruta, en el orden en que se visitarán. */
   const puntos: PuntoRuta[] = useMemo(
@@ -220,6 +242,13 @@ export default function RutaPage() {
       )}
 
       <div className="flex-1 p-5 pb-32 space-y-4 relative max-w-lg mx-auto w-full">
+        {/* Widget de crucero si aplica */}
+        {isCruise && (
+          <div className="mb-3">
+            <CruiseCountdownWidget lang={lang} />
+          </div>
+        )}
+
         {/* Línea que une las paradas */}
         <div
           className="absolute left-[2.05rem] top-8 bottom-8 w-0.5 bg-neutral-200 dark:bg-neutral-800 z-0"
@@ -341,6 +370,30 @@ export default function RutaPage() {
             </div>
           );
         })}
+
+        {/* Retorno al Muelle para cruceristas */}
+        {isCruise && (
+          <div className="relative z-10 rounded-2xl border border-teal-300 bg-teal-50/90 p-4 dark:border-teal-800 dark:bg-teal-950/40 text-center space-y-2 shadow-xs">
+            <div className="flex items-center justify-center gap-2 text-xs font-black text-teal-900 dark:text-teal-200 uppercase tracking-wider">
+              <ShipIcon className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+              <span>{lang === "en" ? "Final Destination: Back to Ship" : "Destino Final: Regreso al Barco"}</span>
+            </div>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              {lang === "en"
+                ? "Veracruz Cruise Dock (Malecón) is only 8 minutes walking distance from downtown."
+                : "El Muelle de Cruceros del Malecón está a solo 8 minutos a pie desde el centro."}
+            </p>
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=19.201,-96.134"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition"
+            >
+              <GoogleMapsIcon className="w-4 h-4" />
+              <span>{lang === "en" ? "Walk Back to Cruise Dock (8 min)" : "Caminar al Muelle de Cruceros (8 min)"}</span>
+            </a>
+          </div>
+        )}
       </div>
 
       <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 flex flex-col max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
