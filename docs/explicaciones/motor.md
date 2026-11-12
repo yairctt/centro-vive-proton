@@ -126,6 +126,13 @@ es la línea recta entre dos puntos. En el Centro Histórico, donde las cuadras
 son cortas, el orden y el tiempo estimado son lo importante. El mapa lo
 advierte con el texto «Trazo aproximado en línea recta».
 
+### El enlace a Google Maps
+
+Cada parada se puede abrir en Google Maps (`components/visitante/enlaces-maps.ts`).
+Al armar el enlace se **limpia el prefijo `[DEMO]`** del nombre: los comercios de
+la demo son ficticios y ese texto rompería la búsqueda en Google. El nombre real
+del lugar sí se conserva.
+
 ---
 
 ## 6. Los horarios: por día de la semana

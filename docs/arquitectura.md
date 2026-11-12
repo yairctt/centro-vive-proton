@@ -41,6 +41,9 @@ ser falso.
 │  /pasaporte                                                        │
 │  /escanear      Auth: /login, /registro, /recuperar                  │
 │  /hoy  (agenda)                                                     │
+│                                                                      │
+│  La portada (app/page.tsx) lleva el logo oficial (components/ui/     │
+│  PulsoLogo.tsx) y un enlace a cada sección.                          │
 └──────────────────────────────┬───────────────────────────────────────┘
                                │  fetch (JSON)
 ┌──────────────────────────────▼───────────────────────────────────────┐
@@ -420,6 +423,22 @@ calculó: `"base"` (la real) o `"respaldo"` (el catálogo local).
 | **Sello** | la marca de una visita validada con QR |
 | **Oportunidad** | cuánta visibilidad necesita un lugar (0..1) |
 | **Bono de Centro de noche** | puntos extra después de las 19:00 para fortalecer el comercio que cierra tarde |
-| **Actividad registrada** | lo que el visitor hizo **en la app**; nunca es conteo de personas |
+| **Actividad registrada** | lo que el visitante hizo **en la app**; nunca es conteo de personas |
 | **Modo demo** | la app funciona sin base de datos, con datos de ejemplo |
 | **Por confirmar** | el dato existe pero no está verificado; se muestra así, no se inventa |
+
+El glosario completo está en [`glosario.md`](glosario.md).
+
+---
+
+## 13. Identidad visual
+
+| Color | Uso |
+|---|---|
+| Verde Golfo (`#0f766e`) | el mar, el puerto y su historia |
+| Ámbar Sol (`#d97706`) | danzón, energía cultural y comercio local |
+| Coral Pulso (`#e11d48`) | dinamismo urbano y rutas vivas |
+
+El logo oficial vive en `components/ui/PulsoLogo.tsx` y se usa en la portada.
+Las instrucciones de estilo de los paneles están en
+[`explicaciones/paneles.md`](explicaciones/paneles.md).
