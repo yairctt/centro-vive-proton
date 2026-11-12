@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toEvent } from "@/lib/db/mappers";
+import { eventosDemo } from "@/lib/engine/datos-eventos";
+import type { Event } from "@/lib/types";
 
 function getMexicoCityDateRange() {
   const now = new Date();
@@ -31,10 +33,10 @@ function getMexicoCityDateRange() {
 
 export async function GET(request: NextRequest) {
   await connection();
-  try {
-    const { searchParams } = new URL(request.url);
-    const when = searchParams.get("when") || "today";
+  const { searchParams } = new URL(request.url);
+  const when = searchParams.get("when") || "today";
 
+  try {
     const { now, startOfDay, endOfDay } = getMexicoCityDateRange();
     const in3Hours = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
@@ -89,8 +91,35 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(events);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error inesperado al consultar eventos";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Modo demo: sin base configurada se responde con los eventos de respaldo,
+    // respetando el mismo filtro por fecha que el de la base.
+    return NextResponse.json(eventosRespaldo(when));
   }
+}
+
+/** Eventos de respaldo filtrados igual que los de la base. */
+function eventosRespaldo(when: string): Event[] {
+  const { now, startOfDay, endOfDay } = getMexicoCityDateRange();
+  const in3Hours = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+
+  return eventosDemo(now).filter((event) => {
+    const startMs = new Date(event.startsAt).getTime();
+    if (isNaN(startMs)) return false;
+
+    if (when === "now") {
+      const nowMs = now.getTime();
+      const in3hMs = in3Hours.getTime();
+      const endMs = event.endsAt ? new Date(event.endsAt).getTime() : null;
+
+      if (startMs >= nowMs && startMs <= in3hMs) return true;
+      if (startMs <= nowMs) {
+        if (endMs !== null && !isNaN(endMs)) return endMs >= nowMs;
+        return nowMs - startMs <= 3 * 60 * 60 * 1000;
+      }
+      return false;
+    }
+
+    return startMs >= startOfDay.getTime() && startMs <= endOfDay.getTime();
+  });
 }

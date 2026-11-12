@@ -76,9 +76,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       visits: (visitRows ?? []).map((v) => toVisit(v as Record<string, unknown>)),
       rewards: (rewardRows ?? []).map((r) => toReward(r as Record<string, unknown>)),
     });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error inesperado al consultar el pasaporte";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Modo demo: sin base configurada se responde con los datos de `lib/mock`,
+    // para que el pasaporte se pueda ver en la demo sin Supabase.
+    const { mockProfile, mockVisits, mockRewards } = await import("@/lib/mock");
+    return NextResponse.json({
+      profile: mockProfile,
+      visits: mockVisits,
+      rewards: mockRewards,
+    });
   }
 }
 
