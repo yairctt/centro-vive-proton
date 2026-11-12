@@ -7,8 +7,8 @@ import { isOpenAt, readPlaceInfo } from "../place";
 import { panaderia, restauranteCaro, zocalo } from "./fixtures";
 
 // Fijamos una hora concreta para que las pruebas no dependan del reloj.
-const MEDIODIA = new Date("2026-11-11T13:00:00");
-const NOCHE = new Date("2026-11-11T20:00:00");
+const MEDIODIA = new Date("2026-11-11T13:00:00-06:00");
+const NOCHE = new Date("2026-11-11T20:00:00-06:00");
 
 describe("afinidad", () => {
   it("da más peso a un lugar cuya categoría está en los intereses", () => {

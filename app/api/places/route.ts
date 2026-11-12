@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toPlace } from "@/lib/db/mappers";
 
 export async function GET() {
+  await connection();
   try {
     const supabase = getAdminClient();
     const { data, error } = await supabase

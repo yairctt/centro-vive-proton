@@ -15,11 +15,11 @@ import { isOpenAt, readPlaceInfo } from "../place";
 import type { Place } from "../../types";
 
 // Miércoles 11 de noviembre de 2026, 13:00.
-const MIERCOLES_13H = new Date("2026-11-11T13:00:00");
+const MIERCOLES_13H = new Date("2026-11-11T13:00:00-06:00");
 // Martes 10 de noviembre de 2026, 13:00.
-const MARTES_13H = new Date("2026-11-10T13:00:00");
+const MARTES_13H = new Date("2026-11-10T13:00:00-06:00");
 // Lunes 9 de noviembre de 2026, 13:00.
-const LUNES_13H = new Date("2026-11-09T13:00:00");
+const LUNES_13H = new Date("2026-11-09T13:00:00-06:00");
 
 describe("catálogo de demostración", () => {
   it("tiene los 12 lugares y los 6 comercios del núcleo", () => {

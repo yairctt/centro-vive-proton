@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { buildRoute } from "../route";
 import { evento, lugar, lugarClosed, lugares, panaderia, zocalo } from "./fixtures";
 
-const MEDIODIA = new Date("2026-11-11T13:00:00");
-const NOCHE = new Date("2026-11-11T20:00:00");
+const MEDIODIA = new Date("2026-11-11T13:00:00-06:00");
+const NOCHE = new Date("2026-11-11T20:00:00-06:00");
 
 describe("filtros", () => {
   it("excluye los lugares que no caben en el presupuesto", () => {
@@ -92,7 +92,7 @@ describe("eventos", () => {
     const ev = evento({
       id: "ev-1",
       name: "Concierto en el Zócalo",
-      startsAt: new Date("2026-11-11T15:00:00").toISOString(),
+      startsAt: new Date("2026-11-11T15:00:00-06:00").toISOString(),
       lat: 19.5440,
       lng: -96.9110,
     });
@@ -110,7 +110,7 @@ describe("eventos", () => {
     const ev = evento({
       id: "ev-2",
       name: "Evento de mañana",
-      startsAt: new Date("2026-11-12T09:00:00").toISOString(),
+      startsAt: new Date("2026-11-12T09:00:00-06:00").toISOString(),
     });
 
     const { stops } = buildRoute(

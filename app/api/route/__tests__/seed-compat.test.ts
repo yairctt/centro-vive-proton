@@ -138,7 +138,7 @@ describe("el motor entiende las filas del seed", () => {
     const lugar = toPlace(filaNocturno);
     const breakdown = scorePlace(lugar, {
       interests: ["gastronomia"],
-      now: new Date("2026-11-11T20:00:00"),
+      now: new Date("2026-11-11T20:00:00-06:00"),
       origin: null,
       remainingMin: 120,
     });
@@ -151,7 +151,7 @@ describe("el motor entiende las filas del seed", () => {
     const { stops } = buildRoute(
       lugares,
       { minutes: 120, interests: ["historia"], budget: "bajo" },
-      { now: new Date("2026-11-11T13:00:00") },
+      { now: new Date("2026-11-11T13:00:00-06:00") },
     );
 
     expect(stops.length).toBeGreaterThan(0);
@@ -167,7 +167,7 @@ describe("el motor entiende las filas del seed", () => {
     const { stops } = buildRoute(
       lugares,
       { minutes: 120, interests: ["historia", "gastronomia"], budget: "medio" },
-      { now: new Date("2026-11-11T17:00:00"), events: eventos, missions: misiones },
+      { now: new Date("2026-11-11T17:00:00-06:00"), events: eventos, missions: misiones },
     );
 
     expect(stops.length).toBeGreaterThan(0);

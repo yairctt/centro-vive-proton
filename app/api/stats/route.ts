@@ -1,13 +1,12 @@
-// GET /api/stats  –  Tablero de afluencia en tiempo real
-//
-// Dueño: Integrante 5 (feat/paneles).
-// Consulta las tablas `visits`, `profiles`, `places`, `rewards` de Supabase y
-// devuelve un `ExtendedStats` listo para consumir en /admin y /comercio.
-// Si la base no está disponible, retorna los datos mock (nunca un 500).
-//
-// Regla 9: todas las métricas son "actividad registrada en la app".
-
-import { NextResponse } from "next/server";
+/**
+ * GET /api/stats
+ * Agrega actividad registrada en la app para el tablero de admin.
+ * Las métricas representan interacciones en la app, NO conteo de personas.
+ *
+ * Query: ?from=ISO8601&to=ISO8601  (opcional; defecto: últimas 24 h)
+ * Response: Stats
+ */
+import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
@@ -44,9 +43,17 @@ function toRecentVisit(row: Record<string, unknown>, idx: number) {
 
 export async function GET() {
   try {
+    // El tablero se refresca cada pocos segundos: siempre se genera en la
+    // petición, nunca se prerenderiza. `connection()` lo marca como dinámico
+    // (con cacheComponents de Next 16 no se usa `export const dynamic`).
+    await connection();
+
     const supabase = getAdminClient();
     const now = new Date();
-    const todayStart = new Date(now);
+    // Medianoche en hora de Veracruz (el servidor puede estar en UTC).
+    const todayStart = new Date(
+      new Date(now).toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+    );
     todayStart.setHours(0, 0, 0, 0);
 
     // Consultas paralelas para minimizar latencia
@@ -94,10 +101,15 @@ export async function GET() {
       .sort((a, b) => b.scans - a.scans)
       .slice(0, 12);
 
-    // Actividad por hora (horas presentes en visits de hoy)
+    // Actividad por hora. La hora es la de Veracruz, no la del servidor
+    // (en Vercel es UTC): si no, el pico de actividad saldría corrido.
     const countByHour = new Map<number, number>();
     for (const v of visits) {
-      const h = new Date(v.created_at as string).getHours();
+      const h = new Date(
+        new Date(v.created_at as string).toLocaleString("en-US", {
+          timeZone: "America/Mexico_City",
+        }),
+      ).getHours();
       countByHour.set(h, (countByHour.get(h) ?? 0) + 1);
     }
     const activityByHour = [...countByHour.entries()]
@@ -136,26 +148,26 @@ export async function GET() {
     const payload: ExtendedStats = useMockBlend
       ? MOCK_ADMIN_STATS
       : {
-          missionsAccepted: missionsAccepted || MOCK_ADMIN_STATS.missionsAccepted,
-          missionsCompleted:
-            missionsCompleted || MOCK_ADMIN_STATS.missionsCompleted,
-          redemptions: redemptions || MOCK_ADMIN_STATS.redemptions,
-          totalInteractions: visits.length,
-          activePlaces,
-          activeBusinesses,
-          scansByPlace:
-            scansByPlace.length > 0 ? scansByPlace : MOCK_ADMIN_STATS.scansByPlace,
-          activityByHour:
-            activityByHour.length > 0
-              ? activityByHour
-              : MOCK_ADMIN_STATS.activityByHour,
-          activityByHourWithBusinesses:
-            activityByHourWithBusinesses.length > 0
-              ? activityByHourWithBusinesses
-              : MOCK_ADMIN_STATS.activityByHourWithBusinesses,
-          recentVisits:
-            recentVisits.length > 0 ? recentVisits : MOCK_ADMIN_STATS.recentVisits,
-        };
+        missionsAccepted: missionsAccepted || MOCK_ADMIN_STATS.missionsAccepted,
+        missionsCompleted:
+          missionsCompleted || MOCK_ADMIN_STATS.missionsCompleted,
+        redemptions: redemptions || MOCK_ADMIN_STATS.redemptions,
+        totalInteractions: visits.length,
+        activePlaces,
+        activeBusinesses,
+        scansByPlace:
+          scansByPlace.length > 0 ? scansByPlace : MOCK_ADMIN_STATS.scansByPlace,
+        activityByHour:
+          activityByHour.length > 0
+            ? activityByHour
+            : MOCK_ADMIN_STATS.activityByHour,
+        activityByHourWithBusinesses:
+          activityByHourWithBusinesses.length > 0
+            ? activityByHourWithBusinesses
+            : MOCK_ADMIN_STATS.activityByHourWithBusinesses,
+        recentVisits:
+          recentVisits.length > 0 ? recentVisits : MOCK_ADMIN_STATS.recentVisits,
+      };
 
     return NextResponse.json(payload, {
       headers: {
