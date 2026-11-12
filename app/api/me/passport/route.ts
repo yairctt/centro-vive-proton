@@ -75,15 +75,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       profile: toProfile(profileRow as Record<string, unknown>),
       visits: (visitRows ?? []).map((v) => toVisit(v as Record<string, unknown>)),
       rewards: (rewardRows ?? []).map((r) => toReward(r as Record<string, unknown>)),
+      demo: false,
     });
   } catch {
-    // Modo demo: sin base configurada se responde con los datos de `lib/mock`,
-    // para que el pasaporte se pueda ver en la demo sin Supabase.
+    // Modo demo: sin base configurada se responde con los datos de `lib/mock`.
+    // Los puntos de la sesión los lleva el cliente (el servidor no ve el
+    // sessionStorage del navegador), así que aquí solo se avisa con `demo`.
     const { mockProfile, mockVisits, mockRewards } = await import("@/lib/mock");
     return NextResponse.json({
       profile: mockProfile,
       visits: mockVisits,
       rewards: mockRewards,
+      demo: true,
     });
   }
 }
