@@ -6,7 +6,7 @@ import { es } from "@/lib/i18n/es";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import { ArrowLeftIcon } from "@/components/paneles/icons";
 
-/** Marco común de las pantallas de acceso (mobile-first, 375 px) con identidad visual oficial. */
+/** Marco común de las pantallas de acceso con diseño Split-Screen moderno inspirado en el boceto. */
 export function AuthShell({
   titulo,
   subtitulo,
@@ -15,58 +15,146 @@ export function AuthShell({
   mostrarVolver = true,
 }: {
   titulo: string;
-  subtitulo?: string;
+  subtitulo?: ReactNode;
   children: ReactNode;
   pie?: ReactNode;
   mostrarVolver?: boolean;
 }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-8 relative">
-      {/* Botón superior de volver a la portada */}
-      {mostrarVolver && (
-        <div className="mb-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1 px-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            title="Volver a la portada principal"
-          >
-            <ArrowLeftIcon className="h-4 w-4 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Volver a la portada</span>
-          </Link>
-          <span className="text-[11px] font-semibold tracking-wide text-neutral-400 uppercase">
-            Pulso Jarocho
-          </span>
+    <div className="min-h-screen w-full bg-white dark:bg-neutral-950 flex flex-col lg:grid lg:grid-cols-12">
+      {/* Columna Izquierda (Showcase Visual Hero al estilo del boceto) */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-teal-950 via-teal-900 to-sky-950 text-white p-8 lg:p-14 lg:col-span-5 xl:col-span-5 flex flex-col justify-between min-h-[320px] lg:min-h-screen">
+        {/* Fondo con foto real de Veracruz y overlay degradado */}
+        <div className="absolute inset-0 z-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/faro-veracruz.jpg"
+            alt="Faro Venustiano Carranza y Centro Histórico de Veracruz"
+            className="w-full h-full object-cover object-center opacity-30 mix-blend-luminosity scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-teal-950 via-teal-950/85 to-sky-950/75" />
         </div>
-      )}
 
-      {/* Cabecera con isotipo oficial */}
-      <div className="mb-6 flex flex-col items-center text-center">
-        <Link href="/" className="group inline-flex flex-col items-center focus:outline-none">
-          <div className="transition-transform group-hover:scale-105 duration-200">
-            <PulsoLogo size="lg" resaltado={true} />
+        {/* Ondas vectoriales concéntricas estilizadas como el boceto */}
+        <svg
+          className="absolute right-0 top-0 h-full w-full pointer-events-none opacity-20 z-0"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 400 600"
+          fill="none"
+        >
+          <path d="M400 50C250 50 150 180 150 350C150 480 220 580 400 600" stroke="white" strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M400 120C280 120 200 220 200 360C200 460 260 540 400 560" stroke="white" strokeWidth="1.5" />
+          <path d="M400 190C310 190 250 260 250 370C250 440 290 500 400 520" stroke="white" strokeWidth="1.5" />
+          <circle cx="120" cy="80" r="4" fill="white" />
+          <circle cx="280" cy="140" r="3" fill="white" />
+        </svg>
+
+        {/* Header superior izquierdo: Logo oficial */}
+        <div className="relative z-10 flex items-center justify-between">
+          <Link href="/" className="inline-flex items-center gap-3 group focus:outline-none">
+            <div className="size-11 rounded-2xl overflow-hidden border border-white/30 bg-white p-0.5 shadow-md transition-transform group-hover:scale-105">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-pulso-jarocho.jpg" alt="Pulso Jarocho" className="w-full h-full object-cover rounded-xl" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="font-black text-lg text-white leading-tight">Pulso Jarocho</span>
+              <span className="text-[11px] font-semibold text-teal-300">Centro Histórico · Veracruz</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Mensaje central hero del boceto */}
+        <div className="relative z-10 my-8 lg:my-auto max-w-md">
+          {/* Ícono de estrella/asterisco veracruzana */}
+          <div className="mb-4 inline-flex items-center justify-center size-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-teal-300 shadow-sm">
+            <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="2" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              <line x1="19.07" y1="4.93" x2="4.93" y2="19.07" />
+            </svg>
           </div>
-          <h2 className="mt-3 text-xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-            {es.appName}
-          </h2>
-          <span className="inline-block mt-0.5 text-xs font-semibold text-teal-700 dark:text-teal-400">
-            Centro Histórico de Veracruz
-          </span>
-        </Link>
+
+          <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tight text-white leading-[1.15]">
+            ¡Hola, <br />
+            <span className="text-teal-300">Pulso Jarocho!</span>
+          </h1>
+
+          <p className="mt-4 text-sm sm:text-base text-teal-100/90 leading-relaxed font-normal">
+            La ciudad se activa contigo. Recorre el Centro Histórico a tu propio ritmo con rutas inteligentes, misiones urbanas, sellos digitales y beneficios en comercios locales.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-teal-200">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
+              12 Puntos emblemáticos
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
+              Comercios locales
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15">
+              Canjes en mostrador
+            </span>
+          </div>
+        </div>
+
+        {/* Footer inferior izquierdo */}
+        <div className="relative z-10 pt-4 border-t border-white/10 text-xs text-teal-200/70 flex items-center justify-between">
+          <p>© 2026 Pulso Jarocho. Reto 6 · Centro Vivo.</p>
+          <span className="hidden sm:inline">Veracruz, Ver.</span>
+        </div>
       </div>
 
-      {/* Tarjeta contenedora con acabados elegantes */}
-      <section className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/90 backdrop-blur-xs">
-        <div className="mb-5 border-b border-neutral-100 dark:border-neutral-800/80 pb-3">
-          <h1 className="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">{titulo}</h1>
-          {subtitulo && (
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 leading-snug">{subtitulo}</p>
+      {/* Columna Derecha (Formulario y Contenido interactivo) */}
+      <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-14 xl:px-20 py-8 lg:py-12 bg-white dark:bg-neutral-950">
+        <div className="w-full max-w-md mx-auto">
+          {/* Botón superior para volver a la portada */}
+          {mostrarVolver && (
+            <div className="mb-6 flex items-center justify-between">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition py-1.5 px-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800"
+                title="Volver a la portada principal"
+              >
+                <ArrowLeftIcon className="h-4 w-4 text-teal-700 dark:text-teal-400" />
+                <span>Volver a la portada</span>
+              </Link>
+              <div className="lg:hidden">
+                <PulsoLogo size="xs" conTexto={false} />
+              </div>
+            </div>
+          )}
+
+          {/* Marca en la parte superior del formulario al estilo del boceto */}
+          <div className="mb-6">
+            <div className="inline-flex items-center gap-2 mb-3">
+              <PulsoLogo size="sm" conTexto={false} />
+              <span className="text-xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+                {es.appName}
+              </span>
+            </div>
+
+            <h2 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+              {titulo}
+            </h2>
+            {subtitulo && (
+              <div className="mt-1.5 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                {subtitulo}
+              </div>
+            )}
+          </div>
+
+          {/* Formulario */}
+          <div>{children}</div>
+
+          {/* Pie */}
+          {pie && (
+            <div className="mt-8 pt-6 border-t border-neutral-100 dark:border-neutral-900 text-center text-sm">
+              {pie}
+            </div>
           )}
         </div>
-        <div>{children}</div>
-      </section>
-
-      {pie && <div className="mt-6 text-center text-sm">{pie}</div>}
-    </main>
+      </div>
+    </div>
   );
 }
 
@@ -87,7 +175,7 @@ export function Campo({
         )}
         <input
           {...props}
-          className={`w-full rounded-xl border border-neutral-300 bg-white py-3 text-base outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/25 dark:border-neutral-700 dark:bg-neutral-950 ${
+          className={`w-full rounded-xl border border-neutral-300 bg-white py-3 text-base outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/25 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 ${
             icono ? "pl-10 pr-4" : "px-4"
           }`}
         />
@@ -104,13 +192,16 @@ export function Boton({
   ...props
 }: {
   children: ReactNode;
-  variante?: "primario" | "secundario" | "invitado" | "demo";
+  variante?: "primario" | "secundario" | "invitado" | "demo" | "oscuro";
   icono?: ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   let estilos = "bg-teal-700 text-white hover:bg-teal-800 disabled:bg-teal-700/60 shadow-xs";
-  if (variante === "secundario") {
+  if (variante === "oscuro") {
     estilos =
-      "border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-100 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 shadow-2xs";
+      "bg-neutral-900 text-white hover:bg-black disabled:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 shadow-sm";
+  } else if (variante === "secundario") {
+    estilos =
+      "border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 shadow-2xs";
   } else if (variante === "invitado") {
     estilos =
       "border border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-200 shadow-2xs";

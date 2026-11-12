@@ -92,46 +92,27 @@ function LoginForm() {
 
   return (
     <AuthShell
-      titulo={es.auth.tituloLogin}
-      subtitulo={es.auth.subtituloLogin}
+      titulo="¡Bienvenido de nuevo!"
+      subtitulo={
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          ¿No tienes una cuenta?{" "}
+          <Link
+            href={conRegistro}
+            className="font-bold text-neutral-900 hover:text-teal-700 dark:text-neutral-100 underline underline-offset-2"
+          >
+            Crea una cuenta nueva gratis
+          </Link>
+          , ¡toma menos de un minuto!
+        </p>
+      }
       pie={
-        <div className="space-y-3">
-          <p className="text-neutral-600 dark:text-neutral-400">
-            {es.auth.sinCuenta}{" "}
-            <Link href={conRegistro} className="font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 underline decoration-teal-500/30">
-              {es.auth.crearCuenta}
-            </Link>
-          </p>
-          <div className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
-            <ShieldCheckIcon className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-            <span>Centro Histórico de Veracruz · Reto 6</span>
-          </div>
+        <div className="flex items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
+          <ShieldCheckIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>Acceso seguro · Centro Histórico de Veracruz</span>
         </div>
       }
     >
-      {/* Botón principal de acceso rápido para visitantes */}
-      <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-b from-teal-50/70 to-teal-50/30 p-3.5 dark:border-teal-800/80 dark:from-teal-950/40 dark:to-teal-950/10">
-        <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-teal-800 dark:text-teal-300">
-          <SparklesIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-          <span>Acceso instantáneo para turistas</span>
-        </div>
-        <Boton
-          type="button"
-          variante="primario"
-          icono={<CompassIcon className="w-5 h-5" />}
-          onClick={entrarComoInvitado}
-          disabled={cargando !== null}
-        >
-          {cargando === "invitado" ? es.auth.entrando : es.auth.invitado}
-        </Boton>
-        <p className="mt-2 text-center text-xs text-teal-900/80 dark:text-teal-200/80">
-          {es.auth.invitadoAyuda}
-        </p>
-      </div>
-
-      <Separador texto="o con tu correo registrado" />
-
-      {/* Formulario de credenciales */}
+      {/* Formulario principal de credenciales como en el boceto */}
       <form onSubmit={entrar} className="space-y-4">
         <Campo
           label={es.auth.correo}
@@ -139,7 +120,7 @@ function LoginForm() {
           autoComplete="email"
           inputMode="email"
           required
-          placeholder="ejemplo@correo.com"
+          placeholder="tu.correo@ejemplo.com"
           icono={<MailIcon className="w-4 h-4" />}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -154,13 +135,33 @@ function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
         {error && <Aviso tipo="error">{error}</Aviso>}
-        <Boton type="submit" variante="secundario" disabled={cargando !== null}>
-          {cargando === "correo" ? es.auth.entrando : es.auth.entrar}
+
+        {/* Botón principal oscuro como el 'Login Now' del boceto */}
+        <Boton type="submit" variante="oscuro" disabled={cargando !== null}>
+          {cargando === "correo" ? "Iniciando sesión..." : "Iniciar Sesión"}
         </Boton>
-        <p className="text-center text-sm">
-          <Link href="/recuperar" className="font-semibold text-teal-700 hover:text-teal-800 dark:text-teal-400">
-            {es.auth.olvide}
+
+        {/* Botón alternativo estilo Google del boceto: Continuar como Visitante */}
+        <Boton
+          type="button"
+          variante="secundario"
+          icono={<CompassIcon className="w-5 h-5 text-teal-700 dark:text-teal-400" />}
+          onClick={entrarComoInvitado}
+          disabled={cargando !== null}
+        >
+          {cargando === "invitado" ? "Entrando como visitante..." : "Continuar como Visitante (Sin registro)"}
+        </Boton>
+
+        {/* Enlace de recuperación al pie del formulario como en el boceto */}
+        <p className="text-center text-xs text-neutral-500 pt-1">
+          ¿Olvidaste tu contraseña?{" "}
+          <Link
+            href="/recuperar"
+            className="font-bold text-neutral-900 dark:text-neutral-100 hover:text-teal-700 underline underline-offset-2"
+          >
+            Haz clic aquí
           </Link>
         </p>
       </form>
@@ -168,7 +169,7 @@ function LoginForm() {
       {/* Accesos rápidos de demostración para el jurado */}
       {flags.accesosDemo && (
         <>
-          <Separador texto="Accesos rápidos demo (Jurado)" />
+          <Separador texto="o accede con una cuenta demo (Jurado)" />
           <div className="space-y-2.5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {/* Demo Visitante */}
@@ -176,13 +177,13 @@ function LoginForm() {
                 type="button"
                 onClick={entrarComoInvitado}
                 disabled={cargando !== null}
-                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-teal-200 bg-teal-50/80 p-2.5 text-center transition hover:bg-teal-100 hover:border-teal-300 active:scale-95 disabled:opacity-50 dark:border-teal-800 dark:bg-teal-950/40 dark:hover:bg-teal-950/70"
+                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-teal-200/90 bg-teal-50/70 p-2.5 text-center transition hover:bg-teal-100/80 hover:border-teal-300 active:scale-95 disabled:opacity-50 dark:border-teal-800 dark:bg-teal-950/40 dark:hover:bg-teal-950/70"
               >
                 <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-teal-700 text-white shadow-2xs group-hover:scale-105 transition-transform">
                   <UserCheckIcon className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-bold text-teal-900 dark:text-teal-200">
-                  {cargando === "invitado" ? es.auth.entrando : "Visitante"}
+                <span className="text-xs font-bold text-teal-950 dark:text-teal-200">
+                  {cargando === "invitado" ? "Entrando..." : "Visitante"}
                 </span>
                 <span className="text-[10px] text-teal-700/80 dark:text-teal-400">
                   Ruta & Sellos
@@ -194,13 +195,13 @@ function LoginForm() {
                 type="button"
                 onClick={() => entrarDemo("comercio")}
                 disabled={cargando !== null}
-                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-amber-200 bg-amber-50/80 p-2.5 text-center transition hover:bg-amber-100 hover:border-amber-300 active:scale-95 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:hover:bg-amber-950/70"
+                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50/70 p-2.5 text-center transition hover:bg-amber-100/80 hover:border-amber-300 active:scale-95 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:hover:bg-amber-950/70"
               >
                 <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-amber-600 text-white shadow-2xs group-hover:scale-105 transition-transform">
                   <StoreIcon className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                  {cargando === "comercio" ? es.auth.entrando : "Comercio"}
+                <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                  {cargando === "comercio" ? "Entrando..." : "Comercio"}
                 </span>
                 <span className="text-[10px] text-amber-700/80 dark:text-amber-400">
                   Vitrina & Canjes
@@ -212,13 +213,13 @@ function LoginForm() {
                 type="button"
                 onClick={() => entrarDemo("admin")}
                 disabled={cargando !== null}
-                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100/90 p-2.5 text-center transition hover:bg-neutral-200 hover:border-neutral-400 active:scale-95 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                className="group cursor-pointer flex flex-col items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100/80 p-2.5 text-center transition hover:bg-neutral-200 hover:border-neutral-400 active:scale-95 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
               >
-                <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-800 text-white shadow-2xs group-hover:scale-105 transition-transform dark:bg-neutral-700">
+                <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs group-hover:scale-105 transition-transform dark:bg-neutral-700">
                   <BarChartIcon className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                  {cargando === "admin" ? es.auth.entrando : "Admin"}
+                  {cargando === "admin" ? "Entrando..." : "Admin"}
                 </span>
                 <span className="text-[10px] text-neutral-600 dark:text-neutral-400">
                   Afluencia Viva

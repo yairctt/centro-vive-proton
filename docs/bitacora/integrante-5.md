@@ -277,3 +277,24 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se confirmó la apariencia atractiva y homogénea del logo y de la interfaz en todas las resoluciones, así como la correcta compilación con TypeScript y paso de las 126 pruebas en Vitest.
 - **Commit:** `feat(ui): decoracion de interfaces, logo oficial pulso jarocho y rediseno de login`
+
+---
+
+### 02:48 · Fase 10: Rediseño moderno de login en Split-Screen inspirado en boceto
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Transformar la interfaz de login en una experiencia visual Split-Screen elegante y moderna basada en el boceto de referencia proporcionado, integrando la fotografía aérea del Faro Venustiano Carranza y el puerto de Veracruz.
+- **Prompt (resumen):** «Intenta mejorar el login, que sea un interfaz parecida a la de la imagen, utilizando esta imagen como boceto.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Estructura Split-Screen responsiva (`components/auth/ui.tsx`):**
+    - **Panel izquierdo Hero (Showcase):** Foto aérea real de Veracruz (`public/faro-veracruz.jpg`) con gradiente profundo en verde mar/azul ultramar (`from-teal-950 via-teal-900 to-sky-950`), ondas curvas concéntricas estilizadas en SVG, logotipo de Pulso Jarocho en cabecera, saludo tipográfico de gran escala (`¡Hola, Pulso Jarocho!`), propuesta de valor de reactivación urbana, badges con métricas clave del centro histórico y pie de derechos reservados.
+    - **Panel derecho Formulario:** Cabecera con isotipo oficial, título `¡Bienvenido de nuevo!`, enlace directo para registrarse gratis en menos de un minuto, campos de entrada limpios con placeholders contextuales, botón principal oscuro/antracita (`Iniciar Sesión`), botón secundario tipo Google (`Continuar como Visitante`), enlace de recuperación de contraseña y accesos de demostración para el jurado (Visitante, Comercio, Admin).
+  - **Compatibilidad y mobile-first:** En pantallas pequeñas (`< lg`) se apila ordenadamente con un banner superior hero que mantiene la atmósfera del puerto sin saturar el espacio de interacción táctil.
+- **Resultado:**
+  - `public/faro-veracruz.jpg` (nueva fotografía panorámica)
+  - `components/auth/ui.tsx` (Split-Screen layout)
+  - `app/(auth)/login/page.tsx` (fidelidad al boceto con soporte demo)
+  - `lib/engine/__tests__/independencia-zona.test.ts` (timeout de test optimizado)
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó la correspondencia visual con el boceto, la responsividad fluida y la aprobación de los 126 tests de Vitest y tipos de TypeScript.
+- **Commit:** `feat(auth): login split-screen moderno inspirado en boceto y fotografia de veracruz`
