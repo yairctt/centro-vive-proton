@@ -208,46 +208,15 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Banner de Bienvenida y Resumen Ejecutivo Amigable */}
-      <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-800 to-teal-950 p-6 text-white shadow-md">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="space-y-1.5 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-700/60 px-3 py-1 text-xs font-semibold text-teal-200 border border-teal-600/50">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Operación Activa del Centro Histórico
-            </span>
-            <h2 className="text-xl font-black tracking-tight sm:text-2xl text-white">
-              Centro Histórico de Veracruz en Movimiento
-            </h2>
-            <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed">
-              El flujo digital de visitantes está activo hoy. El <strong>Malecón</strong> y el <strong>Gran Café de la Parroquia</strong> lideran las interacciones. Recuerda que a partir de las <strong>19:00 hrs</strong> entra en vigor el <em>Bono Nocturno</em> para dinamizar los comercios que extienden su horario.
-            </p>
-          </div>
-
-          <div className="flex shrink-0 flex-wrap gap-2.5 sm:flex-col sm:items-end">
-            <div className="rounded-xl bg-white/10 px-3.5 py-2 backdrop-blur-xs border border-white/10 text-right">
-              <span className="block text-[11px] text-teal-200">Tasa de Conversión</span>
-              <span className="text-lg font-black text-white">64.5%</span>
-            </div>
-            <div className="rounded-xl bg-white/10 px-3.5 py-2 backdrop-blur-xs border border-white/10 text-right">
-              <span className="block text-[11px] text-teal-200">Lugares con QR</span>
-              <span className="text-lg font-black text-white">12 activos</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Regla 9 Aviso Metodológico */}
-      <div className="flex items-start gap-3 rounded-2xl border border-teal-200/80 bg-teal-50/70 p-4 text-xs text-teal-950 shadow-xs dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-200">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
+      <div className="flex items-start gap-3 rounded-2xl border border-teal-200/70 bg-gradient-to-r from-teal-50/80 to-teal-50/30 p-4 text-xs text-teal-900 shadow-2xs dark:border-teal-900/50 dark:from-teal-950/30 dark:to-teal-950/10 dark:text-teal-200">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
           <InfoIcon className="h-4 w-4" />
         </div>
         <div className="space-y-0.5">
-          <p className="font-bold text-teal-950 dark:text-teal-100 text-xs">
-            Nota metodológica para jurado y administradores:
-          </p>
-          <p className="text-teal-800 dark:text-teal-300 leading-relaxed text-[11px]">
-            Las métricas presentadas corresponden a <strong className="font-semibold underline">actividad registrada en la app</strong> (escaneos QR, rutas generadas y misiones completadas en el prototipo); no constituyen un censo peatonal general ni registro fiscal de ventas de los comercios.
+          <p className="font-bold text-teal-950 dark:text-teal-100">Indicadores de actividad en prototipo</p>
+          <p className="text-teal-800/90 dark:text-teal-300/90 leading-relaxed">
+            Las métricas presentadas corresponden a <strong className="font-semibold underline">actividad registrada en la app</strong> (escaneos QR, rutas generadas y misiones completadas); no representan un conteo peatonal total ni facturación comercial.
           </p>
         </div>
       </div>
@@ -258,57 +227,43 @@ export default function AdminDashboardPage() {
           title="Actividad en la App"
           value={stats.totalInteractions}
           subtitle="Escaneos y validaciones registradas hoy"
-          badge="+28% hoy"
-          badgeType="positive"
-          progressPercent={78}
-          hint="Volumen diario de visitas QR"
+          badge={isLive ? "En vivo" : "En pausa"}
+          badgeType={isLive ? "positive" : "neutral"}
           icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Completadas"
           value={`${stats.missionsCompleted}/${stats.missionsAccepted}`}
-          subtitle="Visitantes que completaron su recorrido"
-          badge="Meta 50%"
+          subtitle={
+            stats.missionsAccepted > 0
+              ? `${Math.round((stats.missionsCompleted / stats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
+              : "Aún no hay misiones aceptadas"
+          }
+          badge="Completadas / aceptadas"
           badgeType="brand"
-          progressPercent={65}
-          hint="Conversión de turistas activos"
           icon={<TargetIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Canjes en Comercio"
           value={stats.redemptions}
-          subtitle="Recompensas validadas presencialmente"
-          badge="+12 hoy"
+          subtitle="Beneficios validados presencialmente"
           badgeType="warning"
-          progressPercent={42}
-          hint="Beneficios entregados en caja"
           icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Puntos Conectados"
           value={`${stats.activePlaces} / ${stats.activeBusinesses}`}
-          subtitle="12 atractivos y 6 comercios demo"
-          badge="100% listos"
+          subtitle={`${stats.activePlaces} lugares y ${stats.activeBusinesses} comercios participantes`}
+          badge="Verificados"
           badgeType="neutral"
-          hint="Red urbana verificada"
           icon={<BuildingIcon className="h-5 w-5" />}
         />
       </div>
 
       {/* 2 Gráficas con Recharts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-2.5">
-          <ScansByPlaceChart data={stats.scansByPlace} />
-          <div className="rounded-xl border border-teal-200/80 bg-teal-50/60 p-3 text-xs text-teal-950 dark:border-teal-900/50 dark:bg-teal-950/30 dark:text-teal-300">
-            <span className="font-bold">Interpretación para directores:</span> El Malecón y Los Portales concentran el 62% de las visitas registradas. Programar misiones hacia el Baluarte de Santiago ayuda a redistribuir el flujo hacia comercios del sur del Centro Histórico.
-          </div>
-        </div>
-        <div className="flex flex-col gap-2.5">
-          <ActivityByHourChart data={stats.activityByHourWithBusinesses} />
-          <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3 text-xs text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
-            <span className="font-bold">Oportunidad de horario nocturno (19:00+):</span> La actividad en la app se mantiene en pico mientras 4 de 6 comercios cierran. El &ldquo;Bono Nocturno&rdquo; premia a los negocios que extienden su horario para captar esta demanda.
-          </div>
-        </div>
+        <ScansByPlaceChart data={stats.scansByPlace} />
+        <ActivityByHourChart data={stats.activityByHourWithBusinesses} />
       </div>
 
       {/* Feed en Vivo de Escaneos (< 10s para demo de jurado) */}

@@ -62,6 +62,7 @@ export function ScansByPlaceChart({ data }: ScansByPlaceChartProps) {
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
             <XAxis
               type="number"
+              allowDecimals={false}
               tickLine={false}
               axisLine={{ stroke: "#e5e7eb" }}
               tick={{ fontSize: 11, fill: "#6b7280" }}
