@@ -75,12 +75,14 @@ export default function InicioPage() {
             <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
               Pulso Jarocho
             </span>
-            <Link
-              href="/pasaporte"
-              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors"
-            >
-              <span>📘</span> Pasaporte
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/hoy" className="text-xs bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors border border-orange-100">
+                <span>📅</span> Hoy
+              </Link>
+              <Link href="/pasaporte" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors">
+                <span>📘</span> Pasaporte
+              </Link>
+            </div>
           </div>
           <h1 className="text-2xl font-black text-gray-900 mt-2">
             Diseña tu recorrido
