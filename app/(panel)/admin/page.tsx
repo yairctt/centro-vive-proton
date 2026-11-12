@@ -1,20 +1,71 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
 import {
   KpiCard,
   ScansByPlaceChart,
   ActivityByHourChart,
   LiveVisitsFeed,
   MOCK_ADMIN_STATS,
+  type ExtendedStats,
 } from "@/components/paneles";
-
-export const metadata: Metadata = {
-  title: "Tablero de Afluencia Digital · Pulso Jarocho",
-  description: "Monitoreo en tiempo real de interacciones, misiones y escaneos en el Centro Histórico de Veracruz",
-};
+import type { Stats } from "@/lib/types";
 
 export default function AdminDashboardPage() {
-  const stats = MOCK_ADMIN_STATS;
+  const [stats, setStats] = useState<ExtendedStats>(MOCK_ADMIN_STATS);
+  const [isLive, setIsLive] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>("Recién cargado");
+  const [isFetching, setIsFetching] = useState(false);
+
+  // Consulta a GET /api/stats cada 5 segundos (Requisito CP2: actualización < 10s)
+  const fetchStats = useCallback(async () => {
+    try {
+      setIsFetching(true);
+      const res = await fetch("/api/stats", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as Stats & Partial<ExtendedStats>;
+        setStats((prev) => ({
+          ...prev,
+          missionsAccepted: data.missionsAccepted ?? prev.missionsAccepted,
+          missionsCompleted: data.missionsCompleted ?? prev.missionsCompleted,
+          redemptions: data.redemptions ?? prev.redemptions,
+          totalInteractions:
+            data.totalInteractions ??
+            (data.scansByPlace?.reduce((acc, s) => acc + s.scans, 0) || prev.totalInteractions),
+          scansByPlace:
+            data.scansByPlace && data.scansByPlace.length > 0
+              ? data.scansByPlace
+              : prev.scansByPlace,
+          activityByHour: data.activityByHour ?? prev.activityByHour,
+          recentVisits:
+            data.recentVisits && data.recentVisits.length > 0
+              ? data.recentVisits
+              : prev.recentVisits,
+        }));
+      }
+      setLastUpdated(new Date().toLocaleTimeString("es-MX", { hour12: false }));
+    } catch {
+      // Si la API no está lista aún o hay fallo de red, conservamos datos mock sin romper el tablero
+      setLastUpdated(new Date().toLocaleTimeString("es-MX", { hour12: false }));
+    } finally {
+      setIsFetching(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    if (!isLive) return;
+
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchStats, isLive]);
 
   return (
     <div className="space-y-6">
@@ -25,8 +76,19 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
               Tablero de Afluencia Digital
             </h1>
-            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-              ● En Vivo
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                isLive
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                  : "bg-neutral-100 text-neutral-600 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-400"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isLive ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"
+                }`}
+              ></span>
+              {isLive ? "● En Vivo (cada 5s)" : "Pausado"}
             </span>
           </div>
           <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
@@ -34,9 +96,15 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-            📅 Hoy: Miércoles 11 Nov (Demo)
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsLive(!isLive)}
+            className="cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            {isLive ? "Pausar actualización" : "Reanudar en vivo"}
+          </button>
+          <span className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-500 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+            {isFetching ? "Actualizando…" : `Último pulso: ${lastUpdated}`}
           </span>
         </div>
       </div>
@@ -95,4 +163,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

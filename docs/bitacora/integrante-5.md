@@ -30,3 +30,25 @@
 - **Resultado:** `app/(panel)/comercio/page.tsx`, `components/paneles/ComercioFicha.tsx`, `components/paneles/ComercioPromos.tsx`, `components/paneles/ComercioCanjesList.tsx`, `components/paneles/ComercioHourlyChart.tsx`, `components/paneles/ComercioConversionChart.tsx`, `components/paneles/PublishEventModal.tsx`, `docs/explicaciones/paneles.md`.
 - **Revisión humana:** Se probó el botón interactivo de confirmación de canje presencial y la selección entre distintos comercios de prueba.
 - **Commit:** `feat(comercio): vitrina digital, gestion de canjes y graficas comerciales`
+
+---
+
+### 17:40 · Fase 2a: Conexión de formulario de eventos y confirmación de canjes
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Conectar el modal de eventos comerciales con `POST /api/events` para que los eventos propuestos por el comercio viajen al backend («por confirmar») y conectar la confirmación de canjes con `POST /api/redemptions/confirm`.
+- **Prompt (resumen):** «Conecta PublishEventModal a POST /api/events y ComercioCanjesList a POST /api/redemptions/confirm con manejo de errores y fallback a modo demo.»
+- **Resultado:** `components/paneles/PublishEventModal.tsx` conectado a `/api/events`, `components/paneles/ComercioCanjesList.tsx` conectado a `/api/redemptions/confirm`.
+- **Revisión humana:** Se verificó que el estado de los canjes se actualice visualmente al instante y que los eventos enviados muestren la insignia de estado «Por confirmar».
+- **Commit:** `feat(paneles): conexion de eventos y canjes con fallback resiliente`
+
+---
+
+### 18:25 · Fase 2b: Polling en vivo en /admin cada 5 s y borrador de diapositivas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Implementar la actualización periódica en vivo del tablero de administración (`GET /api/stats` cada 5 s) para cumplir la regla del momento memorable del jurado (< 10 s), y redactar el borrador completo de diapositivas del pitch.
+- **Prompt (resumen):** «Agrega polling en vivo cada 5 s en app/(panel)/admin/page.tsx consultando GET /api/stats con fallback graceful y crea docs/pitch/diapositivas.md con las 8 diapositivas de la demo.»
+- **Resultado:** `app/(panel)/admin/page.tsx` con polling cada 5 segundos y toggle de pausar/reanudar; `docs/pitch/diapositivas.md` con 8 diapositivas detalladas (problema, solución, algoritmo, demo en vivo con jurado, brecha de horario, modelo de negocio y cierre).
+- **Revisión humana:** Se validó que el polling no genere parpadeos en pantalla y que la latencia visual del feed sea inferior a 5 segundos.
+- **Commit:** `feat(paneles): polling en vivo cada 5s en admin y diapositivas del pitch`
