@@ -227,15 +227,19 @@ export default function AdminDashboardPage() {
           title="Actividad en la App"
           value={stats.totalInteractions}
           subtitle="Escaneos y validaciones registradas hoy"
-          badge="+28% hoy"
-          badgeType="positive"
+          badge={isLive ? "En vivo" : "En pausa"}
+          badgeType={isLive ? "positive" : "neutral"}
           icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Completadas"
           value={`${stats.missionsCompleted}/${stats.missionsAccepted}`}
-          subtitle="64.5% de conversión de visitantes"
-          badge="Meta 50%"
+          subtitle={
+            stats.missionsAccepted > 0
+              ? `${Math.round((stats.missionsCompleted / stats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
+              : "Aún no hay misiones aceptadas"
+          }
+          badge="Completadas / aceptadas"
           badgeType="brand"
           icon={<TargetIcon className="h-5 w-5" />}
         />
@@ -243,14 +247,13 @@ export default function AdminDashboardPage() {
           title="Canjes en Comercio"
           value={stats.redemptions}
           subtitle="Beneficios validados presencialmente"
-          badge="+12 hoy"
           badgeType="warning"
           icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Puntos Conectados"
           value={`${stats.activePlaces} / ${stats.activeBusinesses}`}
-          subtitle="12 atractivos y 6 comercios demo"
+          subtitle={`${stats.activePlaces} lugares y ${stats.activeBusinesses} comercios participantes`}
           badge="Verificados"
           badgeType="neutral"
           icon={<BuildingIcon className="h-5 w-5" />}

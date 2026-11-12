@@ -72,12 +72,14 @@ export function ActivityByHourChart({ data }: ActivityByHourChartProps) {
             />
             <YAxis
               yAxisId="left"
+              allowDecimals={false}
               tickLine={false}
               axisLine={{ stroke: "#e5e7eb" }}
               tick={{ fontSize: 11, fill: "#6b7280" }}
             />
             <YAxis
               yAxisId="right"
+              allowDecimals={false}
               orientation="right"
               tickLine={false}
               axisLine={{ stroke: "#e5e7eb" }}
