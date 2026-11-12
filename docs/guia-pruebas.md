@@ -108,12 +108,6 @@ Para comprobar específicamente que **escanear un QR suma puntos al pasaporte**
 node scripts/probar-puntos.mjs
 ```
 
-Y para comprobar que la documentación no tiene enlaces rotos:
-
-```bash
-node scripts/verificar-enlaces.mjs
-```
-
 ---
 
 ## 4. Recorrer el flujo de oro
@@ -221,8 +215,8 @@ de inicio: el middleware decide por rol.
 | `POST /api/redemptions` | `{rewardId}` | canje creado | Visitante o admin |
 | `POST /api/missions` · `POST /api/places` | datos | registro creado o actualizado | Solo admin |
 
-> La lista completa, con los roles de cada endpoint, está en
-> [`arquitectura.md`](arquitectura.md).
+> La lista completa, con los roles de cada endpoint, está en la documentación
+> técnica del proyecto.
 
 `origen` en `/api/route` dice de dónde salieron los datos: `base` (la base de
 datos, lo normal) o `respaldo` (el catálogo de demostración, cuando la base no
@@ -256,15 +250,3 @@ npm run lint    # sin errores nuevos
 
 Y el commit sigue el formato `tipo(área): descripción`, por ejemplo
 `feat(motor): agrega el peso de oportunidad`.
-
----
-
-## 9. Para entender el código
-
-| Quiero saber… | Miro |
-|---|---|
-| cómo encaja todo el proyecto | [`arquitectura.md`](arquitectura.md) |
-| por qué el motor eligió estos lugares | [`explicaciones/motor.md`](explicaciones/motor.md) |
-| qué le tocó hacer a la IA | [`explicaciones/ia.md`](explicaciones/ia.md) |
-| de dónde salen los datos y si son ciertos | [`explicaciones/datos.md`](explicaciones/datos.md) |
-| qué significa una palabra del proyecto | [`glosario.md`](glosario.md) |

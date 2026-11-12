@@ -25,22 +25,15 @@ Variables (`.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON
 
 **Para probar la demo**, paso a paso: [`docs/guia-pruebas.md`](docs/guia-pruebas.md). Con el servidor arriba, `node scripts/verificar-demo.mjs` comprueba que las 9 pantallas y los 7 endpoints principales responden.
 
-**Para entender cómo funciona**, empieza por [`docs/arquitectura.md`](docs/arquitectura.md).
-
 ## Documentación
 
 | Documento | Para qué |
 | --------- | -------- |
-| [`docs/arquitectura.md`](docs/arquitectura.md) | **Cómo encaja todo**: capas, flujo de oro paso a paso, endpoints, modelo de datos, seguridad, configuración y despliegue |
 | [`docs/guia-pruebas.md`](docs/guia-pruebas.md) | Cómo levantar el proyecto y recorrer la demo paso a paso, con qué falla y por qué |
-| [`docs/glosario.md`](docs/glosario.md) | Los términos del proyecto, en español llano |
-| [`docs/explicaciones/motor.md`](docs/explicaciones/motor.md) | El motor de recomendación: la fórmula, los pesos, los horarios por día y cómo ajustarlo |
-| [`docs/explicaciones/ia.md`](docs/explicaciones/ia.md) | Qué hace la IA, qué no puede hacer y por qué nunca rompe la demo |
-| [`docs/explicaciones/datos.md`](docs/explicaciones/datos.md) | Las diez tablas, RLS, el seed y la verdad de los datos |
 | [`docs/explicaciones/mapa.md`](docs/explicaciones/mapa.md) | El mapa de Leaflet con OpenStreetMap |
 | [`docs/explicaciones/qr.md`](docs/explicaciones/qr.md) | Los códigos QR: generación, lectura y validación |
 | [`docs/explicaciones/auth.md`](docs/explicaciones/auth.md) | Cuentas, sesión y reglas por rol |
-| [`docs/explicaciones/paneles.md`](docs/explicaciones/paneles.md) | El tablero de afluencia y el panel de comercio |
+| [`docs/explicaciones/paneles.md`](docs/explicaciones/paneles.md) | El tablero de abundancia y el panel de comercio |
 | [`docs/explicaciones/gestion-crud.md`](docs/explicaciones/gestion-crud.md) | La gestión de lugares, eventos, misiones y recompensas |
 | [`docs/explicaciones/requisito-jueves.md`](docs/explicaciones/requisito-jueves.md) | Cómo activar el requisito nuevo en minutos |
 | [`docs/propuesta.md`](docs/propuesta.md) | La propuesta original: contexto y justificación |
@@ -69,9 +62,7 @@ lib/
   flags.ts            # interruptores de funciones
 supabase/             # schema.sql y seed.sql
 docs/
-  arquitectura.md     # documento técnico de referencia
   guia-pruebas.md     # cómo levantar y recorrer la demo paso a paso
-  glosario.md         # los términos del proyecto
   propuesta.md        # propuesta completa
   bitacora/           # bitácora de IA por integrante
   explicaciones/      # explicación de cada módulo
@@ -461,10 +452,10 @@ Commit: feat(visitante): agrega vista de agenda de hoy
 ##### 03:05 · Documentación técnica del proyecto
 
 - **Herramienta:** OpenCode (MiniMax M3.1 Flash)
-- **Objetivo:** Dejar el proyecto documentado: que se entienda cómo encaja, no solo que funcione.
+- **Objetivo:** Documentar el proyecto para que se entienda cómo encaja, no solo que funcione.
 - **Prompt (resumen):** «Trabaja la documentación, procura ser lo más detallado posible y que luzca profesional, abarca lo mayor posible del proyecto».
-- **Resultado:** Se escribieron cuatro documentos nuevos y se reorganizó el README. `docs/arquitectura.md` es el documento central: las capas del sistema con un diagrama, el flujo de oro paso a paso (qué endpoint hace qué), el catálogo completo de endpoints con su acceso, el modelo de datos tabla por tabla, las tres capas de seguridad, la configuración (variables, interruptores y pesos), el despliegue, el modo de respaldo y el mapa de carpetas con su dueño. `docs/explicaciones/motor.md` explica la fórmula con los seis pesos reales, los tres pasos de construcción, el horario por día de la semana, la zona horaria y cómo ajustarlo. `docs/explicaciones/ia.md` explica qué hace el modelo, qué no puede hacer y por qué nunca rompe la demo. `docs/explicaciones/datos.md` documenta las diez tablas, las políticas de RLS, el seed y la verdad de los datos. `docs/glosario.md` explica los términos en español llano. El README ahora tiene un índice de documentación y la estructura completa.
-- **Revisión humana:** Cada dato se comprobó contra el código y no contra la memoria: se leyeron las diez tablas del schema, las políticas de RLS, las funciones, el contenido real del seed (18 lugares, 6 comercios con el prefijo `[DEMO]`, 4 eventos, 3 misiones, 3 recompensas) y los 19 route handlers con sus roles. Se añadió `scripts/verificar-enlaces.mjs`, que revisa los 50 enlaces internos de la documentación: todos apuntan a archivos que existen. También se corrigió la tabla de endpoints de la guía de pruebas, que tenía `qr-tokens` como «solo admin» cuando es «comercio o admin».
+- **Resultado:** Se redactó una documentación técnica completa, **fuera del repositorio** (en la carpeta local `documentacion-pulso-jarocho/`), para convertirla en un documento profesional sin cargar el repositorio: `arquitectura.md` (las capas del sistema con un diagrama, el flujo de oro paso a paso, el catálogo de endpoints con su acceso, el modelo de datos tabla por tabla, las tres capas de seguridad, la configuración, el despliegue y el modo de respaldo), `explicaciones/motor.md` (la fórmula con los seis pesos reales, los tres pasos de construcción, el horario por día de la semana y cómo ajustarlo), `explicaciones/ia.md` (qué hace el modelo, qué no puede hacer y por qué nunca rompe la demo), `explicaciones/datos.md` (las diez tablas, las políticas de RLS, el seed y la verdad de los datos) y `glosario.md` (los términos en español llano). Cada uno termina con las preguntas probables del jurado.
+- **Revisión humana:** Cada dato se comprobó contra el código y no contra la memoria: se leyeron las diez tablas del schema, las políticas de RLS, las funciones, el contenido real del seed (18 lugares, 6 comercios con el prefijo `[DEMO]`, 4 eventos, 3 misiones, 3 recompensas) y los 19 route handlers con sus roles. También se corrigió la tabla de endpoints de la guía de pruebas, que tenía `qr-tokens` como «solo admin» cuando es «comercio o admin».
 - **Commit:** pendiente
 
 ### Bitácora de IA — Integrante 5 (Paneles de comercio y admin; pitch)
