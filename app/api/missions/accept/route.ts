@@ -2,17 +2,17 @@
  * POST /api/missions/accept
  * Registra que un perfil acepta una misión.
  *
- * Body: { missionId: string; profileId?: string }
+ * Body: { missionId: string }   ·   Perfil = el de la sesión.
  * Response: { ok: true } | { error: string }
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
 
 const bodySchema = z.object({
   missionId: z.guid({ message: "missionId inválido" }),
-  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -32,7 +32,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const { missionId, profileId: rawProfileId } = parsed.data;
+  const { missionId } = parsed.data;
+
+  const auth = await requireProfile(["visitante", "admin"]);
+  if ("response" in auth) return auth.response;
+  const profileId = auth.profile.id;
+
   const supabase = getAdminClient();
 
   // 2. Verificar que la misión existe y está activa
@@ -50,25 +55,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Misión inactiva" }, { status: 409 });
   }
 
-  // 3. Determinar perfil (enviado o perfil demo)
-  let profileId = rawProfileId ?? null;
-  if (!profileId) {
-    const { data: demoProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("alias", "visitante-demo")
-      .single();
-    profileId = demoProfile?.id ?? null;
-  }
-
-  if (!profileId) {
-    return NextResponse.json(
-      { error: "No se encontró un perfil activo" },
-      { status: 422 },
-    );
-  }
-
-  // 4. Verificar si ya aceptó esta misión
+  // 3. Verificar si ya aceptó esta misión
   const { data: existing } = await supabase
     .from("mission_accepts")
     .select("id")
@@ -80,7 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, already: true });
   }
 
-  // 5. Registrar la aceptación
+  // 4. Registrar la aceptación
   const { error: insertError } = await supabase
     .from("mission_accepts")
     .insert({ profile_id: profileId, mission_id: missionId });

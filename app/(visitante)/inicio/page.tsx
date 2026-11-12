@@ -33,6 +33,7 @@ export default function InicioPage() {
     "historia",
   ]);
   const [budget, setBudget] = useState<Budget>("medio");
+  const [loading, setLoading] = useState(false);
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
@@ -40,9 +41,30 @@ export default function InicioPage() {
     );
   };
 
-  const handleStartRoute = () => {
-    // Para Punto de Control 1 navegamos a /ruta con los datos de prueba
-    router.push("/ruta");
+  const handleStartRoute = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/route', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          minutes,
+          interests: selectedInterests,
+          budget
+        })
+      });
+
+      if (!res.ok) throw new Error("Error al generar la ruta");
+
+      const data = await res.json();
+      sessionStorage.setItem('rutaGenerada', JSON.stringify(data.stops));
+      router.push("/ruta");
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un error al conectar con el motor. Avisa al Integrante 3.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,7 +92,6 @@ export default function InicioPage() {
       </header>
 
       <div className="flex-1 p-6 space-y-6 max-w-lg mx-auto w-full">
-        {/* Sección: Tiempo disponible */}
         <section className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-gray-900 text-base flex items-center gap-2">
@@ -89,11 +110,10 @@ export default function InicioPage() {
                   key={opt.value}
                   type="button"
                   onClick={() => setMinutes(opt.value)}
-                  className={`p-3 rounded-xl border text-center transition-all ${
-                    selected
+                  className={`p-3 rounded-xl border text-center transition-all ${selected
                       ? "border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20"
                       : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <div className="font-bold text-sm">{opt.label}</div>
                   <div className="text-[11px] text-gray-500 mt-0.5">{opt.desc}</div>
@@ -103,7 +123,6 @@ export default function InicioPage() {
           </div>
         </section>
 
-        {/* Sección: Intereses */}
         <section className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-gray-900 text-base flex items-center gap-2">
@@ -122,11 +141,10 @@ export default function InicioPage() {
                   key={interest.id}
                   type="button"
                   onClick={() => toggleInterest(interest.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                    selected
+                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${selected
                       ? "border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-200"
                       : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <span>{interest.icon}</span>
                   <span>{interest.label}</span>
@@ -136,7 +154,6 @@ export default function InicioPage() {
           </div>
         </section>
 
-        {/* Sección: Presupuesto */}
         <section className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
           <h2 className="font-bold text-gray-900 text-base flex items-center gap-2">
             <span>💳</span> Presupuesto estimado
@@ -150,11 +167,10 @@ export default function InicioPage() {
                   key={b.id}
                   type="button"
                   onClick={() => setBudget(b.id)}
-                  className={`p-3 rounded-xl border text-center transition-all ${
-                    selected
+                  className={`p-3 rounded-xl border text-center transition-all ${selected
                       ? "border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20"
                       : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <div className="font-extrabold text-base text-blue-600">{b.symbol}</div>
                   <div className="font-bold text-xs mt-1 text-gray-800">{b.label}</div>
@@ -166,19 +182,17 @@ export default function InicioPage() {
         </section>
       </div>
 
-      {/* Botón de acción fijo */}
       <footer className="bg-white border-t border-gray-100 p-4 pb-8 max-w-lg mx-auto w-full sticky bottom-0 z-20 shadow-lg">
         <button
           type="button"
           onClick={handleStartRoute}
-          disabled={selectedInterests.length === 0}
+          disabled={selectedInterests.length === 0 || loading}
           className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-2xl font-bold text-base shadow-lg shadow-blue-200 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <span>🚀</span>
-          <span>Crear Mi Ruta Inteligente</span>
+          <span>{loading ? 'Calculando...' : 'Crear Mi Ruta Inteligente'}</span>
         </button>
       </footer>
     </main>
   );
 }
-

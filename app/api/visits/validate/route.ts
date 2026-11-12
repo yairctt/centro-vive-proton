@@ -3,18 +3,18 @@
  * Valida un token QR, registra la visita y otorga puntos al perfil.
  * Los puntos SIEMPRE se calculan en el servidor (service role).
  *
- * Body: { token: string; profileId?: string }
+ * Body: { token: string }   ·   Perfil = el de la sesión.
  * Response: ValidateResponse
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
 import type { ValidateResponse } from "@/lib/types";
 
 const bodySchema = z.object({
   token: z.string().min(1),
-  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 // Puntos base por visita con QR
@@ -39,8 +39,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const { token, profileId: rawProfileId } = parsed.data;
-  const supabase = getAdminClient();
+  const { token } = parsed.data;
+
+  try {
+    // Solo usuarios con sesión suman puntos (invitado o cuenta registrada).
+    const auth = await requireProfile(["visitante", "admin"]);
+    if ("response" in auth) return auth.response;
+    const profileId = auth.profile.id;
+
+    const supabase = getAdminClient();
 
   // 2. Buscar el token QR
   const { data: qrRow, error: qrError } = await supabase
@@ -72,23 +79,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const placeId: string = qrRow.place_id as string;
 
-  // 3. Determinar perfil: usar el enviado o el perfil demo de visitante
-  let profileId = rawProfileId ?? null;
-  if (!profileId) {
-    const { data: demoProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("alias", "visitante-demo")
-      .single();
-    profileId = demoProfile?.id ?? null;
-  }
-
-  if (!profileId) {
-    return NextResponse.json(
-      { ok: false, pointsAdded: 0, totalPoints: 0, missionCompleted: false, message: "No se encontró un perfil activo" } satisfies ValidateResponse,
-      { status: 422 },
-    );
-  }
+  // 3. (El perfil ya viene de la sesión.)
 
   // 4. Verificar visita previa (un token por perfil)
   const { data: prevVisit } = await supabase
@@ -203,4 +194,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ? `¡Misión completada! +${pointsAdded} puntos`
       : `¡Visita registrada! +${pointsAdded} puntos`,
   } satisfies ValidateResponse);
+  } catch {
+    // Sin base de datos: se responde 404 SIN cuerpo para que el cliente caiga
+    // al modo demo (es la convención que espera `lib/qr/validate.ts`: un 404
+    // sin JSON de error significa "el endpoint no está disponible").
+    return new NextResponse(null, { status: 404 });
+  }
 }
