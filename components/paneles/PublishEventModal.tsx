@@ -141,6 +141,49 @@ export function PublishEventModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Plantillas Rápidas Jarochas (1 clic) */}
+            <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-2.5 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <span className="block text-[11px] font-bold text-amber-900 dark:text-amber-200 mb-1.5">
+                Plantillas rápidas jarochas (1 clic para rellenar):
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  {
+                    t: "Música de Marimba y Danzón",
+                    c: "cultura",
+                    h: "19:00",
+                    d: "Música en vivo típica jarocha en los portales para disfrutar en familia.",
+                  },
+                  {
+                    t: "Degustación de Toritos y Café",
+                    c: "gastronomia",
+                    h: "18:00",
+                    d: "Muestra artesanal de toritos veracruzanos tradicionales y café de altura.",
+                  },
+                  {
+                    t: "Taller Artesanal de Conchas",
+                    c: "compras",
+                    h: "17:00",
+                    d: "Aprende la elaboración tradicional de artesanías marinas del Malecón.",
+                  },
+                ].map((preset) => (
+                  <button
+                    key={preset.t}
+                    type="button"
+                    onClick={() => {
+                      setTitle(preset.t);
+                      setCategory(preset.c);
+                      setTime(preset.h);
+                      setDescription(preset.d);
+                    }}
+                    className="cursor-pointer rounded-lg border border-amber-300/80 bg-white px-2 py-1 text-[11px] font-medium text-amber-950 shadow-2xs hover:bg-amber-100/70 active:scale-95 transition dark:border-amber-800 dark:bg-neutral-800 dark:text-amber-200"
+                  >
+                    + {preset.t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                 Título del evento

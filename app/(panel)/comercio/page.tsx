@@ -15,6 +15,7 @@ import {
   CompassIcon,
   GiftIcon,
   ClockIcon,
+  SparklesIcon,
   type ComercioMockData,
 } from "@/components/paneles";
 
@@ -111,6 +112,61 @@ export default function ComercioPage() {
         </div>
       </div>
 
+      {/* Guía visual paso a paso para el cajero o encargado */}
+      <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/90 via-orange-50/50 to-amber-50/80 p-5 shadow-xs dark:border-amber-900/60 dark:from-amber-950/40 dark:via-orange-950/20 dark:to-amber-950/30">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-600 text-xs font-black text-white shadow-2xs">
+              ?
+            </span>
+            <h3 className="text-sm font-bold text-amber-950 dark:text-amber-200">
+              ¿Cómo validar un canje en caja? (Guía rápida para el encargado)
+            </h3>
+          </div>
+          <span className="hidden sm:inline-block rounded-full bg-amber-200/60 px-2.5 py-0.5 text-[10px] font-bold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
+            Fácil y en 3 pasos
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="flex items-start gap-2.5 rounded-xl bg-white/80 p-3 shadow-2xs dark:bg-neutral-900/70 border border-amber-100 dark:border-amber-900/40">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">
+              1
+            </span>
+            <div>
+              <p className="text-xs font-bold text-neutral-900 dark:text-white">Pide el código</p>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                El visitante te muestra su cupón digital en la pantalla de su teléfono.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 rounded-xl bg-white/80 p-3 shadow-2xs dark:bg-neutral-900/70 border border-amber-100 dark:border-amber-900/40">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">
+              2
+            </span>
+            <div>
+              <p className="text-xs font-bold text-neutral-900 dark:text-white">Búscalo en la lista</p>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                Usa el buscador o ve a la pestaña &ldquo;Canjes en Caja&rdquo; abajo.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 rounded-xl bg-white/80 p-3 shadow-2xs dark:bg-neutral-900/70 border border-amber-100 dark:border-amber-900/40">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+              3
+            </span>
+            <div>
+              <p className="text-xs font-bold text-neutral-900 dark:text-white">Pulsa &ldquo;Confirmar&rdquo;</p>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                Entrega el beneficio y el canje queda registrado al instante.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Navigation View Tabs for Mobile-First UX */}
       <div className="flex border-b border-neutral-200/80 pb-1 gap-1 overflow-x-auto dark:border-neutral-800">
         {[
@@ -151,6 +207,8 @@ export default function ComercioPage() {
             subtitle="Escaneos presenciales validados"
             badge="+6 hoy"
             badgeType="positive"
+            progressPercent={65}
+            hint="Visitantes en tu local hoy"
             icon={<MapPinIcon className="h-5 w-5" />}
           />
           <KpiCard
@@ -159,6 +217,8 @@ export default function ComercioPage() {
             subtitle="Rutas que traen visitantes aquí"
             badge="Activas"
             badgeType="brand"
+            progressPercent={100}
+            hint="Rutas turísticas aliadas"
             icon={<CompassIcon className="h-5 w-5" />}
           />
           <KpiCard
@@ -167,6 +227,8 @@ export default function ComercioPage() {
             subtitle="Beneficios entregados a clientes"
             badge="Efectivos"
             badgeType="warning"
+            progressPercent={84}
+            hint="Cupones canjeados con éxito"
             icon={<GiftIcon className="h-5 w-5" />}
           />
           <KpiCard
@@ -175,8 +237,26 @@ export default function ComercioPage() {
             subtitle="Clientes esperando validación"
             badge={comercio.stats.pendingRedemptions > 0 ? "Por validar" : "Al día"}
             badgeType={comercio.stats.pendingRedemptions > 0 ? "warning" : "neutral"}
+            hint="Revisa la lista en caja"
             icon={<ClockIcon className="h-5 w-5" />}
           />
+        </div>
+      )}
+
+      {/* Tip contextual sobre el Centro de Noche */}
+      {(currentTab === "general" || currentTab === "analitica") && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50/50 p-4 text-xs dark:border-amber-900/60 dark:from-amber-950/40 dark:to-orange-950/20">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white font-bold text-xs shadow-2xs">
+            <SparklesIcon className="h-4 w-4 text-white" />
+          </span>
+          <div className="space-y-0.5">
+            <p className="font-bold text-amber-950 dark:text-amber-200">
+              Consejo comercial de Pulso Jarocho:
+            </p>
+            <p className="text-amber-900/90 dark:text-amber-300/90 leading-relaxed text-[11px]">
+              La afluencia en el Centro Histórico se concentra entre las <strong>18:00 y las 21:00 hrs</strong>. Activar una promoción especial con tu café o antojitos durante esas horas duplica los puntos para el visitante y atrae clientes que salen del Malecón.
+            </p>
+          </div>
         </div>
       )}
 
@@ -193,8 +273,18 @@ export default function ComercioPage() {
       {/* 2 Gráficas con Recharts */}
       {(currentTab === "general" || currentTab === "analitica") && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <ComercioHourlyChart data={comercio.hourlyVisits} />
-          <ComercioConversionChart data={comercio.conversionData} />
+          <div className="flex flex-col gap-2.5">
+            <ComercioHourlyChart data={comercio.hourlyVisits} />
+            <div className="rounded-xl border border-teal-200/80 bg-teal-50/60 p-3 text-xs text-teal-950 dark:border-teal-900/50 dark:bg-teal-950/30 dark:text-teal-300">
+              <span className="font-bold">Consejo de afluencia:</span> Tu pico de visitas registradas es a las 19:00 hrs. Tener preparado tu QR a la vista en la barra o mostrador agiliza el servicio y evita filas.
+            </div>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            <ComercioConversionChart data={comercio.conversionData} />
+            <div className="rounded-xl border border-blue-200/80 bg-blue-50/60 p-3 text-xs text-blue-950 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300">
+              <span className="font-bold">Efectividad de tu vitrina:</span> El 76% de los turistas que incluyen tu local en su ruta se presentan físicamente. Publicar una promoción atractiva eleva los canjes en caja.
+            </div>
+          </div>
         </div>
       )}
 
