@@ -5,7 +5,7 @@ import { CATALOGO_DEMO } from "../datos-demo";
 import { eventosDemo } from "../datos-eventos";
 import { buildRoute } from "../route";
 
-const DIA = new Date("2026-11-11T00:00:00");
+const DIA = new Date("2026-11-11T00:00:00-06:00");
 
 describe("eventos de demostración", () => {
   it("son 4 eventos y todos están marcados como demo", () => {
@@ -29,7 +29,7 @@ describe("eventos de demostración", () => {
     const { stops } = buildRoute(
       CATALOGO_DEMO,
       { minutes: 180, interests: ["cultura"], budget: "alto" },
-      { now: new Date("2026-11-11T09:00:00"), events: eventos },
+      { now: new Date("2026-11-11T09:00:00-06:00"), events: eventos },
     );
 
     // La ruta de la mañana (10:00) sí cabe; la de la noche (18:00) no.
@@ -42,7 +42,7 @@ describe("eventos de demostración", () => {
     const { stops } = buildRoute(
       CATALOGO_DEMO,
       { minutes: 180, interests: ["cultura", "paseo"], budget: "alto" },
-      { now: new Date("2026-11-11T17:30:00"), events: eventos },
+      { now: new Date("2026-11-11T17:30:00-06:00"), events: eventos },
     );
 
     expect(stops.some((s) => s.eventId === "evento-demo-nocturno")).toBe(true);
@@ -53,7 +53,7 @@ describe("eventos de demostración", () => {
     const { stops } = buildRoute(
       CATALOGO_DEMO,
       { minutes: 180, interests: ["compras"], budget: "alto" },
-      { now: new Date("2026-11-11T15:30:00"), events: eventos },
+      { now: new Date("2026-11-11T15:30:00-06:00"), events: eventos },
     );
 
     const parada = stops.find((s) => s.eventId === "evento-demo-tarde-mercado");

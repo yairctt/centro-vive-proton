@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { diaSemanaIso, minutosDelDia, partesEnZona } from "../zona-horaria";
+import { diaSemanaIso, fechaEnZona, instanteEnZona, minutosDelDia, partesEnZona } from "../zona-horaria";
 import { dayOfWeek, minutesOfDay } from "../score";
 
 describe("zona horaria de Veracruz", () => {
@@ -60,5 +60,45 @@ describe("zona horaria de Veracruz", () => {
     expect(partes.hora).toBe(14);
     expect(partes.minuto).toBe(30);
     expect(partes.diaSemana).toBe(3);
+  });
+});
+
+describe("instantes a partir de una hora de reloj", () => {
+  // Referencia al mediodía de Veracruz (18:00 UTC), para que el día sea el
+  // mismo esté el servidor donde esté.
+  const REFERENCIA = new Date("2026-11-11T18:00:00.000Z");
+
+  it("las 18:00 de Veracruz se guardan como el instante correcto", () => {
+    const instante = instanteEnZona(REFERENCIA, "18:00");
+
+    // Al convertirlo de vuelta, debe seguir siendo las 18:00 en Veracruz.
+    expect(minutosDelDia(instante)).toBe(18 * 60);
+    expect(fechaEnZona(instante)).toBe("2026-11-11");
+  });
+
+  it("las 10:00 de Veracruz se guardan como el instante correcto", () => {
+    const instante = instanteEnZona(REFERENCIA, "10:00");
+
+    expect(minutosDelDia(instante)).toBe(10 * 60);
+    expect(fechaEnZona(instante)).toBe("2026-11-11");
+  });
+
+  it("no depende de la zona del servidor", () => {
+    // Así es como lo interpretaría un servidor en UTC (Vercel):
+    // "2026-11-11T18:00:00Z" son las 12:00 en Veracruz. Ese es el bug.
+    const comoLoParseaUnServidorUtc = new Date("2026-11-11T18:00:00.000Z");
+    expect(minutosDelDia(comoLoParseaUnServidorUtc)).toBe(12 * 60);
+
+    // Con instanteEnZona, las 18:00 son las 18:00, este donde esté el servidor.
+    const instante = instanteEnZona(REFERENCIA, "18:00");
+    expect(minutosDelDia(instante)).toBe(18 * 60);
+  });
+
+  it("el día se calcula en la zona del destino, no en UTC", () => {
+    // 02:00 UTC del 12 todavía es el 11 en Veracruz.
+    const instante = new Date("2026-11-12T02:00:00.000Z");
+
+    expect(instante.toISOString().slice(0, 10)).toBe("2026-11-12");
+    expect(fechaEnZona(instante)).toBe("2026-11-11");
   });
 });

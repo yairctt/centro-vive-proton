@@ -81,7 +81,7 @@ describe("compatibilidad con el mapper del backend", () => {
 
   it("convierte un evento del backend y lo mete en la ruta", () => {
     // El evento empieza dentro de la ventana de la ruta.
-    const inicio = new Date("2026-11-11T17:00:00");
+    const inicio = new Date("2026-11-11T17:00:00-06:00");
     const evento = toEvent(filaEvent(inicio));
     expect(evento.placeId).toBe("zocalo");
     expect(evento.startsAt).toBe(inicio.toISOString());
