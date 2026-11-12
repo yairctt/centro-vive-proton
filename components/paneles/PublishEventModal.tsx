@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { CalendarIcon, CheckIcon } from "./icons";
+import React, { useState, useEffect } from "react";
+import { CalendarIcon, CheckIcon, MapPinIcon, TagIcon } from "./icons";
 
 interface PublishEventModalProps {
   isOpen: boolean;
@@ -30,6 +30,16 @@ export function PublishEventModal({
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Cerrar modal con tecla Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -83,8 +93,14 @@ export function PublishEventModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs transition-opacity"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+      >
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50">
@@ -209,18 +225,36 @@ export function PublishEventModal({
               ></textarea>
             </div>
 
+            {/* Vista previa en tiempo real para el comercio */}
+            {title && (
+              <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/50 p-2.5 dark:border-amber-800/80 dark:bg-amber-950/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                  Vista previa en la app
+                </span>
+                <p className="mt-1 text-xs font-bold text-neutral-900 dark:text-white">{title}</p>
+                <div className="mt-1 flex items-center gap-2 text-[11px] text-neutral-500">
+                  <span className="flex items-center gap-1">
+                    <CalendarIcon className="h-3 w-3 text-neutral-400" />
+                    {date} {time} hrs
+                  </span>
+                  <span>•</span>
+                  <span>{defaultPlaceName}</span>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                className="cursor-pointer rounded-lg border border-neutral-300 px-3.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 active:scale-95 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="cursor-pointer rounded-lg bg-teal-700 px-4 py-1.5 text-xs font-semibold text-white hover:bg-teal-800 disabled:opacity-50"
+                className="cursor-pointer rounded-lg bg-teal-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-teal-800 active:scale-95 disabled:opacity-50 transition"
               >
                 {isSubmitting ? "Enviando…" : "Publicar Evento"}
               </button>

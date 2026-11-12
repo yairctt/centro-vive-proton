@@ -24,8 +24,11 @@ const COMERCIOS_SELECTOR = [
   { id: "toritos-la-chata", name: "Toritos La Chata (Tradición)" },
 ];
 
+type ComercioViewTab = "general" | "canjes" | "promos" | "analitica";
+
 export default function ComercioPage() {
   const [comercio, setComercio] = useState<ComercioMockData>(MOCK_COMERCIO);
+  const [currentTab, setCurrentTab] = useState<ComercioViewTab>("general");
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
   const handleToggleOpen = () => {
@@ -108,56 +111,92 @@ export default function ComercioPage() {
         </div>
       </div>
 
+      {/* Navigation View Tabs for Mobile-First UX */}
+      <div className="flex border-b border-neutral-200/80 pb-1 gap-1 overflow-x-auto dark:border-neutral-800">
+        {[
+          { id: "general", label: "Vista General" },
+          {
+            id: "canjes",
+            label: `Canjes en Caja${comercio.stats.pendingRedemptions > 0 ? ` (${comercio.stats.pendingRedemptions})` : ""}`,
+            badge: comercio.stats.pendingRedemptions > 0,
+          },
+          { id: "promos", label: "Vitrina & Promociones" },
+          { id: "analitica", label: "Afluencia & Métricas" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setCurrentTab(tab.id as ComercioViewTab)}
+            className={`cursor-pointer whitespace-nowrap rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+              currentTab === tab.id
+                ? "bg-teal-700 text-white shadow-2xs dark:bg-teal-600"
+                : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Vitrina Digital Ficha */}
-      <ComercioFicha comercio={comercio} onToggleOpen={handleToggleOpen} />
+      {(currentTab === "general" || currentTab === "promos") && (
+        <ComercioFicha comercio={comercio} onToggleOpen={handleToggleOpen} />
+      )}
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          title="Visitas QR en Local"
-          value={comercio.stats.totalScans}
-          subtitle="Escaneos presenciales validados"
-          badge="+6 hoy"
-          badgeType="positive"
-          icon={<MapPinIcon className="h-5 w-5" />}
-        />
-        <KpiCard
-          title="Misiones Vinculadas"
-          value={comercio.stats.activeMissions}
-          subtitle="Rutas que traen visitantes aquí"
-          badge="Activas"
-          badgeType="brand"
-          icon={<CompassIcon className="h-5 w-5" />}
-        />
-        <KpiCard
-          title="Canjes Confirmados"
-          value={comercio.stats.redemptionsConfirmed}
-          subtitle="Beneficios entregados a clientes"
-          badge="Efectivos"
-          badgeType="warning"
-          icon={<GiftIcon className="h-5 w-5" />}
-        />
-        <KpiCard
-          title="Canjes Pendientes"
-          value={comercio.stats.pendingRedemptions}
-          subtitle="Clientes esperando validación"
-          badge={comercio.stats.pendingRedemptions > 0 ? "Por validar" : "Al día"}
-          badgeType={comercio.stats.pendingRedemptions > 0 ? "warning" : "neutral"}
-          icon={<ClockIcon className="h-5 w-5" />}
-        />
-      </div>
+      {(currentTab === "general" || currentTab === "analitica") && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            title="Visitas QR en Local"
+            value={comercio.stats.totalScans}
+            subtitle="Escaneos presenciales validados"
+            badge="+6 hoy"
+            badgeType="positive"
+            icon={<MapPinIcon className="h-5 w-5" />}
+          />
+          <KpiCard
+            title="Misiones Vinculadas"
+            value={comercio.stats.activeMissions}
+            subtitle="Rutas que traen visitantes aquí"
+            badge="Activas"
+            badgeType="brand"
+            icon={<CompassIcon className="h-5 w-5" />}
+          />
+          <KpiCard
+            title="Canjes Confirmados"
+            value={comercio.stats.redemptionsConfirmed}
+            subtitle="Beneficios entregados a clientes"
+            badge="Efectivos"
+            badgeType="warning"
+            icon={<GiftIcon className="h-5 w-5" />}
+          />
+          <KpiCard
+            title="Canjes Pendientes"
+            value={comercio.stats.pendingRedemptions}
+            subtitle="Clientes esperando validación"
+            badge={comercio.stats.pendingRedemptions > 0 ? "Por validar" : "Al día"}
+            badgeType={comercio.stats.pendingRedemptions > 0 ? "warning" : "neutral"}
+            icon={<ClockIcon className="h-5 w-5" />}
+          />
+        </div>
+      )}
 
-      {/* 2 Gráficas con Recharts */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ComercioHourlyChart data={comercio.hourlyVisits} />
-        <ComercioConversionChart data={comercio.conversionData} />
-      </div>
+      {/* Lista y Confirmación de Canjes (Puesta arriba si se selecciona 'canjes' para prioridad operativa) */}
+      {(currentTab === "general" || currentTab === "canjes") && (
+        <ComercioCanjesList initialRedemptions={comercio.recentRedemptions} />
+      )}
 
       {/* Promociones y Recompensas */}
-      <ComercioPromos initialPromotions={comercio.promotions} />
+      {(currentTab === "general" || currentTab === "promos") && (
+        <ComercioPromos initialPromotions={comercio.promotions} />
+      )}
 
-      {/* Lista y Confirmación de Canjes */}
-      <ComercioCanjesList initialRedemptions={comercio.recentRedemptions} />
+      {/* 2 Gráficas con Recharts */}
+      {(currentTab === "general" || currentTab === "analitica") && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <ComercioHourlyChart data={comercio.hourlyVisits} />
+          <ComercioConversionChart data={comercio.conversionData} />
+        </div>
+      )}
 
       {/* Modal para publicar evento rápido */}
       <PublishEventModal
