@@ -108,6 +108,12 @@ Para comprobar específicamente que **escanear un QR suma puntos al pasaporte**
 node scripts/probar-puntos.mjs
 ```
 
+Y para comprobar que la documentación no tiene enlaces rotos:
+
+```bash
+node scripts/verificar-enlaces.mjs
+```
+
 ---
 
 ## 4. Recorrer el flujo de oro
@@ -177,7 +183,26 @@ canjes y publicación de eventos (que entran como «por confirmar»).
 
 ---
 
-## 5. Endpoints y qué devuelven
+## 5. Entrar con una cuenta
+
+La app tiene tres roles y cada uno ve una parte distinta:
+
+| Rol | Pantalla de inicio | Qué puede hacer |
+|---|---|---|
+| Visitante | `/inicio` | rutas, misiones, pasaporte, escanear, canjear |
+| Comercio | `/comercio` | su vitrina, publicar eventos, confirmar canjes, QR de sus locales |
+| Administración | `/admin` | todo: tablero, QR imprimibles y gestión de lugares, eventos, misiones y recompensas |
+
+Con `NEXT_PUBLIC_MODO_DEMO=true` (y el seed corrido) la pantalla de login
+ofrece **acceso directo** a cada rol con un botón, sin teclear credenciales.
+Con `NEXT_PUBLIC_ACCESOS_DEMO=false` esos botones se ocultan.
+
+Si entras como **visitante**, `/admin` y `/comercio` te devuelven a tu pantalla
+de inicio: el middleware decide por rol.
+
+---
+
+## 6. Endpoints y qué devuelven
 
 | Método y ruta | Entrada | Salida | Nota |
 |---|---|---|---|
@@ -189,9 +214,15 @@ canjes y publicación de eventos (que entran como «por confirmar»).
 | `POST /api/missions/accept` | `{missionId}` | misión aceptada | Idempotente |
 | `POST /api/visits/validate` | `{token}` | `ValidateResponse` | Los puntos los suma el servidor |
 | `GET /api/me/passport` | `?profileId=` | `{profile, visits, rewards}` | |
-| `GET /api/stats?from&to` | query | `Stats` |-activity registrada |
+| `GET /api/stats?from&to` | query | `Stats` | Actividad registrada |
 | `POST /api/redemptions/confirm` | `{redemptionId}` | canje confirmado | Solo rol comercio |
-| `GET /api/qr-tokens` | — | tarjetas de QR | Solo rol admin |
+| `GET /api/qr-tokens` | — | tarjetas de QR | Solo rol comercio o admin |
+| `GET /api/me` | — | sesión y perfil | Público (perfil si hay sesión) |
+| `POST /api/redemptions` | `{rewardId}` | canje creado | Visitante o admin |
+| `POST /api/missions` · `POST /api/places` | datos | registro creado o actualizado | Solo admin |
+
+> La lista completa, con los roles de cada endpoint, está en
+> [`arquitectura.md`](arquitectura.md).
 
 `origen` en `/api/route` dice de dónde salieron los datos: `base` (la base de
 datos, lo normal) o `respaldo` (el catálogo de demostración, cuando la base no
@@ -199,7 +230,7 @@ está configurada).
 
 ---
 
-## 6. Si algo falla
+## 7. Si algo falla
 
 | Síntoma | Causa probable | Qué hacer |
 |---|---|---|
@@ -210,15 +241,30 @@ está configurada).
 | La IA siempre devuelve el mismo texto | no hay `GEMINI_API_KEY` | Configurarla en Vercel y en `.env.local` |
 | `npm run build` falla | suele ser una variable faltante | El build debe pasar **sin** variables: si falla, es un bug |
 | El QR dice que ya se visitó | el token se usó antes con ese perfil | Es lo esperado: un token cuenta una vez |
+| La pantalla tarda mucho | la base no responde y cada consulta espera | El respaldo tiene límites de tiempo; si sigue, revisa la red |
+| `npm run lint` falla con «setState in an effect» | la regla de React 19 | Ocurre en varios archivos del equipo; no bloquea el build |
 
 ---
 
-## 7. Antes de abrir un PR
+## 8. Antes de abrir un PR
 
 ```bash
 npm run build   # sin errores
 npm test        # todas las pruebas pasan
+npm run lint    # sin errores nuevos
 ```
 
 Y el commit sigue el formato `tipo(área): descripción`, por ejemplo
 `feat(motor): agrega el peso de oportunidad`.
+
+---
+
+## 9. Para entender el código
+
+| Quiero saber… | Miro |
+|---|---|
+| cómo encaja todo el proyecto | [`arquitectura.md`](arquitectura.md) |
+| por qué el motor eligió estos lugares | [`explicaciones/motor.md`](explicaciones/motor.md) |
+| qué le tocó hacer a la IA | [`explicaciones/ia.md`](explicaciones/ia.md) |
+| de dónde salen los datos y si son ciertos | [`explicaciones/datos.md`](explicaciones/datos.md) |
+| qué significa una palabra del proyecto | [`glosario.md`](glosario.md) |

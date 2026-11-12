@@ -25,6 +25,29 @@ Variables (`.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON
 
 **Para probar la demo**, paso a paso: [`docs/guia-pruebas.md`](docs/guia-pruebas.md). Con el servidor arriba, `node scripts/verificar-demo.mjs` comprueba que las 9 pantallas y los 7 endpoints principales responden.
 
+**Para entender cómo funciona**, empieza por [`docs/arquitectura.md`](docs/arquitectura.md).
+
+## Documentación
+
+| Documento | Para qué |
+| --------- | -------- |
+| [`docs/arquitectura.md`](docs/arquitectura.md) | **Cómo encaja todo**: capas, flujo de oro paso a paso, endpoints, modelo de datos, seguridad, configuración y despliegue |
+| [`docs/guia-pruebas.md`](docs/guia-pruebas.md) | Cómo levantar el proyecto y recorrer la demo paso a paso, con qué falla y por qué |
+| [`docs/glosario.md`](docs/glosario.md) | Los términos del proyecto, en español llano |
+| [`docs/explicaciones/motor.md`](docs/explicaciones/motor.md) | El motor de recomendación: la fórmula, los pesos, los horarios por día y cómo ajustarlo |
+| [`docs/explicaciones/ia.md`](docs/explicaciones/ia.md) | Qué hace la IA, qué no puede hacer y por qué nunca rompe la demo |
+| [`docs/explicaciones/datos.md`](docs/explicaciones/datos.md) | Las diez tablas, RLS, el seed y la verdad de los datos |
+| [`docs/explicaciones/mapa.md`](docs/explicaciones/mapa.md) | El mapa de Leaflet con OpenStreetMap |
+| [`docs/explicaciones/qr.md`](docs/explicaciones/qr.md) | Los códigos QR: generación, lectura y validación |
+| [`docs/explicaciones/auth.md`](docs/explicaciones/auth.md) | Cuentas, sesión y reglas por rol |
+| [`docs/explicaciones/paneles.md`](docs/explicaciones/paneles.md) | El tablero de afluencia y el panel de comercio |
+| [`docs/explicaciones/gestion-crud.md`](docs/explicaciones/gestion-crud.md) | La gestión de lugares, eventos, misiones y recompensas |
+| [`docs/explicaciones/requisito-jueves.md`](docs/explicaciones/requisito-jueves.md) | Cómo activar el requisito nuevo en minutos |
+| [`docs/propuesta.md`](docs/propuesta.md) | La propuesta original: contexto y justificación |
+| [`docs/pitch/guion-pitch.md`](docs/pitch/guion-pitch.md) | Guion de 3 minutos para el pitch |
+| [`docs/pitch/diapositivas.md`](docs/pitch/diapositivas.md) | Las diapositivas de la presentación |
+| [`docs/bitacora/`](docs/bitacora/) | Bitácora de IA de cada integrante |
+
 ## Estructura
 
 ```
@@ -41,14 +64,18 @@ lib/
   engine/             # motor de recomendación (funciones puras + pruebas)
   ai/                 # cliente de Gemini, prompts y textos de respaldo
   db/  qr/  mock/     # Supabase, QR y datos de prueba
+  auth/               # reglas de acceso por rol
   i18n/es.ts          # textos de la interfaz
   flags.ts            # interruptores de funciones
 supabase/             # schema.sql y seed.sql
 docs/
-  propuesta.md        # propuesta completa
+  arquitectura.md     # documento técnico de referencia
   guia-pruebas.md     # cómo levantar y recorrer la demo paso a paso
+  glosario.md         # los términos del proyecto
+  propuesta.md        # propuesta completa
   bitacora/           # bitácora de IA por integrante
   explicaciones/      # explicación de cada módulo
+  pitch/              # guion y diapositivas
 scripts/              # utilidades (compilar-bitacora.mjs, verificar-demo.mjs)
 ```
 
@@ -373,7 +400,16 @@ Bitácoras por integrante:
 - **Prompt (resumen):** «De acuerdo al horario del CONTEXTO.md, nos hace falta algo? Guíate de la rama main que ha sido actualizada recientemente».
 - **Resultado:** Se prepararon los tres escenarios que tocan al motor y a la IA, **sin cambiar el comportamiento actual**: el peso `clima` y el peso `accesibilidad` están en 0 y el filtro de accesibilidad está apagado, así que la ruta es exactamente igual que antes. Con el peso encendido, la lluvia o el calor priorizan los lugares con `meta.bajoTecho` (y la temperatura de 33 °C lo activa sola), y una ruta accesible prioriza los lugares con `meta.accesible`. La IA ya acepta `idioma`: con `"en"` cambian la instrucción al modelo, el prompt y la plantilla de respaldo. Todo se activa desde `lib/engine/config.ts` y `lib/ai/config.ts`, como pide el CONTEXTO. Además se corrigió la diapositiva 4 del pitch, que tenía la fórmula incompleta (le faltaba el factor disponibilidad) y no mostraba los pesos ni los tres pasos del recorrido, y se escribió `docs/explicaciones/requisito-jueves.md` con los pasos exactos para cada escenario.
 - **Revisión humana:** Se añadió `lib/engine/__tests__/requisito-jueves.test.ts` (14 pruebas) que deja claro que con los pesos en 0 nada cambia: el motor se comporta igual antes y después del requisito. Al probarlo se detectaron dos errores propios: el factor de clima valía 1 tanto para los lugares con techo como sin él (se corrigió a 1 = favorable, 0 = desfavorable) y el desglose de accesibilidad no reflejaba el valor real cuando el peso estaba apagado (ahora siempre lo refleja, que además ayuda a depurar).
-- **Commit:** feat(motor): prepara los escenarios del requisito nuevo y la diapositiva del algoritmo
+- **Commit:** `9e24b2f` — feat(motor): prepara los escenarios del requisito nuevo y la diapositiva del algoritmo
+
+##### 03:05 · Documentación técnica del proyecto
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Dejar el proyecto documentado: que se entienda cómo encaja, no solo que funcione.
+- **Prompt (resumen):** «Trabaja la documentación, procura ser lo más detallado posible y que luzca profesional, abarca lo mayor posible del proyecto».
+- **Resultado:** Se escribieron cuatro documentos nuevos y se reorganizó el README. `docs/arquitectura.md` es el documento central: las capas del sistema con un diagrama, el flujo de oro paso a paso (qué endpoint hace qué), el catálogo completo de endpoints con su acceso, el modelo de datos tabla por tabla, las tres capas de seguridad, la configuración (variables, interruptores y pesos), el despliegue, el modo de respaldo y el mapa de carpetas con su dueño. `docs/explicaciones/motor.md` explica la fórmula con los seis pesos reales, los tres pasos de construcción, el horario por día de la semana, la zona horaria y cómo ajustarlo. `docs/explicaciones/ia.md` explica qué hace el modelo, qué no puede hacer y por qué nunca rompe la demo. `docs/explicaciones/datos.md` documenta las diez tablas, las políticas de RLS, el seed y la verdad de los datos. `docs/glosario.md` explica los términos en español llano. El README ahora tiene un índice de documentación y la estructura completa.
+- **Revisión humana:** Cada dato se comprobó contra el código y no contra la memoria: se leyeron las diez tablas del schema, las políticas de RLS, las funciones, el contenido real del seed (18 lugares, 6 comercios con el prefijo `[DEMO]`, 4 eventos, 3 misiones, 3 recompensas) y los 19 route handlers con sus roles. Se añadió `scripts/verificar-enlaces.mjs`, que revisa los 50 enlaces internos de la documentación: todos apuntan a archivos que existen. También se corrigió la tabla de endpoints de la guía de pruebas, que tenía `qr-tokens` como «solo admin» cuando es «comercio o admin».
+- **Commit:** pendiente
 
 ### Bitácora de IA — Integrante 5 (Paneles de comercio y admin; pitch)
 
