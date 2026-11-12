@@ -215,3 +215,4 @@ export function CruiseCountdownWidget({ lang = "es" }: { lang?: Idioma }) {
     </div>
   );
 }
+

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Budget } from "@/lib/types";
-import { CalendarIcon, ShipIcon, GlobeIcon, SparklesIcon } from "@/components/paneles/icons";
+import { CalendarIcon, ShipIcon, GlobeIcon, SparklesIcon, UsersIcon, TrophyIcon } from "@/components/paneles/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import { getDictionary, getSavedLanguage, setSavedLanguage, type Idioma } from "@/lib/i18n";
+import { crearNuevoGrupo } from "@/lib/grupo";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -53,6 +54,9 @@ export default function InicioPage() {
   ]);
   const [budget, setBudget] = useState<Budget>("medio");
   const [loading, setLoading] = useState(false);
+  const [esGrupo, setEsGrupo] = useState(false);
+  const [tamanoGrupo, setTamanoGrupo] = useState(4);
+  const [nombreGrupo, setNombreGrupo] = useState("Amigos del Puerto");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -68,6 +72,8 @@ export default function InicioPage() {
       setMinutes(300); // 5 horas
       setSelectedInterests(["gastronomia", "paseo", "compras", "historia"]);
       setBudget("medio");
+      setEsGrupo(true);
+      setNombreGrupo("Cruise Party #5");
     }
   }, []);
 
@@ -116,6 +122,15 @@ export default function InicioPage() {
       sessionStorage.setItem('rutaGenerada', JSON.stringify(data.stops));
       sessionStorage.setItem('isCruiseMode', isCruise ? 'true' : 'false');
       sessionStorage.setItem('pulsoLang', lang);
+
+      if (esGrupo) {
+        crearNuevoGrupo(nombreGrupo, tamanoGrupo, "Tú");
+      } else {
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("pulso_grupo_activo");
+        }
+      }
+
       router.push(`/ruta?lang=${lang}${isCruise ? '&mode=cruise' : ''}`);
     } catch (error) {
       console.error(error);
@@ -249,6 +264,98 @@ export default function InicioPage() {
               );
             })}
           </div>
+        </section>
+
+        {/* Modalidad de Recorrido: Individual o En Grupo */}
+        <section className="bg-white dark:bg-neutral-900 p-5 rounded-2xl shadow-xs border border-neutral-200/80 dark:border-neutral-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-neutral-900 dark:text-neutral-100 text-base flex items-center gap-2">
+              <span className="flex w-7 h-7 items-center justify-center rounded-lg bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400">
+                <UsersIcon className="w-4 h-4" />
+              </span>
+              ¿Cómo viajas hoy?
+            </h2>
+            <span className="text-xs font-semibold text-teal-700 dark:text-teal-400">
+              {esGrupo ? `${tamanoGrupo} personas` : "Individual"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setEsGrupo(false)}
+              className={`p-3 rounded-xl border text-center transition duration-100 ${
+                !esGrupo
+                  ? "border-teal-700 bg-teal-50 text-teal-900 ring-2 ring-teal-600/20 dark:border-teal-500 dark:bg-teal-950/40 dark:text-teal-100"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+              }`}
+            >
+              <div className="font-bold text-sm">Explorador Solo</div>
+              <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">Ruta individual</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setEsGrupo(true)}
+              className={`p-3 rounded-xl border text-center transition duration-100 ${
+                esGrupo
+                  ? "border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-500/20 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+              }`}
+            >
+              <div className="font-bold text-sm flex items-center justify-center gap-1.5">
+                <UsersIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>Ruta en Grupo</span>
+              </div>
+              <div className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5 font-semibold">¡Bote de recompensas!</div>
+            </button>
+          </div>
+
+          {esGrupo && (
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
+              <div>
+                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
+                  Cantidad de integrantes en el grupo
+                </label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[2, 3, 4, 5, 6].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setTamanoGrupo(num)}
+                      className={`py-2 rounded-lg font-bold text-xs border transition ${
+                        tamanoGrupo === num
+                          ? "bg-amber-500 border-amber-600 text-neutral-950 shadow-2xs"
+                          : "border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                      }`}
+                    >
+                      {num} pers.
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
+                  Nombre de tu grupo o familia
+                </label>
+                <input
+                  type="text"
+                  value={nombreGrupo}
+                  onChange={(e) => setNombreGrupo(e.target.value)}
+                  placeholder="Ej. Familia Gómez o Amigos del Malecón"
+                  className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                />
+              </div>
+
+              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2.5 border border-amber-200 dark:border-amber-800 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
+                <TrophyIcon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] leading-tight">
+                  <strong>Beneficio Grupal:</strong> Todos los miembros acumulan puntos en el bote compartido y desbloquean rondas de café lechero, descuentos de mesa y cortesías en comercios aliados.
+                </p>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="bg-white dark:bg-neutral-900 p-5 rounded-2xl shadow-xs border border-neutral-200/80 dark:border-neutral-800 space-y-3">

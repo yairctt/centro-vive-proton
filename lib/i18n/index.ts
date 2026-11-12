@@ -21,3 +21,4 @@ export function setSavedLanguage(lang: Idioma) {
   if (typeof window === "undefined") return;
   localStorage.setItem("pulso_lang", lang);
 }
+

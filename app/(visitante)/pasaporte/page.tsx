@@ -7,6 +7,7 @@ import { mockProfile, mockVisits, mockPlaces, mockRewards } from "@/lib/mock";
 import { puntosDemo } from "@/lib/qr/mock";
 import { CheckIcon } from "@/components/paneles/icons";
 import { ArrowLeftIcon, CameraIcon, TrophyIcon } from "@/components/ui/icons";
+import { GroupPassportSection } from "@/components/ui/GroupExperience";
 
 /** Respuesta de GET /api/me/passport (datos del usuario de la sesión). */
 interface Pasaporte {
@@ -291,6 +292,9 @@ export default function PasaportePage() {
             </div>
           </div>
         )}
+
+        {/* Recompensas Grupales y Colectivas */}
+        <GroupPassportSection />
 
         {/* Recompensas */}
         <div>

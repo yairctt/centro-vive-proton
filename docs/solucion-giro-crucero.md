@@ -40,16 +40,19 @@ Frente a la llegada simultánea de **3,000 pasajeros de crucero internacionales*
 - **Ship Departure Countdown (`CruiseCountdownWidget` en `/ruta`):** Un reloj interactivo en vivo calcula el tiempo restante en tierra, avisando al crucerista con suficiente margen para el toque de embarque.
 - **Garantía de Retorno Puntual («Safe Return»):** Todas las paradas seleccionadas por el motor se encuentran en un radio caminable menor a 12 minutos. Al final de la ruta, el crucerista cuenta con un botón directo a Google Maps para caminar de vuelta al Muelle de Cruceros en **8 minutos a pie**.
 
-### Desafío 3: «Llevarlos a negocios del centro» → Dinamización Comercial y Perks
-- **Priorización de Comercios Locales:** El motor dirige el flujo de turistas extranjeros directamente a negocios tradicionales del centro histórico:
-  1. **Mercado de Artesanías del Malecón:** Venta de guayaberas, vainilla y artesanías jarochas.
-  2. **Gran Café de la Parroquia:** Degustación del café lechero tradicional tintineando el vaso.
-  3. **Los Portales de Lerdo:** Música de marimba en vivo y bebidas tradicionales.
-  4. **Toritos La Chata:** Degustación de torito jarocho tradicional.
-- **Cruise Passenger Welcome Perks:** Incentivos en el pasaporte digital (sellos con 2x puntos y obsequios o degustaciones de cortesía en comercios participantes).
+### Desafío 3: «Llevarlos a negocios del centro» → Dinamización Comercial, Perks y Rutas Grupales
+- **Rutas Grupales y Células de Pasajeros:**
+  - Los visitantes y cruceristas no caminan solos; viajan en familias o grupos de 2 a 6+ personas.
+  - El sistema permite crear una **«Ruta en Grupo»** (`JAROCHO-88` o `CRUISE-PARTY-5`) donde todos los integrantes comparten la misma ruta en sus teléfonos.
+  - **Sello Colaborativo:** Cuando todos los miembros del grupo escanean el QR en un negocio, se activa el sello grupal con bono de puntos.
+  - **Recompensas Grupales para Toda la Mesa:**
+    - *Gran Café de la Parroquia:* Ronda de café lechero y bombas para toda la mesa al completar 2 paradas.
+    - *Mercado de Artesanías:* 20% de descuento en compras colectivas al completar 3 paradas.
+    - *Los Portales de Lerdo:* Jarra de cortesía de Torito tradicional o aguas frescas de frutas con marimba en vivo.
+- **Priorización de Comercios Locales:** El motor dirige el flujo de turistas extranjeros directamente a negocios tradicionales del centro histórico.
 - **Monitoreo y Derrama en Tablero de Afluencia (`/admin`):**
   - Botón interactivo de **«Simulación Operativo Crucero (3,000 Pax)»**.
-  - Permite a las autoridades y cámaras de comercio ver el impacto en vivo: **+2,420 interacciones registradas**, **590 canjes en comercios aliados** y una derrama económica estimada de **~$485,000 MXN**.
+  - Permite a las autoridades y cámaras de comercio ver el impacto en vivo: **+2,420 interacciones registradas**, **590 canjes en comercios aliados**, **480 grupos activos** y una derrama económica estimada de **~$485,000 MXN**.
 
 ---
 
@@ -59,12 +62,12 @@ Frente a la llegada simultánea de **3,000 pasajeros de crucero internacionales*
 
 1. **Abre la Portada (`/`):**
    *«Cuando atracan 3,000 turistas de crucero en el muelle de Veracruz con solo 5 horas y sin hablar español, Pulso Jarocho activa instantáneamente el banner de crucero y el selector de idioma en inglés.»*
-2. **Haz clic en «Start 5h Cruise Tour (English)»:**
-   *«El turista ve la app 100% en inglés, con una ruta calibrada a 5 horas que inicia en el Malecón y lo lleva a consumir al Gran Café de la Parroquia y al Mercado de Artesanías.»*
-3. **Muestra la Ruta (`/ruta`):**
-   *«La app incluye un temporizador de embarque y la garantía de que nunca perderán el crucero: siempre están a menos de 8 minutos caminando del muelle.»*
+2. **Personalización Individual o en Grupo (`/inicio`):**
+   *«Los cruceristas viajan en familia o con amigos: con un clic crean su 'Ruta en Grupo', comparten el código y todos siguen el mismo recorrido, acumulando puntos en un bote grupal compartido.»*
+3. **Muestra la Ruta y el Sello Grupal (`/ruta`):**
+   *«La app incluye un temporizador de embarque con garantía de retorno al muelle en 8 minutos y un widget grupal donde ven qué miembros han hecho check-in para desbloquear juntos una ronda de café lechero en la Parroquia.»*
 4. **Pasa al Tablero de Administración (`/admin`):**
-   *«Y en el tablero de las autoridades, el botón 'Simular Impacto' muestra en tiempo real cómo esos 3,000 cruceristas generan más de $485,000 pesos en ventas y canjes directos en negocios locales.»*
+   *«Y en el tablero de las autoridades, el botón 'Simular Impacto' demuestra cómo esos 3,000 cruceristas y sus 480 células grupales generan más de $485,000 pesos en ventas y canjes directos en negocios locales.»*
 
 ---
 
@@ -72,13 +75,17 @@ Frente a la llegada simultánea de **3,000 pasajeros de crucero internacionales*
 
 | Archivo | Tipo | Propósito |
 |---|---|---|
+| `lib/grupo/index.ts` | **Nuevo** | Lógica de rutas grupales, bote de puntos compartido y recompensas para grupos. |
+| `components/ui/GroupExperience.tsx` | **Nuevo** | Widget de check-in grupal en ruta y sección de recompensas colectivas en pasaporte. |
 | `lib/i18n/en.ts` | **Nuevo** | Diccionario completo en inglés con sección especializada `cruise`. |
 | `lib/i18n/index.ts` | **Nuevo** | Gestor unificado de traducción con selector y persistencia de idioma. |
 | `lib/i18n/es.ts` | Modificado | Incorporación de claves equivalentes `cruise`. |
 | `components/ui/CruiseExperience.tsx` | **Nuevo** | Banner interactivo de crucero y widget de cuenta regresiva de embarque. |
-| `components/paneles/icons.tsx` | Modificado | Iconos SVG náuticos y globales (`ShipIcon`, `GlobeIcon`, `AnchorIcon`). |
+| `components/paneles/icons.tsx` | Modificado | Iconos SVG náuticos y grupales (`ShipIcon`, `GlobeIcon`, `UsersIcon`, `TrophyIcon`, `ShareIcon`). |
 | `app/page.tsx` | Modificado | Integración de `CruiseBanner` y selector de idioma en la portada. |
-| `app/(visitante)/inicio/page.tsx` | Modificado | Soporte de Modo Crucero (5h / 300 min), selector EN/ES y coordenadas del muelle. |
-| `app/(visitante)/ruta/page.tsx` | Modificado | Widget de cuenta regresiva de embarque y botón de regreso al muelle. |
-| `app/(panel)/admin/page.tsx` | Modificado | Simulación interactiva del operativo de 3,000 cruceristas y derrama comercial. |
+| `app/(visitante)/inicio/page.tsx` | Modificado | Selector de recorrido Individual vs Grupo, preset de 5h y coordenadas del muelle. |
+| `app/(visitante)/ruta/page.tsx` | Modificado | Widget de grupo colaborativo, countdown de embarque y retorno al muelle. |
+| `app/(visitante)/pasaporte/page.tsx` | Modificado | Sección de Recompensas de Grupo Desbloqueadas y Bote Grupal de Puntos. |
+| `app/(panel)/admin/page.tsx` | Modificado | Simulación interactiva de crucero y métricas de afluencia grupal. |
 | `docs/solucion-giro-crucero.md` | **Nuevo** | Documento oficial de entrega y pitch del giro del reto. |
+

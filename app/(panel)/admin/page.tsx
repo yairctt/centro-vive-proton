@@ -20,7 +20,7 @@ import {
   ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
-import { ShipIcon, SparklesIcon } from "@/components/paneles/icons";
+import { ShipIcon, SparklesIcon, UsersIcon } from "@/components/paneles/icons";
 import type { Stats } from "@/lib/types";
 
 type TimeRange = "hoy" | "ayer" | "semana";
@@ -418,6 +418,53 @@ export default function AdminDashboardPage() {
           badgeType="neutral"
           icon={<BuildingIcon className="h-5 w-5" />}
         />
+      </div>
+
+      {/* Métrica de Rutas en Grupo y Derrama Colectiva */}
+      <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+            <UsersIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                Rutas Grupales y Células Activas
+              </span>
+              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                Ticket promedio +320%
+              </span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {isCruiseSimulated
+                ? "480 grupos de cruceristas activos en el centro · Promedio de 3.8 personas por grupo · Mesas completas en gastronomía y artesanías."
+                : "Grupos familiares y de amigos compartiendo ruta y acumulando puntos en el bote grupal."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-center shrink-0">
+          <div>
+            <span className="text-base font-black text-teal-700 dark:text-teal-400">
+              {isCruiseSimulated ? "480" : "18"}
+            </span>
+            <span className="block text-[10px] text-neutral-500">Grupos activos</span>
+          </div>
+          <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+          <div>
+            <span className="text-base font-black text-amber-600 dark:text-amber-400">
+              3.8
+            </span>
+            <span className="block text-[10px] text-neutral-500">Pers. / grupo</span>
+          </div>
+          <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+          <div>
+            <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+              {isCruiseSimulated ? "1,824" : "68"}
+            </span>
+            <span className="block text-[10px] text-neutral-500">Turistas en grupo</span>
+          </div>
+        </div>
       </div>
 
       {/* 2 Gráficas con Recharts */}

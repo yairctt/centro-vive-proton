@@ -8,6 +8,8 @@ import { es } from "@/lib/i18n/es";
 import { getDictionary, type Idioma } from "@/lib/i18n";
 import type { RouteStop } from "@/lib/types";
 import { CruiseCountdownWidget } from "@/components/ui/CruiseExperience";
+import { GroupRouteWidget } from "@/components/ui/GroupExperience";
+import { obtenerGrupo } from "@/lib/grupo";
 
 import { enlaceLugar, enlaceRutaCompleta, type PuntoRuta } from "@/components/visitante/enlaces-maps";
 import {
@@ -61,6 +63,7 @@ export default function RutaPage() {
   const [enlaceCopiado, setEnlaceCopiado] = useState(false);
   const [isCruise, setIsCruise] = useState(false);
   const [lang, setLang] = useState<Idioma>("es");
+  const [grupoActivo, setGrupoActivo] = useState(false);
 
   useEffect(() => {
     // El setTimeout saca la actualización de estado del flujo síncrono del efecto,
@@ -80,6 +83,7 @@ export default function RutaPage() {
         const queryCruise = searchParams.get("mode") === "cruise";
         const savedCruise = sessionStorage.getItem("isCruiseMode") === "true";
         setIsCruise(queryCruise || savedCruise);
+        setGrupoActivo(Boolean(obtenerGrupo()));
 
         const queryLang = searchParams.get("lang") as Idioma;
         const savedLang = sessionStorage.getItem("pulsoLang") as Idioma;
@@ -246,6 +250,17 @@ export default function RutaPage() {
         {isCruise && (
           <div className="mb-3">
             <CruiseCountdownWidget lang={lang} />
+          </div>
+        )}
+
+        {/* Widget de ruta en grupo colaborativo */}
+        {grupoActivo && (
+          <div className="mb-3">
+            <GroupRouteWidget
+              currentPlaceId={stops[0]?.place?.id || "malecon"}
+              currentPlaceName={stops[0]?.place?.name || "Parada Actual"}
+              lang={lang}
+            />
           </div>
         )}
 

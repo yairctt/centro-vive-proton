@@ -345,3 +345,32 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se validó la navegación bilingüe fluida, la correcta generación de la ruta de 5 horas desde el muelle, el temporizador de embarque, la simulación de afluencia en el tablero de admin, y el pase exitoso de los 141 tests de Vitest y tipos de TypeScript al 100%.
 - **Commit:** `feat(giro-crucero): solucion integral atraco de crucero con modo bilingue ruta 5h dinamizacion comercial y tablero de impacto`
+
+---
+
+### 07:35 · Fase 13: Rutas Colaborativas en Grupo y Recompensas Colectivas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Potenciar la experiencia de exploración urbana para permitir que familias, grupos de amigos y células de cruceristas participen juntos en una misma ruta sincronizada y obtengan recompensas colectivas en comercios aliados del centro.
+- **Prompt (resumen):** «Mejora la idea, a que se pueda hacer una ruta en la que puedan participar todos los integrantes en un grupo. Y que todos puedan obtener sus recompensas como grupo.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Módulo de Lógica y Estado Grupal (`lib/grupo/index.ts`):** Definición de la entidad `GrupoViaje`, generación de códigos de grupo (`JAROCHO-88`), asignación de roles/avatares a los integrantes y gestión del Bote Grupal de Puntos con persistencia.
+  - **Selector de Modalidad en Diseña tu Recorrido (`app/(visitante)/inicio/page.tsx`):** Opción interactiva para elegir entre "Explorador Solo" o "Ruta en Grupo", selector de cantidad de integrantes (2 a 6+ personas) y personalización del nombre del grupo.
+  - **Widget de Check-in Grupal en la Ruta (`components/ui/GroupExperience.tsx`, `app/(visitante)/ruta/page.tsx`):** Visualización en vivo del progreso de escaneo del grupo en la parada actual (ej. 3/4 miembros validados), barra de porcentaje interactiva, animación de desbloqueo al completar todos el check-in y botón para compartir el código del grupo.
+  - **Recompensas Colectivas en el Pasaporte (`app/(visitante)/pasaporte/page.tsx`):** Vales especiales para toda la mesa en comercios tradicionales:
+    - *Gran Café de la Parroquia:* Ronda de café lechero y bombas al completar 2 paradas juntos.
+    - *Mercado de Artesanías:* 20% de descuento en compras colectivas al completar 3 paradas.
+    - *Los Portales de Lerdo:* Jarra de cortesía de Torito tradicional con música de marimba.
+  - **Métricas de Afluencia Grupal en Tablero Admin (`app/(panel)/admin/page.tsx`):** Monitoreo de células turísticas activas en el centro, tamaño promedio por grupo (3.8 personas) y su impacto multiplicador en el ticket comercial (+320%).
+- **Resultado:**
+  - `lib/grupo/index.ts` (nuevo módulo de grupos y recompensas colectivas)
+  - `components/ui/GroupExperience.tsx` (componentes de widget grupal y pasaporte colectivo)
+  - `components/paneles/icons.tsx` (`UsersIcon`, `TrophyIcon`)
+  - `app/(visitante)/inicio/page.tsx` (selector de modalidad de viaje individual vs. grupo)
+  - `app/(visitante)/ruta/page.tsx` (widget colaborativo de avance grupal en paradas)
+  - `app/(visitante)/pasaporte/page.tsx` (sección de recompensas grupales desbloqueadas)
+  - `app/(panel)/admin/page.tsx` (métrica de células grupales y derrama comercial)
+  - `docs/solucion-giro-crucero.md` (actualización de arquitectura)
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó la creación del grupo, la interacción colaborativa en la ruta, el reflejo en el pasaporte y la aprobación de las 141 pruebas unitarias y compilación con TypeScript.
+- **Commit:** `feat(grupos): rutas colaborativas en grupo bote de puntos y recompensas colectivas para toda la mesa`
