@@ -105,3 +105,38 @@
   - `app/(panel)/comercio/page.tsx`
 - **Revisión humana:** Se validó que ningún componente conserve emojis de texto, que todos los iconos mantengan el mismo grosor de trazo y alineación visual, y que el diseño sea mobile-first y armónico.
 - **Commit:** `style(paneles): reemplazo de emojis por iconografia svg pulida y mejora visual de tableros`
+
+---
+
+### 20:25 · Fase 5: Perfeccionamiento de UX y UI (Mobile-First y Operación Real)
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Perfeccionar integralmente la experiencia de usuario (UX) y el diseño de interfaz (UI) de los tableros `/admin` y `/comercio`, agregando interactividad operativa, filtros por rango, búsqueda en tiempo real, navegación por pestañas en móvil y exportación de datos.
+- **Prompt (resumen):** «Necesito que perfecciones el UX Y UI.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **UX en `/admin`:**
+    - Selector de rango temporal (`Hoy`, `Ayer`, `Semana`) para segmentar visualmente el análisis de interacción.
+    - Exportación de métricas a archivo CSV descargable al instante (requisito para autoridades urbanas y reportes).
+    - Botón de actualización manual inmediata con spinner de feedback visual mientras consulta `/api/stats`.
+  - **UX en `/comercio`:**
+    - Navegación móvil por pestañas de sección (`Vista General`, `Canjes en Caja`, `Vitrina & Promociones`, `Afluencia & Métricas`), permitiendo al comercio enfocarse en la validación rápida de clientes en mostrador sin scroll extenso.
+    - Pestañas de filtrado en la lista de canjes (`Todos`, `Pendientes`, `Entregados`) con contador de cupones pendientes.
+    - Buscador interactivo en vivo por código de cupón, nombre del beneficio o alias de visitante.
+  - **UX en Feed de Visitas (`LiveVisitsFeed`):**
+    - Búsqueda en tiempo real por lugar o título de misión y empty state con botón para restablecer filtros.
+  - **UX en Modal de Eventos (`PublishEventModal`):**
+    - Cierre intuitivo mediante tecla `Escape` o clic sobre el backdrop exterior.
+    - Tarjeta de previsualización en vivo mientras el comerciante redacta el evento.
+  - **UI / a11y en `PanelHeader`:**
+    - Indicador de rol activo de la sesión (`Administrador` o `Comercio Asociado`) y focus visible accesible con anillo teal.
+- **Resultado:**
+  - `components/paneles/icons.tsx` (iconos Search, Filter, Share, Download, ChevronRight, XIcon)
+  - `components/paneles/PanelHeader.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `components/paneles/LiveVisitsFeed.tsx`
+  - `components/paneles/ComercioCanjesList.tsx`
+  - `components/paneles/PublishEventModal.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se probó la navegación responsive en anchos móviles (375 px), la descarga del archivo CSV y la búsqueda instantánea en tablas y feed sin retardos.
+- **Commit:** `feat(paneles): perfeccionamiento integral de UX y UI, filtros y exportacion`

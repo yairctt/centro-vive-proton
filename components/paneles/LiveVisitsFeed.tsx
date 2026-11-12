@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { QrCodeIcon, PlusIcon, SparklesIcon } from "./icons";
+import React, { useState, useMemo } from "react";
+import { QrCodeIcon, PlusIcon, SearchIcon, XIcon } from "./icons";
 
 export interface VisitItem {
   id: string;
@@ -19,6 +19,7 @@ interface LiveVisitsFeedProps {
 
 export function LiveVisitsFeed({ initialVisits }: LiveVisitsFeedProps) {
   const [visits, setVisits] = useState<VisitItem[]>(initialVisits);
+  const [searchTerm, setSearchTerm] = useState("");
   const [simulatedCount, setSimulatedCount] = useState(0);
 
   // Demo helper: lets the presenter or judge inject a real-time scan to test < 10s rule
@@ -37,6 +38,16 @@ export function LiveVisitsFeed({ initialVisits }: LiveVisitsFeedProps) {
     setVisits((prev) => [newVisit, ...prev]);
   };
 
+  const filteredVisits = useMemo(() => {
+    if (!searchTerm.trim()) return visits;
+    const term = searchTerm.toLowerCase();
+    return visits.filter(
+      (v) =>
+        v.placeName.toLowerCase().includes(term) ||
+        (v.missionTitle && v.missionTitle.toLowerCase().includes(term))
+    );
+  }, [visits, searchTerm]);
+
   return (
     <div className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -52,64 +63,104 @@ export function LiveVisitsFeed({ initialVisits }: LiveVisitsFeedProps) {
               </span>
               En vivo (&lt; 10s)
             </span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-500">
+              ({filteredVisits.length} {filteredVisits.length === 1 ? "registro" : "registros"})
+            </span>
           </div>
           <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
             Cada QR validado en un comercio o atractivo urbano se refleja al instante
           </p>
         </div>
 
-        <button
-          onClick={handleSimulateJudgeScan}
-          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-teal-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-700"
-        >
-          <PlusIcon className="h-3.5 w-3.5" />
-          <span>Probar escaneo (Demo)</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Quick Filter Search */}
+          <div className="relative">
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Buscar lugar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-36 sm:w-44 rounded-xl border border-neutral-200/80 bg-neutral-50/60 pl-8 pr-7 py-1.5 text-xs text-neutral-800 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-white"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              >
+                <XIcon className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={handleSimulateJudgeScan}
+            title="Inyecta un escaneo en vivo simulando un miembro del jurado para validar la regla de latencia < 10s"
+            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-teal-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-700"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Probar escaneo (Demo)</span>
+            <span className="sm:hidden">Demo</span>
+          </button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-100 dark:border-neutral-800">
-        <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-          {visits.slice(0, 6).map((visit, index) => (
-            <div
-              key={visit.id}
-              className={`flex items-center justify-between p-3.5 transition-colors ${
-                index === 0 && visit.id.startsWith("sim-")
-                  ? "bg-teal-50/70 animate-pulse dark:bg-teal-950/30"
-                  : "hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40"
-              }`}
+        {filteredVisits.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-xs text-neutral-400">No se encontraron visitas que coincidan con &ldquo;{searchTerm}&rdquo;</p>
+            <button
+              onClick={() => setSearchTerm("")}
+              className="mt-2 text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
             >
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 border border-teal-100 text-teal-700 dark:bg-teal-950/60 dark:border-teal-900/60 dark:text-teal-300">
-                  <QrCodeIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-                      {visit.placeName}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                      QR validado
-                    </span>
+              Mostrar todas las visitas
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            {filteredVisits.slice(0, 6).map((visit, index) => (
+              <div
+                key={visit.id}
+                className={`flex items-center justify-between p-3.5 transition-colors ${
+                  index === 0 && visit.id.startsWith("sim-")
+                    ? "bg-teal-50/70 animate-pulse dark:bg-teal-950/30"
+                    : "hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 border border-teal-100 text-teal-700 dark:bg-teal-950/60 dark:border-teal-900/60 dark:text-teal-300">
+                    <QrCodeIcon className="h-4 w-4" />
                   </div>
-                  {visit.missionTitle && (
-                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      {visit.missionTitle}
-                    </p>
-                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        {visit.placeName}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                        QR validado
+                      </span>
+                    </div>
+                    {visit.missionTitle && (
+                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                        {visit.missionTitle}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="inline-block text-xs font-bold text-teal-700 tabular-nums dark:text-teal-400">
+                    +{visit.pointsAwarded} pts
+                  </span>
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                    {visit.createdAt}
+                  </p>
                 </div>
               </div>
-
-              <div className="text-right">
-                <span className="inline-block text-xs font-bold text-teal-700 dark:text-teal-400">
-                  +{visit.pointsAwarded} pts
-                </span>
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                  {visit.createdAt}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
