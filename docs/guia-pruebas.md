@@ -28,6 +28,7 @@ GEMINI_API_KEY=AIza...
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` y `GEMINI_API_KEY` solo se usan en el servidor:
+
 nunca se exponen al navegador.
 
 ---
@@ -47,6 +48,27 @@ Comprobación rápida:
 SELECT count(*) FROM places;   -- 18
 SELECT count(*) FROM events;   -- 4
 ```
+
+Los perfiles de prueba (`visitante-demo`, `comercio-demo`, `admin-demo`) los
+crea también el seed: son los que usa el modo demo cuando no hay sesión.
+
+### 2.1 El modo demo (para probar sin cuentas)
+
+La app tiene autenticación: sin sesión, el middleware manda a `/login` y las
+APIs que exigen rol responden **401**. Para probar sin crear cuentas, se
+enciende el modo demo:
+
+```env
+NEXT_PUBLIC_MODO_DEMO=true
+```
+
+Con esa variable:
+
+- El middleware deja pasar las pantallas sin sesión.
+- Las APIs usan los perfiles demo del seed en lugar de pedir login.
+
+> La variable se lee **al compilar**. Si la cambias, hay que volver a
+> compilar (`npm run build`) o redeplegar en Vercel, si no sigue sin efecto.
 
 ---
 
@@ -182,6 +204,8 @@ está configurada).
 | Síntoma | Causa probable | Qué hacer |
 |---|---|---|
 | `Variables de entorno ... son requeridas` | falta `.env.local` | Copiar `.env.example` y completarlo |
+| La app manda a `/login` | no hay sesión y el modo demo está apagado | Encender `NEXT_PUBLIC_MODO_DEMO=true` y **recompilar** |
+| Un endpoint responde **401** | pide sesión o un rol concreto | Es correcto sin login; con `MODO_DEMO` usa el perfil demo |
 | La ruta sale con datos de prueba | la base no responde | Verificar que el seed se corrió |
 | La IA siempre devuelve el mismo texto | no hay `GEMINI_API_KEY` | Configurarla en Vercel y en `.env.local` |
 | `npm run build` falla | suele ser una variable faltante | El build debe pasar **sin** variables: si falla, es un bug |
