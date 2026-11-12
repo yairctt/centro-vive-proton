@@ -17,6 +17,12 @@ export interface ScoreContext {
   origin?: LatLng | null;
   /** Minutos que aún quedan en el presupuesto de tiempo. */
   remainingMin: number;
+  /** Condiciones de clima adverso que reporta el visitante. */
+  clima?: string[];
+  /** Temperatura en °C, si se conoce. */
+  temperaturaC?: number;
+  /** Si el visitante pide una ruta accesible. */
+  requiereAccesible?: boolean;
 }
 
 export interface ScoreBreakdown {
@@ -28,6 +34,10 @@ export interface ScoreBreakdown {
   tiempo: number;
   oportunidad: number;
   bonoNocturno: number;
+  /** Ajuste por clima (1 = favorable, 0 = desfavorable). */
+  clima: number;
+  /** Ajuste por accesibilidad (1 = accesible). */
+  accesibilidad: number;
   /** Distancia al origen en metros (null si no hay origen). */
   distanceM: number | null;
   /** Si el lugar está abierto en este momento (null = se desconoce). */
@@ -66,6 +76,18 @@ export function matchesInterest(place: Place, interests: string[]): boolean {
     if (!wanted) return false;
     return category === wanted || category.includes(wanted) || wanted.includes(category);
   });
+}
+
+/**
+ * ¿El lugar es accesible? Se lee de `meta.accesible` (dato del backend).
+ * Si no lo dice y el lugar está verificado, se asume accesible: los espacios
+ * públicos del centro lo son. No se inventa el dato.
+ */
+export function lugarAccesible(place: Place): boolean {
+  const valor = place.meta?.accesible;
+  if (valor === true) return true;
+  if (valor === false) return false;
+  return place.verified;
 }
 
 /** Distancia al origen en metros, o null si el visitante no dio ubicación. */
@@ -114,13 +136,32 @@ export function scorePlace(
   const sigueAbierto = abiertoDeNoche(info, hoy, place.meta);
   const bonoNocturno = flags.centroDeNoche && esNoche && sigueAbierto === true ? 1 : 0;
 
+  // Clima: con buen clima no penaliza a nadie (1). Con clima adverso, los
+  // lugares con techo o interiores puntúan más y los descubiertos bajan.
+  const hayClimaAdverso =
+    (ctx.clima?.length ?? 0) > 0 ||
+    (ctx.temperaturaC !== undefined &&
+      ctx.temperaturaC >= engineConfig.clima.temperaturaCalorExtremo);
+  const tieneTecho = place.meta?.bajoTecho === true || place.meta?.interior === true;
+  const clima = !hayClimaAdverso
+    ? 1
+    : tieneTecho
+      ? engineConfig.clima.bonoConTecho
+      : engineConfig.clima.penalSinTecho;
+
+  // Accesibilidad: el desglose siempre refleja si el lugar es accesible
+  // (así se puede depurar), pero solo suma si el peso está activo.
+  const accesibilidad = ctx.requiereAccesible ? (lugarAccesible(place) ? 1 : 0) : 1;
+
   const total =
     weights.afinidad * afinidad +
     weights.cercania * cercania +
     weights.disponibilidad * disponibilidad +
     weights.tiempo * tiempo +
     weights.oportunidad * oportunidad +
-    weights.bonoNocturno * bonoNocturno;
+    weights.bonoNocturno * bonoNocturno +
+    weights.clima * clima +
+    weights.accesibilidad * accesibilidad;
 
   return {
     total,
@@ -130,6 +171,8 @@ export function scorePlace(
     tiempo,
     oportunidad,
     bonoNocturno,
+    clima,
+    accesibilidad,
     distanceM: dist,
     open: abierto,
   };

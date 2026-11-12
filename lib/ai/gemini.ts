@@ -3,7 +3,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-import { aiConfig } from "./config";
+import { aiConfig, instruccionPara, normalizaIdioma } from "./config";
 import { fallbackMission, type MissionCopy } from "./fallback";
 import { flags } from "../flags";
 import type { Place } from "../types";
@@ -14,12 +14,15 @@ export interface MissionContext {
   interests: string[];
   /** Motivo calculado por el motor, para que el texto sea consistente. */
   reason?: string;
+  /** Idioma en el que debe redactarse ("es" o "en"). */
+  idioma?: string;
 }
 
 /** Arma el contenido del prompt con los datos de la ficha. */
 export function buildPrompt(ctx: MissionContext): string {
   const { place, interests, reason } = ctx;
   const meta = place.meta ?? {};
+  const enIngles = normalizaIdioma(ctx.idioma) === "en";
 
   const datos: Record<string, unknown> = {
     nombre: place.name,
@@ -41,10 +44,18 @@ export function buildPrompt(ctx: MissionContext): string {
   }
 
   return [
-    "Datos de la ficha (única fuente de verdad):",
+    enIngles
+      ? "Place data (the only source of truth):"
+      : "Datos de la ficha (única fuente de verdad):",
     JSON.stringify(datos, null, 2),
-    `Intereses del visitante: ${interests.length > 0 ? interests.join(", ") : "no indicados"}`,
-    reason ? `Motivo calculado por el motor: ${reason}` : "",
+    enIngles
+      ? `Visitor interests: ${interests.length > 0 ? interests.join(", ") : "not specified"}`
+      : `Intereses del visitante: ${interests.length > 0 ? interests.join(", ") : "no indicados"}`,
+    reason
+      ? enIngles
+        ? `Reason calculated by the engine: ${reason}`
+        : `Motivo calculado por el motor: ${reason}`
+      : "",
     "",
     'Responde solo con JSON: {"text": "...", "why": "..."}',
   ]
@@ -79,7 +90,7 @@ export function parseModelJson(raw: string): { text: string; why: string } | nul
  * Devuelve siempre un resultado: si falla o se pasa de tiempo, la plantilla.
  */
 export async function generateMission(ctx: MissionContext): Promise<MissionCopy> {
-  const respaldo = fallbackMission(ctx.place, ctx.interests);
+  const respaldo = fallbackMission(ctx.place, ctx.interests, ctx.idioma);
   const apiKey = process.env.GEMINI_API_KEY;
   // Interruptor de funciones: si la IA está apagada, siempre la plantilla.
   if (!flags.ia) return respaldo;
@@ -92,7 +103,7 @@ export async function generateMission(ctx: MissionContext): Promise<MissionCopy>
         model: aiConfig.modelo,
         contents: buildPrompt(ctx),
         config: {
-          systemInstruction: aiConfig.instruccion,
+          systemInstruction: instruccionPara(ctx.idioma),
           temperature: 0.4,
           responseMimeType: "application/json",
         },

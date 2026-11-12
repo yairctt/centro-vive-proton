@@ -6,7 +6,7 @@ import type { Event, Mission, Place, RouteRequest, RouteStop } from "../types";
 import { engineConfig } from "./config";
 import { distanceM, walkMinutes, type LatLng } from "./geo";
 import { fitsBudget, isOpenAt, readPlaceInfo, type DiaSemana } from "./place";
-import { dayOfWeek, minutesOfDay, normalizeText, scorePlace, type ScoreBreakdown } from "./score";
+import { dayOfWeek, lugarAccesible, minutesOfDay, normalizeText, scorePlace, type ScoreBreakdown } from "./score";
 import { flags } from "../flags";
 
 /** Parada del motor: una parada del contrato más el evento que la acompaña. */
@@ -35,6 +35,15 @@ export interface BuildRouteOptions {
   missions?: Mission[];
   /** Eventos de la agenda ya filtrados. */
   events?: Event[];
+  /**
+   * Condiciones del clima que reporta el visitante ("lluvia", "calor"…).
+   * Si viene alguna, el motor prioriza los lugares con techo o interiores.
+   */
+  clima?: string[];
+  /** Temperatura en °C, si se conoce (activa el calor extremo). */
+  temperaturaC?: number;
+  /** Si el visitante pide una ruta accesible. */
+  requiereAccesible?: boolean;
 }
 
 /** Formatea una distancia en minutos de caminata, en español. */
@@ -95,6 +104,40 @@ export function buscarLugarReferencia(places: Place[]): Place | undefined {
   const clave = normalizeText(engineConfig.palabraClaveReferencia);
   return places.find((lugar) => normalizeText(lugar.name).includes(clave));
 }
+
+/**
+ * Detecta si el clima que reporta el visitante es adverso para caminar.
+ * Devuelve la lista de condiciones activa (vacía si el clima es bueno).
+ */
+export function detectarClima(
+  condiciones: string[] | undefined,
+  temperaturaC?: number,
+): string[] {
+  const activas: string[] = [];
+
+  for (const condicion of condiciones ?? []) {
+    const texto = normalizeText(condicion);
+    const adversa = engineConfig.clima.condicionesAdversas.some(
+      (c) => texto.includes(normalizeText(c)),
+    );
+    if (adversa) activas.push(condicion);
+  }
+
+  if (
+    temperaturaC !== undefined &&
+    temperaturaC >= engineConfig.clima.temperaturaCalorExtremo
+  ) {
+    activas.push("calor extremo");
+  }
+
+  return activas;
+}
+
+/**
+ * ¿El lugar es accesible? Se lee de `meta.accesible` (dato del backend).
+ * Un lugar sin el dato no se da por accesible: no se inventa.
+ */
+export const esAccesible = lugarAccesible;
 
 /** Convierte un evento en una parada sintetizable (para mostrarlo en la ruta). */
 function eventToPlace(event: Event): Place {
@@ -159,11 +202,31 @@ export function buildRoute(
     if (!misionPorLugar.has(mision.placeId)) misionPorLugar.set(mision.placeId, mision.id);
   }
 
+  /**
+   * Condiciones de clima que adversely afectan la visita. Se activan solo si
+   * el visitante las reporta (o si la temperatura es extrema).
+   */
+  const climaActivo = detectarClima(options.clima, options.temperaturaC);
+
+  /**
+   * Opciones efectivas tras aplicar la configuración: si el requisito de
+   * accesibilidad está apagado en `config.ts`, no se filtra por ella.
+   */
+  const opciones = {
+    requiereAccesible:
+      (options.requiereAccesible ?? false) && engineConfig.accesibilidad.exigirAccesible,
+  };
+
   // 1. Filtros duros: presupuesto y lugares cerrados (hoy, a esta hora).
   const candidatos = places.filter((place) => {
     const info = readPlaceInfo(place, hoy);
     if (!fitsBudget(info, request.budget)) return false;
     if (isOpenAt(info, ahora, hoy) === false) return false;
+    // Ruta accesible: se descartan los lugares sin accesibilidad confirmada,
+    // salvo que la configuración permita dejar los desconocidos.
+    if (opciones.requiereAccesible && !esAccesible(place)) {
+      if (!engineConfig.accesibilidad.permitirDesconocido) return false;
+    }
     return true;
   });
 
@@ -175,6 +238,9 @@ export function buildRoute(
       now,
       origin,
       remainingMin: minutosVentana,
+      clima: climaActivo,
+      temperaturaC: options.temperaturaC,
+      requiereAccesible: opciones.requiereAccesible,
     }, info);
     return { place, info, breakdown };
   });
@@ -266,7 +332,8 @@ export function buildRoute(
       parada.eventId = evento.id;
       parada.eventName = evento.name;
       parada.reason = buildReason(parada.place, parada.score ?? {
-        total: 0, afinidad: 0, cercania: 0, disponibilidad: 0, tiempo: 0, oportunidad: 0, bonoNocturno: 0, distanceM: null, open: null,
+        total: 0, afinidad: 0, cercania: 0, disponibilidad: 0, tiempo: 0, oportunidad: 0,
+        bonoNocturno: 0, clima: 1, accesibilidad: 1, distanceM: null, open: null,
       }, { eventName: evento.name });
       continue;
     }

@@ -37,6 +37,8 @@ const bodySchema = z.object({
       meta: z.record(z.string(), z.unknown()).default({}),
     })
     .optional(),
+  /** Idioma en el que se redacta ("es" o "en"), para los cruceristas. */
+  idioma: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { placeId, interests, place } = parseo.data;
+  const { placeId, interests, place, idioma } = parseo.data;
 
   const lugar = place ?? (await buscarLugar(placeId, request.url));
   if (!lugar) {
@@ -63,11 +65,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const copy = await generateMission({ place: lugar, interests });
+    const copy = await generateMission({ place: lugar, interests, idioma });
     return Response.json({ text: copy.text, why: copy.why, source: copy.source });
   } catch {
     // Salvaguarda extra: si algo revienta, la plantilla responde igual.
-    const respaldo = fallbackMission(lugar, interests);
+    const respaldo = fallbackMission(lugar, interests, idioma);
     return Response.json({ text: respaldo.text, why: respaldo.why, source: respaldo.source });
   }
 }

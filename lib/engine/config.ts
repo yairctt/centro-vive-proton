@@ -10,6 +10,17 @@ export const weights = {
   tiempo: 0.1,
   oportunidad: 0.15,
   bonoNocturno: 0.1,
+  /**
+   * Peso del clima: lugares con techo (bajoTecho) o interiores puntúan más
+   * cuando llueve o hace demasiado calor. Con 0 no cambia nada: es el peso
+   * que se enciende si el requisito del jueves habla del clima.
+   */
+  clima: 0,
+  /**
+   * Peso de la accesibilidad: los lugares accesibles puntúan más si el
+   * visitante la necesita. Con 0 no cambia nada.
+   */
+  accesibilidad: 0,
 } as const;
 
 export const engineConfig = {
@@ -52,4 +63,29 @@ export const engineConfig = {
   lugarReferenciaId: "zocalo",
   /** Palabra clave para localizar el lugar de referencia por su nombre. */
   palabraClaveReferencia: "zocalo",
+  /**
+   * Condiciones del clima que activan el peso `clima`.
+   * Si el visitante reporta lluvia o calor extremo, se priorizan los lugares
+   * con techo (`meta.bajoTecho`) o interiores.
+   */
+  clima: {
+    /** Condiciones que cuentan como «clima adverso». */
+    condicionesAdversas: ["lluvia", "llovizna", "tormenta", "calor", "calor extremo"] as const,
+    /** Temperatura a partir de la cual se considera calor extremo (°C). */
+    temperaturaCalorExtremo: 33,
+    /** Lugares sin techo quedan en 0 con mal clima (1 = favorable). */
+    penalSinTecho: 0,
+    /** Lugares con techo o interiores se quedan en 1 con mal clima. */
+    bonoConTecho: 1,
+  },
+  /**
+   * Requisitos de accesibilidad. Si el visitante pide una ruta accesible, se
+   * descartan los lugares sin `meta.accesible` confirmado.
+   */
+  accesibilidad: {
+    /** Se exige `meta.accesible === true` en los lugares de la ruta. */
+    exigirAccesible: false,
+    /** Un lugar sin dato de accesibilidad no se descarta (no se inventa). */
+    permitirDesconocido: true,
+  },
 } as const;

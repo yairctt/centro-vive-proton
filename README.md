@@ -141,6 +141,42 @@ Bitácoras por integrante:
 - **Revisión humana:** Comprobé la vista previa de impresión con `@media print`: verifiqué que la barra de navegación, botones y avisos se oculten automáticamente y que el layout acomode exactamente 2 tarjetas por hoja tamaño carta sin saltos de página indeseados. Escaneé los códigos QR generados directamente desde la pantalla y desde una hoja impresa de prueba con el teléfono, confirmando que la URL redirige de inmediato a `/escanear?t=...`.
 - **Commit:** `1e85fed` — feat(qr): página de QR imprimibles
 
+##### 23:01 · Rediseño editorial de la UI (cero emojis, paleta teal)
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** rediseño visual completo del flujo del visitante y detalles de paneles: sustituir todos los emojis por iconos SVG, aplicar paleta identitaria (teal/amber/emerald), modo oscuro y correcciones de UX (barras pegajosas que tapaban contenido, spinner de carga, estados vacíos y de error), sin tocar lógica ni contratos de API.
+- **Prompt (resumen):** «Rediseño editorial humano, cero emojis y corrección UX/UI: iconos SVG centralizados, eliminar fondo negro y halos en /mision, paleta teal-700/amber-600/emerald-600, pb-32 bajo barras sticky, active:scale-[0.98], contraste WCAG.»
+- **Resultado:** `components/ui/icons.tsx` (nuevo, 20 iconos SVG de trazo); rediseño de `app/(visitante)/inicio`, `ruta`, `mision/[id]`, `pasaporte`, `app/escanear`; `PrinterIcon` en `app/(panel)/comercio/qr`; logo sólido en `PanelHeader`. Lógica, hooks, sessionStorage, `#lector-qr` y `CSS_IMPRESION` intactos.
+- **Revisión humana:** `npm run build` sin errores; barrido de emojis en app/ y components/ (solo quedan una flecha en comentario de código y la estrella tipográfica del marcador de Leaflet); los 2 errores de ESLint (`set-state-in-effect`) son preexistentes en lógica que no se tocó.
+- **Commit:** pendiente en `feat/ux-visitante`
+
+##### 23:XX · Vista /hoy homogénea con el rediseño
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** restilizar `app/(visitante)/hoy` (venía de main con el estilo anterior) para homogeneizarla con el rediseño editorial: paleta teal/amber, superficies neutras con modo oscuro, iconos SVG en lugar de emojis y badges con borde.
+- **Prompt (resumen):** «Refactoriza la vista /hoy para que sea homogénea con los cambios que se subieron.»
+- **Resultado:** `app/(visitante)/hoy/page.tsx` — badge «Agenda viva» en amber con CalendarIcon, cierre con XIcon, bloque de hora en amber-600 (mismo acento que los eventos en /ruta), categoría traducida con `es.ruta.categoria`, lugar con MapPinIcon, «Por confirmar» con borde visible, estado vacío con icono circular y botón hacia /inicio. Lógica de fetch y formato de hora intactas.
+- **Revisión humana:** `npm run build` sin errores.
+- **Commit:** pendiente en `feat/ux-visitante`
+
+##### 00:40 · CRUD completo de contenido (lugares, eventos, misiones, recompensas) + script de eventos
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** poder dar de alta, editar y borrar lugares, eventos, misiones y recompensas desde los paneles de admin y comercio sin entrar al dashboard de Supabase; además un script CLI para insertar eventos del día.
+- **Prompt (resumen):** «¿Cómo agrego un evento del día? ¿Se puede sin entrar a Supabase? Hazlo y crea CRUD para todo (lugares, eventos, etc.) para el panel de admin y comercio según corresponda.»
+- **Resultado:** APIs nuevas/extendidas: `POST /api/events` (contrato sección 7, `verified=false`) y `GET /api/events?when=all`, `PATCH/DELETE /api/events/[id]`, `POST /api/places` y `PATCH/DELETE /api/places/[id]` (admin), `GET/POST /api/missions` y `PATCH/DELETE /api/missions/[id]` (admin), `GET/POST /api/rewards` y `PATCH/DELETE /api/rewards/[id]`, `GET /api/me/businesses`; helpers `app/api/_lib/{comercio,esquemas}.ts` (propiedad por owner_id + esquemas zod). UI: `/admin/gestion` (4 pestañas CRUD) y `/comercio/gestion` (mis eventos y recompensas) con componentes en `components/paneles/gestion/`; `PublishEventModal` conectado al API real (selector de lugar propio y manejo de errores); enlaces nuevos en `PanelHeader`. Fallback de descripción de evento vía `meta.description` en `lib/db/mappers.ts` (la tabla no tiene esa columna). Script `scripts/crear-evento.mjs` (inserta evento de hoy por nombre de lugar usando `.env.local`).
+- **Revisión humana:** reglas de propiedad verificadas en el código (comercio solo toca eventos/recompensas de sus negocios; verificación de eventos reservada al admin); `npm run build` y `npm test` (125 pruebas) sin errores. Nota: se tocaron carpetas de I3 (`app/api`) e I5 (`components/paneles`, `app/(panel)`) por pedido explícito; avisar a ambos antes del merge.
+- **Commit:** `e40421e` — feat(paneles): CRUD de lugares, eventos, misiones y recompensas (push a `feat/ux-visitante` y `feat/paneles`; luego merge de main en `f1b07f2`)
+
+##### 01:05 · Tres accesos separados por rol (visitante, comercio, admin)
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** tres logins independientes donde cada rol solo accede a sus paneles (el enrutamiento por rol ya existía en proxy.ts/roles.ts; faltaban las cuentas y el acceso rápido).
+- **Prompt (resumen):** «Quiero 3 logins diferentes para admin, comerciante y usuario (o invitado), cada uno con acceso solo a sus paneles. Hazlo.»
+- **Resultado:** cuentas reales creadas con `scripts/crear-cuenta.mjs`: `comercio@pulsojarocho.mx` → perfil `comercio-demo` (dueño de los 6 negocios del seed) y `admin@pulsojarocho.mx` → perfil `admin-demo`; el visitante entra como invitado (auth anónima). En `/login`, sección «Accesos de demostración» con 3 botones (Visitante/Comercio/Admin) tras el flag nuevo `flags.accesosDemo` (se apaga con `NEXT_PUBLIC_ACCESOS_DEMO=false`); credenciales rotables por `NEXT_PUBLIC_DEMO_*`. Textos nuevos en `es.auth`.
+- **Revisión humana:** probé el inicio de sesión real de ambas cuentas contra Supabase y verifiqué que el perfil ligado trae el rol correcto (`comercio-demo/comercio`, `admin-demo/admin`); `npm run build` sin errores. Pendiente operativo: poner `NEXT_PUBLIC_MODO_DEMO=false` en Vercel para que el candado de roles aplique en producción.
+- **Commit:** pendiente en `feat/ux-visitante`
+
 ### Bitácora de IA — Integrante 3 (Backend, base de datos y seguridad)
 
 ##### 15:35 · Clientes Supabase, mappers y endpoints places/events
@@ -174,6 +210,42 @@ Bitácoras por integrante:
   - `app/api/stats/route.ts` — agrega actividad registrada en la app (scansByPlace, activityByHour, etc.).
 - **Revisión humana:** Se corrigieron 4 errores TS: `ZodError.errors` → `.issues`, shape de `Stats.scansByPlace` (`placeName` no `name`) y `activityByHour` (`count` no `interactions`). Build confirmado en 0 errores.
 - **Commit:** `feat(backend): schema.sql, validate, accept, passport y stats`
+
+##### 18:54 · Build de Vercel: rutas API dinámicas
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Que el PR pase el build (fallaba al prerenderizar `/api/me/passport` sin variables de Supabase).
+- **Prompt (resumen):** Log de Vercel con el error «Variables de entorno … son requeridas» al prerenderizar.
+- **Resultado:** Con `cacheComponents` (Next 16) `export const dynamic` no evita el prerender; se usa `await connection()` en los GET. Se resolvió el conflicto de merge en `api/stats` y faltaba importar `connection`.
+- **Revisión humana:** Pendiente — verificado con `npm run build` (todas las `/api/*` como `ƒ Dynamic`).
+- **Commit:** `73b5544`, `669c0eb`
+
+##### 19:25 · QR imprimibles y confirmación de canjes
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Crear `GET /api/qr-tokens` y `POST /api/redemptions/confirm`, y corregir la validación de ids.
+- **Prompt (resumen):** «Faltan POST /api/redemptions/confirm y GET /api/qr-tokens.»
+- **Resultado:** Un token activo por lugar con forma `QrTarjeta`; confirmación de canje solo por el comercio dueño, una sola vez, con descuento de puntos en el servidor. `z.string().uuid()` (zod 4) rechazaba los ids del seed → `z.guid()`.
+- **Revisión humana:** Pendiente — probado contra Supabase con un canje temporal (200 → 409 al repetir) y limpieza posterior.
+- **Commit:** `e2dfb14`, `fa4d2c3`
+
+##### 19:34 · Visitas con la base real, canjes y schema.sql
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Revisar los pendientes del backend contra la base real.
+- **Prompt (resumen):** «Sigamos con los pendientes.»
+- **Resultado:** `visits` no tiene `points_awarded` → todo escaneo QR fallaba; ahora guarda `qr_token_id`. `stats` usa datos reales (canjes, misiones aceptadas). Nuevos `POST/GET /api/redemptions`. `schema.sql` igual a la base.
+- **Revisión humana:** Pendiente — flujo completo probado (QR → puntos → tablero → pasaporte → canje → confirmación) y datos de prueba borrados.
+- **Commit:** `c7d7936`
+
+##### 20:50 · Cuentas de usuario, recuperación de contraseña y acceso por rol
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Registro, inicio de sesión, invitado, recuperación de contraseña y separar la app por rol (rama `feat/auth`).
+- **Prompt (resumen):** «Registro de usuario para que cada quien tenga todo guardado, recuperar contraseña y dividir por rol: visitante (explorar, rutas, pasaporte), admin (panel) y comercio (QR imprimibles y panel).»
+- **Resultado:** Supabase Auth con `@supabase/ssr`; `proxy.ts` por rol; páginas `/login`, `/registro`, `/recuperar`, `/restablecer`; APIs con el perfil de la sesión (ya no aceptan `profileId`); QR imprimibles movidos a `/comercio/qr` (solo los del comercio); pasaporte con datos reales y botón «Canjear»; `scripts/crear-cuenta.mjs` para cuentas de comercio/admin. Ver `docs/explicaciones/auth.md`.
+- **Revisión humana:** Pendiente — verificado: build, redirecciones sin sesión y 401 en las APIs protegidas.
+- **Commit:** `feat(auth): cuentas, recuperación de contraseña y acceso por rol`
 
 ### Bitácora de IA — Integrante 4 (Motor de recomendación e IA)
 
@@ -293,6 +365,15 @@ Bitácoras por integrante:
 - **Resultado:** El bug tenía dos causas encadenadas. Primera: `lib/qr/mock.ts` devolvía siempre los mismos números (`pointsAdded: 50`, `totalPoints: 150`), así que aunque el escaneo «funcionara» el total nunca cambiaba; ahora el mock guarda los puntos y las visitas en el `sessionStorage` del navegador y los va sumando, con un token que solo cuenta una vez, igual que el servidor. Segunda: `app/(visitante)/pasaporte/page.tsx` era una pantalla estática que leía `mockProfile.points` de `lib/mock`, así que mostraba 150 fijos aunque se acabara de escanear; ahora lee `GET /api/me/passport` y, cuando la base no está disponible, usa los puntos de la sesión. De paso, `GET /api/me/passport` responde `demo: true` en modo respaldo, para que el cliente sepa que debe tomar los puntos del navegador (el servidor no ve su `sessionStorage`). Con 5 pruebas nuevas en `lib/qr/__tests__/puntos.test.ts` y el script `scripts/probar-puntos.mjs`, que recorre el flujo en un Chrome de verdad.
 - **Revisión humana:** El arreglo se comprobó en un navegador real, no solo con pruebas unitarias: escanear un QR lleva el total de 150 a 200, volver a escanear el mismo token no suma otra vez, un token distinto lo lleva a 250 y el pasaporte muestra siempre el total vigente. Con base de datos el camino ya estaba bien (la función `increment_points` suma de forma atómica y `/api/me/passport` lee `profiles.points`), así que el arreglo era del lado del modo demo. Los archivos tocados son de I1 (la pantalla del pasaporte) e I2 (el mock del QR), así que se les avisó para que los incorporen en sus ramas.
 - **Commit:** `174c4b2` — Actualizaciones y correcciones de errores
+
+##### 02:05 · Preparados para el requisito de las 07:00 + diapositiva del algoritmo
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Dejar el motor y la IA listos para el requisito sorpresa que llega a las 07:00 (CONTEXTO.md, sección 12) y cerrar mi franja de la madrugada con la diapositiva del algoritmo.
+- **Prompt (resumen):** «De acuerdo al horario del CONTEXTO.md, nos hace falta algo? Guíate de la rama main que ha sido actualizada recientemente».
+- **Resultado:** Se prepararon los tres escenarios que tocan al motor y a la IA, **sin cambiar el comportamiento actual**: el peso `clima` y el peso `accesibilidad` están en 0 y el filtro de accesibilidad está apagado, así que la ruta es exactamente igual que antes. Con el peso encendido, la lluvia o el calor priorizan los lugares con `meta.bajoTecho` (y la temperatura de 33 °C lo activa sola), y una ruta accesible prioriza los lugares con `meta.accesible`. La IA ya acepta `idioma`: con `"en"` cambian la instrucción al modelo, el prompt y la plantilla de respaldo. Todo se activa desde `lib/engine/config.ts` y `lib/ai/config.ts`, como pide el CONTEXTO. Además se corrigió la diapositiva 4 del pitch, que tenía la fórmula incompleta (le faltaba el factor disponibilidad) y no mostraba los pesos ni los tres pasos del recorrido, y se escribió `docs/explicaciones/requisito-jueves.md` con los pasos exactos para cada escenario.
+- **Revisión humana:** Se añadió `lib/engine/__tests__/requisito-jueves.test.ts` (14 pruebas) que deja claro que con los pesos en 0 nada cambia: el motor se comporta igual antes y después del requisito. Al probarlo se detectaron dos errores propios: el factor de clima valía 1 tanto para los lugares con techo como sin él (se corrigió a 1 = favorable, 0 = desfavorable) y el desglose de accesibilidad no reflejaba el valor real cuando el peso estaba apagado (ahora siempre lo refleja, que además ayuda a depurar).
+- **Commit:** pendiente
 
 ### Bitácora de IA — Integrante 5 (Paneles de comercio y admin; pitch)
 
@@ -436,6 +517,37 @@ Bitácoras por integrante:
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se probó la navegación responsive en anchos móviles (375 px), la descarga del archivo CSV y la búsqueda instantánea en tablas y feed sin retardos.
 - **Commit:** `feat(paneles): perfeccionamiento integral de UX y UI, filtros y exportacion`
+
+---
+
+##### 20:45 · Fase 6: Diseño cálido, amigable para todo tipo de usuarios y enriquecimiento visual
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Superar el minimalismo plano y frío para crear una interfaz humana, cálida y accesible para todo tipo de usuarios (comerciantes tradicionales, encargados de caja, jurado y directores de turismo), con explicaciones claras, guías paso a paso, diferenciación cromática veracruzana y componentes con personalidad.
+- **Prompt (resumen):** «Necesito mejorar aun las cosas,, trata de que sean amigables para todos los tipos de usuarios. Sean diseños no tan minimalistas y homogeneos.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Diferenciación visual en tarjetas KPI (`KpiCard`):** Bordes superiores de acento cromático temático (esmeralda para actividad, teal para misiones, ámbar dorado para canjes, azul para red urbana), barras de progreso visuales con porcentaje del día y subtítulos explicativos.
+  - **Banner institucional y narrativo en `/admin`:** Cabecera con fondo degradado veracruzano que explica en lenguaje llano qué sucede en el Centro Histórico y cómo opera el programa Centro de Noche.
+  - **Guía paso a paso para el cajero en `/comercio`:** Panel ilustrado de 3 pasos ("Pide el código" → "Búscalo en la lista" → "Pulsa Confirmar") que elimina la fricción operativa para comerciantes que no son nativos digitales.
+  - **Ficha comercial enriquecida (`ComercioFicha`):** Diseño de escaparate cálido con banner superior tricolor veracruzano, botón para compartir vitrina pública y badge de puntos otorgados al visitante (+50 pts).
+  - **Promociones estilo cupón recortable (`ComercioPromos`):** Tarjetas con estética de cupón real, puntos dorados destacados y botones de activación/pausa amigables.
+  - **Consejo contextual ("Tip Jarocho"):** Mensaje de ayuda que explica a qué horas se concentra la afluencia nocturna en el Centro para incentivar aperturas tardías.
+  - **Plantillas rápidas jarochas (1 clic) en `PublishEventModal` y `ComercioPromos`:** Botones de un solo toque ("Música de Marimba y Danzón", "Degustación de Toritos y Café", "15% de descuento en café") que rellenan automáticamente los formularios, ahorrando tiempo y esfuerzo a comerciantes tradicionales.
+  - **Simulación interactiva de cliente en caja en `ComercioCanjesList`:** Botón para inyectar un cupón en tiempo real y probar la validación en vivo frente al jurado.
+  - **Cajas de interpretación en lenguaje natural bajo cada gráfica:** Explicaciones claras para directores de turismo y dueños de negocios sobre cómo interpretar los datos y tomar decisiones (ej. redistribución hacia el Baluarte de Santiago y aprovechamiento del pico nocturno a las 19:00 hrs).
+  - **Layout general con footer cálido (`app/(panel)/layout.tsx`):** Pie de página con identidad institucional de Veracruz, enlaces directos y recordatorio metodológico de Regla 9.
+- **Resultado:**
+  - `components/paneles/KpiCard.tsx`
+  - `components/paneles/ComercioFicha.tsx`
+  - `components/paneles/ComercioPromos.tsx`
+  - `components/paneles/ComercioCanjesList.tsx`
+  - `components/paneles/PublishEventModal.tsx`
+  - `app/(panel)/admin/page.tsx`
+  - `app/(panel)/comercio/page.tsx`
+  - `app/(panel)/layout.tsx`
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se confirmó que las interfaces transmitan calidez, legibilidad y facilidad inmediata de uso para cualquier perfil de usuario.
+- **Commit:** `feat(paneles): diseno calido, amigable para todos los usuarios y enriquecimiento visual`
 
 <!-- BITACORA:FIN -->
 

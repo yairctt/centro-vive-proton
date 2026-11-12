@@ -38,6 +38,15 @@ const cuerpoSchema = z.object({
   lat: z.number().min(-90).max(90).optional(),
   /** Longitud opcional. */
   lng: z.number().min(-180).max(180).optional(),
+  /**
+   * Condiciones del clima que reporta el visitante ("lluvia", "calor"…).
+   * Si vienen, el motor prioriza los lugares con techo o interiores.
+   */
+  clima: z.array(z.string().min(1)).optional(),
+  /** Temperatura en °C, si se conoce. */
+  temperaturaC: z.number().min(-20).max(60).optional(),
+  /** Si el visitante pide una ruta accesible. */
+  requiereAccesible: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -56,7 +65,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const { minutes, interests, budget, lat, lng } = parseo.data;
+  const { minutes, interests, budget, lat, lng, clima, temperaturaC, requiereAccesible } =
+    parseo.data;
   const now = new Date();
   const finVentana = new Date(now.getTime() + minutes * 60_000).toISOString();
 
@@ -115,7 +125,7 @@ export async function POST(request: Request) {
   const { stops, totalMin } = buildRoute(
     places,
     { minutes, interests, budget, lat, lng },
-    { now, events, missions },
+    { now, events, missions, clima, temperaturaC, requiereAccesible },
   );
 
   return NextResponse.json({ stops, totalMin, origen });

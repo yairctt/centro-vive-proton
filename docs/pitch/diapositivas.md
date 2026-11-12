@@ -44,12 +44,21 @@
 
 ## Diapositiva 4 · La Innovación: Algoritmo Explicable + IA Contextual
 - **Puntuación pura y determinista (el algoritmo decide la ruta, no la IA):**
-  $$\text{Score} = w_{\text{afinidad}} + w_{\text{cercanía}} + w_{\text{tiempo}} + w_{\text{oportunidad}} + w_{\text{bono\_nocturno}}$$
+  $$\text{Score} = w_{\text{afinidad}} + w_{\text{cercanía}} + w_{\text{disponibilidad}} + w_{\text{tiempo}} + w_{\text{oportunidad}} + w_{\text{bono\_nocturno}}$$
+  - Pesos en uso (`lib/engine/config.ts`): afinidad **0.35**, cercanía **0.25**, disponibilidad **0.15**, tiempo **0.10**, oportunidad **0.15**, bono nocturno **0.10**.
+  - Cada parada lleva **el desglose** de su puntuación, no solo el total: por eso el motivo que ve el turista explica la decisión.
+- **Cómo se arma la ruta (3 pasos, sin caja negra):**
+  1. **Filtro:** se descartan los lugares cerrados ahora y los que no entran en el presupuesto.
+  2. **Orden:** se puntúa cada lugar con los seis factores y se ordena.
+  3. **Recorrido:** se camina de parada en parada con **vecino más cercano**, sin pasarse de los minutos que declaró el visitante (≈ 80 m/min, distancia real por haversine).
 - **Por qué funciona:**
   - Equilibra lo que busca el turista con los comercios y puntos que necesitan visibilidad.
-  - **Incentivo «Centro de noche»:** Puntos extra pasadas las 19:00 hrs para combatir el cierre temprano.
+  - **Incentivo «Centro de noche»:** puntos extra pasadas las 19:00 hrs para combatir el cierre temprano.
+  - **Todo es configurable:** los pesos viven en un archivo, no en el código. Por eso un requisito nuevo (lluvia, accesibilidad, inglés) se activa cambiando valores, no reescribiendo el motor.
 - **El rol estricto de Gemini:**
   - Redacta el motivo de la misión y el *«por qué te lo recomendamos»* sin inventar precios, horarios ni datos no verificados.
+  - Si el modelo no responde en 5 segundos o falla, entra una **plantilla de respaldo**: la demo nunca se rompe.
+  - El punto clave ante el jurado: **la IA no decide la ruta, la explica.**
 
 ---
 
