@@ -1,9 +1,67 @@
 "use client";
 
 import Link from "next/link";
-import { mockProfile, mockVisits, mockPlaces, mockRewards } from "@/lib/mock";
+import { useEffect, useState } from "react";
+import { mockPlaces, mockProfile, mockRewards, mockVisits } from "@/lib/mock";
+import type { Place, Profile, Reward, Visit } from "@/lib/types";
+
+interface Pasaporte {
+  profile: Profile;
+  visits: Visit[];
+  rewards: Reward[];
+  places: Place[];
+}
+
+const PASAPORTE_MOCK: Pasaporte = {
+  profile: mockProfile,
+  visits: mockVisits,
+  rewards: mockRewards,
+  places: mockPlaces,
+};
+
+async function cargarPasaporte(): Promise<Pasaporte> {
+  const [rp, rl] = await Promise.all([
+    fetch("/api/me/passport", { cache: "no-store" }),
+    fetch("/api/places", { cache: "no-store" }),
+  ]);
+  if (!rp.ok) throw new Error("passport");
+  const passport = (await rp.json()) as Omit<Pasaporte, "places">;
+  const places = rl.ok ? ((await rl.json()) as Place[]) : [];
+  const visits = [...passport.visits].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return { ...passport, visits, places: Array.isArray(places) ? places : [] };
+}
 
 export default function PasaportePage() {
+  const [datos, setDatos] = useState<Pasaporte | null>(null);
+
+  useEffect(() => {
+    let vigente = true;
+    cargarPasaporte()
+      .catch(() => PASAPORTE_MOCK)
+      .then((d) => {
+        if (vigente) setDatos(d);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  if (!datos) {
+    return (
+      <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-6 bg-gray-50 px-6 pt-16">
+        <div className="h-44 animate-pulse rounded-3xl bg-blue-200/60" />
+        <div className="h-20 animate-pulse rounded-2xl bg-gray-200" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-24 animate-pulse rounded-2xl bg-gray-200" />
+          <div className="h-24 animate-pulse rounded-2xl bg-gray-200" />
+        </div>
+      </main>
+    );
+  }
+
+  const { profile, visits, rewards, places } = datos;
+  const lugar = (id: string) => places.find((p) => p.id === id);
+
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-blue-200">
       <header className="px-6 pt-8 pb-4 max-w-lg mx-auto w-full flex items-center justify-between">
@@ -29,7 +87,7 @@ export default function PasaportePage() {
             <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">
               Explorador Jarocho
             </span>
-            <h2 className="text-3xl font-black mt-4 mb-6 truncate">{mockProfile.alias}</h2>
+            <h2 className="text-3xl font-black mt-4 mb-6 truncate">{profile.alias}</h2>
 
             <div className="flex justify-between items-end">
               <div>
@@ -37,7 +95,7 @@ export default function PasaportePage() {
                   Puntos Acumulados
                 </p>
                 <p className="text-5xl font-black text-yellow-400 drop-shadow-md">
-                  {mockProfile.points}
+                  {profile.points}
                 </p>
               </div>
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/30 text-2xl shadow-inner">
@@ -70,14 +128,22 @@ export default function PasaportePage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-black text-gray-800 text-base">
-              Sellos de Visita ({mockVisits.length})
+              Sellos de Visita ({visits.length})
             </h3>
             <span className="text-[11px] font-semibold text-emerald-600">Verificados por QR</span>
           </div>
 
+          {visits.length === 0 && (
+            <Link
+              href="/escanear"
+              className="block rounded-2xl border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-500"
+            >
+              Aún no tienes sellos. <span className="font-bold text-blue-600">Escanea tu primer QR →</span>
+            </Link>
+          )}
           <div className="grid grid-cols-2 gap-3">
-            {mockVisits.map((visit) => {
-              const place = mockPlaces.find((p) => p.id === visit.placeId);
+            {visits.map((visit) => {
+              const place = lugar(visit.placeId);
               return (
                 <div
                   key={visit.id}
@@ -90,7 +156,15 @@ export default function PasaportePage() {
                     {place?.name || "Lugar del Centro"}
                   </h4>
                   <span className="text-[10px] font-bold text-blue-600 mt-0.5">
-                    +{visit.pointsAwarded} pts
+                    {visit.pointsAwarded > 0
+                      ? `+${visit.pointsAwarded} pts`
+                      : new Date(visit.createdAt).toLocaleString("es-MX", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "America/Mexico_City",
+                        })}
                   </span>
                 </div>
               );
@@ -102,7 +176,9 @@ export default function PasaportePage() {
         <div>
           <h3 className="font-black text-gray-800 mb-3 text-base">Recompensas para canjear</h3>
           <div className="space-y-2.5">
-            {mockRewards.map((reward) => (
+            {rewards.map((reward) => {
+              const alcanza = profile.points >= reward.pointsCost;
+              return (
               <div
                 key={reward.id}
                 className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between gap-3"
@@ -111,11 +187,17 @@ export default function PasaportePage() {
                   <h4 className="font-bold text-xs text-gray-900 leading-snug">{reward.title}</h4>
                   <p className="text-[11px] text-gray-500 mt-0.5">{reward.conditions}</p>
                 </div>
-                <span className="bg-amber-100 text-amber-900 font-black text-xs px-2.5 py-1 rounded-lg shrink-0">
+                <span
+                  className={`font-black text-xs px-2.5 py-1 rounded-lg shrink-0 ${
+                    alcanza ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"
+                  }`}
+                >
+                  {alcanza ? "✓ " : ""}
                   {reward.pointsCost} pts
                 </span>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

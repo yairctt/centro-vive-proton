@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RouteStop } from "@/lib/types";
+import { Mapa } from "@/components/mapa";
 
 export default function RutaPage() {
     const [stops, setStops] = useState<RouteStop[]>([]);
@@ -44,12 +45,23 @@ export default function RutaPage() {
 
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-blue-200">
-            <header className="bg-white px-6 py-6 shadow-sm z-10 sticky top-0">
-                <h1 className="text-2xl font-black text-gray-900">Tu ruta sugerida</h1>
-                <p className="text-gray-500 font-medium text-sm mt-1">
-                    {stops.length} paradas • Aprox. {stops.reduce((acc, stop) => acc + stop.etaMin + (Number(stop.place.avgVisitMin) || 30), 0)} min
-                </p>
+            <header className="bg-white px-6 py-6 shadow-sm z-[1100] sticky top-0">
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900">Tu ruta sugerida</h1>
+                        <p className="text-gray-500 font-medium text-sm mt-1">
+                            {stops.length} paradas • Aprox. {stops.reduce((acc, stop) => acc + stop.etaMin + (Number(stop.place.avgVisitMin) || 30), 0)} min
+                        </p>
+                    </div>
+                    <Link href="/pasaporte" className="shrink-0 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700">
+                        🏆 Pasaporte
+                    </Link>
+                </div>
             </header>
+
+            <div className="px-6 pt-6 max-w-lg mx-auto w-full">
+                <Mapa stops={stops} className="h-64 w-full shadow-sm border border-gray-100" />
+            </div>
 
             <div className="flex-1 p-6 space-y-6 relative max-w-lg mx-auto w-full">
                 <div className="absolute left-10 top-10 bottom-10 w-0.5 bg-gray-200 z-0"></div>
@@ -97,12 +109,12 @@ export default function RutaPage() {
                 })}
             </div>
 
-            <nav className="bg-white border-t border-gray-100 p-4 pb-8 flex gap-3 max-w-lg mx-auto w-full sticky bottom-0 z-20">
+            <nav className="bg-white border-t border-gray-100 p-4 pb-8 flex gap-3 max-w-lg mx-auto w-full sticky bottom-0 z-[1100]">
                 <Link href="/inicio" className="flex-1 text-center py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold active:bg-gray-200 transition-colors">
                     Modificar
                 </Link>
-                <Link href="/pasaporte" className="flex-[2] text-center py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-md active:scale-95 transition-all">
-                    Ver Pasaporte
+                <Link href="/escanear" className="flex-[2] text-center py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-md shadow-blue-200 active:scale-95 transition-all">
+                    📷 Escanear QR
                 </Link>
             </nav>
         </main>

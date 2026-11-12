@@ -21,13 +21,39 @@ type Estado =
   | { fase: "manual"; sinCamara: "permiso" | "camara" | null };
 
 const btnPrimario =
-  "w-full rounded-2xl bg-rose-600 px-6 py-5 text-lg font-semibold text-white shadow-md transition active:scale-[0.98] disabled:opacity-50";
+  "w-full rounded-2xl bg-blue-600 px-6 py-5 text-lg font-bold text-white shadow-lg shadow-blue-200 transition active:scale-[0.98] disabled:opacity-50";
 const btnSecundario =
-  "w-full rounded-2xl border border-neutral-300 px-6 py-4 text-base font-medium text-neutral-800 dark:border-neutral-700 dark:text-neutral-100";
+  "block w-full rounded-2xl border border-gray-200 bg-white px-6 py-4 text-center text-base font-bold text-gray-800 active:bg-gray-100";
 
 function esErrorDePermiso(err: unknown): boolean {
   const s = String((err as { name?: string })?.name ?? err);
   return /NotAllowed|Permission|denied/i.test(s);
+}
+
+// Sello del pasaporte: entra grande y transparente y «golpea» la página.
+const CSS_ANIMACIONES = `
+@keyframes pj-sello { 0% { transform: scale(2.6) rotate(8deg); opacity: 0; } 60% { transform: scale(0.92) rotate(-10deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
+@keyframes pj-aparece { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.pj-sello { animation: pj-sello 520ms cubic-bezier(.2,.9,.3,1.2) both; }
+.pj-aparece { animation: pj-aparece 400ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .pj-sello, .pj-aparece { animation: none; } }
+`;
+
+/** Cuenta de 0 a `hasta` en ~700 ms. */
+function ContadorPuntos({ hasta }: { hasta: number }) {
+  const [valor, setValor] = useState(0);
+  useEffect(() => {
+    let frame = 0;
+    const inicio = performance.now();
+    const paso = (ahora: number) => {
+      const p = Math.min((ahora - inicio) / 700, 1);
+      setValor(Math.round(hasta * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) frame = requestAnimationFrame(paso);
+    };
+    frame = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(frame);
+  }, [hasta]);
+  return <>{valor}</>;
 }
 
 function estadoFinal(r: ValidateResult): Estado {
@@ -140,27 +166,48 @@ function Escaner() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-4 py-8">
-      <header className="space-y-2">
-        <Link href="/" className="text-sm text-neutral-500">
-          ← {es.appName}
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-gray-50 px-6 pt-8 pb-8 text-gray-900">
+      <style>{CSS_ANIMACIONES}</style>
+      <header className="flex items-center justify-between">
+        <Link href="/ruta" className="text-xs font-bold text-blue-600">
+          ← {t.volverRuta}
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">{t.titulo}</h1>
+        <Link href="/pasaporte" className="rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700">
+          🏆 {t.verPasaporte}
+        </Link>
       </header>
+      <h1 className="text-3xl font-black tracking-tight">{t.titulo}</h1>
 
       {estado.fase === "inicio" && (
-        <section className="flex flex-1 flex-col justify-center gap-4">
-          <p className="text-base text-neutral-600 dark:text-neutral-400">{t.instrucciones}</p>
-          <button type="button" className={btnPrimario} onClick={() => setEstado({ fase: "escaneando" })}>
-            {t.botonEscanear}
-          </button>
-          <button
-            type="button"
-            className="py-2 text-sm text-neutral-600 underline dark:text-neutral-400"
-            onClick={() => setEstado({ fase: "manual", sinCamara: null })}
-          >
-            {t.escribirCodigo}
-          </button>
+        <section className="flex flex-1 flex-col gap-6">
+          <div className="flex flex-col items-center gap-4 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-800 p-8 text-center text-white shadow-xl shadow-blue-900/20">
+            <div className="flex size-20 items-center justify-center rounded-3xl border border-white/30 bg-white/20 text-4xl backdrop-blur-md">
+              📷
+            </div>
+            <p className="text-base font-medium text-blue-100">{t.instrucciones}</p>
+          </div>
+          <ol className="space-y-3">
+            {t.pasos.map((paso, i) => (
+              <li key={paso} className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-xs">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-black text-blue-600">
+                  {i + 1}
+                </span>
+                <span className="text-sm font-bold text-gray-800">{paso}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-auto space-y-2">
+            <button type="button" className={btnPrimario} onClick={() => setEstado({ fase: "escaneando" })}>
+              📷 {t.botonEscanear}
+            </button>
+            <button
+              type="button"
+              className="w-full py-2 text-sm font-medium text-gray-500 underline"
+              onClick={() => setEstado({ fase: "manual", sinCamara: null })}
+            >
+              {t.escribirCodigo}
+            </button>
+          </div>
         </section>
       )}
 
@@ -170,7 +217,7 @@ function Escaner() {
             id={LECTOR_ID}
             className="aspect-square w-full overflow-hidden rounded-2xl bg-neutral-900 text-neutral-400 [&_video]:h-full [&_video]:w-full [&_video]:object-cover"
           />
-          <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">{t.apunta}</p>
+          <p className="text-center text-sm font-medium text-gray-600">{t.apunta}</p>
           <button type="button" className={btnSecundario} onClick={reiniciar}>
             {t.cancelar}
           </button>
@@ -179,7 +226,7 @@ function Escaner() {
 
       {estado.fase === "validando" && (
         <section className="flex flex-1 flex-col items-center justify-center gap-4" aria-live="polite">
-          <div className="size-12 animate-spin rounded-full border-4 border-neutral-300 border-t-rose-600" />
+          <div className="size-12 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
           <p className="text-base">{t.validando}</p>
         </section>
       )}
@@ -191,24 +238,34 @@ function Escaner() {
               {t.modoDemo}
             </span>
           )}
-          <p className="text-2xl font-bold">{t.exito}</p>
-          <p className="text-6xl font-extrabold text-rose-600">
-            +{estado.data.pointsAdded} <span className="text-2xl font-bold">{t.puntos}</span>
+          <div className="pj-sello flex size-36 flex-col items-center justify-center rounded-full border-4 border-dashed border-emerald-500 bg-emerald-50 text-emerald-700">
+            <span className="text-5xl leading-none font-black">✓</span>
+            <span className="mt-1 text-xs font-black tracking-[0.3em]">{t.sellado}</span>
+          </div>
+          <p className="pj-aparece text-2xl font-black">{t.exito}</p>
+          {estado.data.message && (
+            <p className="pj-aparece text-base font-medium text-gray-600">{estado.data.message}</p>
+          )}
+          <p className="pj-aparece text-6xl font-black text-blue-600">
+            +<ContadorPuntos hasta={estado.data.pointsAdded} />{" "}
+            <span className="text-2xl font-bold">{t.puntos}</span>
           </p>
-          <p className="text-base text-neutral-700 dark:text-neutral-300">
-            {t.totalPasaporte}: <strong>{estado.data.totalPoints}</strong> {t.puntos}
+          <p className="pj-aparece rounded-2xl bg-white px-4 py-2 text-base text-gray-700 shadow-xs">
+            {t.totalPasaporte}: <strong className="text-gray-900">{estado.data.totalPoints}</strong> {t.puntos}
           </p>
           {estado.data.missionCompleted && (
-            <p className="rounded-xl bg-emerald-100 px-4 py-2 text-base font-semibold text-emerald-900">
+            <p className="pj-aparece rounded-xl bg-amber-100 px-4 py-2 text-base font-bold text-amber-900">
               🏅 {t.misionCompletada}
             </p>
           )}
-          {estado.data.message && <p className="text-sm text-neutral-500">{estado.data.message}</p>}
           <div className="mt-4 flex w-full flex-col gap-3">
-            <Link href="/pasaporte" className={`${btnPrimario} text-center`}>
-              {t.verPasaporte}
+            <Link href="/ruta" className={`${btnPrimario} block text-center`}>
+              {t.seguirRuta} →
             </Link>
-            <button type="button" className={btnSecundario} onClick={reiniciar}>
+            <Link href="/pasaporte" className={btnSecundario}>
+              🏆 {t.verPasaporte}
+            </Link>
+            <button type="button" className="py-2 text-sm font-medium text-gray-500 underline" onClick={reiniciar}>
               {t.escanearOtro}
             </button>
           </div>
@@ -217,8 +274,9 @@ function Escaner() {
 
       {estado.fase === "error" && (
         <section className="flex flex-1 flex-col justify-center gap-4 text-center" role="alert">
-          <p className="text-2xl font-bold">{t.error}</p>
-          <p className="text-base text-neutral-700 dark:text-neutral-300">{estado.mensaje}</p>
+          <p className="text-5xl">😕</p>
+          <p className="text-2xl font-black">{t.error}</p>
+          <p className="text-base text-gray-600">{estado.mensaje}</p>
           <button type="button" className={btnPrimario} onClick={reiniciar}>
             {t.intentarDeNuevo}
           </button>
@@ -249,7 +307,7 @@ function Escaner() {
               autoComplete="off"
               autoCapitalize="off"
               spellCheck={false}
-              className="w-full rounded-xl border border-neutral-300 px-4 py-4 font-mono text-base dark:border-neutral-700 dark:bg-neutral-900"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-4 font-mono text-base focus:border-blue-500 focus:outline-none"
             />
             {errorManual && <p className="text-sm text-rose-700">{errorManual}</p>}
             <button type="submit" className={btnPrimario} disabled={!tokenManual.trim()}>
