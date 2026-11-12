@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toEvent } from "@/lib/db/mappers";
 
@@ -30,6 +30,7 @@ function getMexicoCityDateRange() {
 }
 
 export async function GET(request: NextRequest) {
+  await connection();
   try {
     const { searchParams } = new URL(request.url);
     const when = searchParams.get("when") || "today";

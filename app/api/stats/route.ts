@@ -1,14 +1,12 @@
-// GET /api/stats  –  Tablero de afluencia en tiempo real
-//
-// Dueño: Integrante 5 (feat/paneles).
-// Consulta las tablas `visits`, `profiles`, `places`, `rewards` de Supabase y
-// devuelve un `ExtendedStats` listo para consumir en /admin y /comercio.
-// Si la base no está disponible, retorna los datos mock (nunca un 500).
-//
-// Regla 9: todas las métricas son "actividad registrada en la app".
-
-import { NextResponse } from "next/server";
-import { connection } from "next/server";
+/**
+ * GET /api/stats
+ * Agrega actividad registrada en la app para el tablero de admin.
+ * Las métricas representan interacciones en la app, NO conteo de personas.
+ *
+ * Query: ?from=ISO8601&to=ISO8601  (opcional; defecto: últimas 24 h)
+ * Response: Stats
+ */
+import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
@@ -150,26 +148,26 @@ export async function GET() {
     const payload: ExtendedStats = useMockBlend
       ? MOCK_ADMIN_STATS
       : {
-          missionsAccepted: missionsAccepted || MOCK_ADMIN_STATS.missionsAccepted,
-          missionsCompleted:
-            missionsCompleted || MOCK_ADMIN_STATS.missionsCompleted,
-          redemptions: redemptions || MOCK_ADMIN_STATS.redemptions,
-          totalInteractions: visits.length,
-          activePlaces,
-          activeBusinesses,
-          scansByPlace:
-            scansByPlace.length > 0 ? scansByPlace : MOCK_ADMIN_STATS.scansByPlace,
-          activityByHour:
-            activityByHour.length > 0
-              ? activityByHour
-              : MOCK_ADMIN_STATS.activityByHour,
-          activityByHourWithBusinesses:
-            activityByHourWithBusinesses.length > 0
-              ? activityByHourWithBusinesses
-              : MOCK_ADMIN_STATS.activityByHourWithBusinesses,
-          recentVisits:
-            recentVisits.length > 0 ? recentVisits : MOCK_ADMIN_STATS.recentVisits,
-        };
+        missionsAccepted: missionsAccepted || MOCK_ADMIN_STATS.missionsAccepted,
+        missionsCompleted:
+          missionsCompleted || MOCK_ADMIN_STATS.missionsCompleted,
+        redemptions: redemptions || MOCK_ADMIN_STATS.redemptions,
+        totalInteractions: visits.length,
+        activePlaces,
+        activeBusinesses,
+        scansByPlace:
+          scansByPlace.length > 0 ? scansByPlace : MOCK_ADMIN_STATS.scansByPlace,
+        activityByHour:
+          activityByHour.length > 0
+            ? activityByHour
+            : MOCK_ADMIN_STATS.activityByHour,
+        activityByHourWithBusinesses:
+          activityByHourWithBusinesses.length > 0
+            ? activityByHourWithBusinesses
+            : MOCK_ADMIN_STATS.activityByHourWithBusinesses,
+        recentVisits:
+          recentVisits.length > 0 ? recentVisits : MOCK_ADMIN_STATS.recentVisits,
+      };
 
     return NextResponse.json(payload, {
       headers: {

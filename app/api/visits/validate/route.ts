@@ -6,6 +6,7 @@
  * Body: { token: string; profileId?: string }
  * Response: ValidateResponse
  */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";

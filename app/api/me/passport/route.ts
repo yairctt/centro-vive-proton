@@ -5,11 +5,14 @@
  * Query: ?profileId=<uuid>  (opcional; si se omite usa el perfil demo)
  * Response: { profile: Profile; visits: Visit[]; rewards: Reward[] }
  */
-import { NextRequest, NextResponse } from "next/server";
+
+import { NextRequest, NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toProfile, toVisit, toReward } from "@/lib/db/mappers";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  // Siempre dinámico: nunca se prerenderiza en el build (cacheComponents).
+  await connection();
   const { searchParams } = new URL(req.url);
   let profileId = searchParams.get("profileId") ?? null;
 
@@ -78,3 +81,4 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

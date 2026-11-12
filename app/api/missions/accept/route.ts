@@ -5,6 +5,7 @@
  * Body: { missionId: string; profileId?: string }
  * Response: { ok: true } | { error: string }
  */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
