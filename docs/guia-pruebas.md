@@ -79,6 +79,13 @@ node scripts/verificar-demo.mjs
 Revisa las 9 pantallas y los 7 endpoints principales. Si todo dice `OK`,
 la demo se puede recorrer.
 
+Para comprobar específicamente que **escanear un QR suma puntos al pasaporte**
+(hay un Chrome instalado, la prueba lo abre sola):
+
+```bash
+node scripts/probar-puntos.mjs
+```
+
 ---
 
 ## 4. Recorrer el flujo de oro
@@ -127,6 +134,11 @@ El cliente nunca asigna puntos.
 
 **Mi pasaporte** (`/pasaporte`) muestra el alias, los puntos, las visitas y las
 recompensas canjeables.
+
+> Si la base no está configurada, la pantalla avisa que está en **modo
+> demostración** y guarda los puntos en el navegador: escanear un QR y volver
+> al pasaporte muestra el total nuevo. Con base de datos, los puntos los lleva
+> el servidor y el pasaporte los lee de ahí.
 
 ### 4.6 Ver el tablero
 
