@@ -6,6 +6,10 @@ export type IdiomaIA = "es" | "en";
 export const aiConfig = {
   /** Modelo de Gemini usado para redactar. */
   modelo: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
+  /** Modelo de DeepSeek usado para redactar. */
+  modeloDeepseek: process.env.DEEPSEEK_MODEL ?? "deepseek-chat",
+  /** Endpoint de la API de DeepSeek. */
+  deepseekEndpoint: process.env.DEEPSEEK_ENDPOINT ?? "https://api.deepseek.com/chat/completions",
   /** Tiempo límite de la llamada (ms). Si se excede, se usa la plantilla. */
   timeoutMs: 5000,
   /** Idioma por defecto: español. */

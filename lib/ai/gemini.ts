@@ -86,40 +86,94 @@ export function parseModelJson(raw: string): { text: string; why: string } | nul
 }
 
 /**
- * Pide a Gemini el texto de la misión.
+ * Llama a la API de DeepSeek para redactar el texto de la misión.
+ */
+async function callDeepseek(ctx: MissionContext, apiKey: string): Promise<MissionCopy | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), aiConfig.timeoutMs);
+
+  try {
+    const res = await fetch(aiConfig.deepseekEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: aiConfig.modeloDeepseek,
+        messages: [
+          { role: "system", content: instruccionPara(ctx.idioma) },
+          { role: "user", content: buildPrompt(ctx) },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.4,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+
+    const raw = data.choices?.[0]?.message?.content ?? "";
+    const parsed = parseModelJson(raw);
+    if (!parsed) return null;
+
+    return { text: parsed.text, why: parsed.why, source: "ia" };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Pide a la IA (DeepSeek o Gemini) el texto de la misión.
  * Devuelve siempre un resultado: si falla o se pasa de tiempo, la plantilla.
  */
 export async function generateMission(ctx: MissionContext): Promise<MissionCopy> {
   const respaldo = fallbackMission(ctx.place, ctx.interests, ctx.idioma);
-  const apiKey = process.env.GEMINI_API_KEY;
   // Interruptor de funciones: si la IA está apagada, siempre la plantilla.
   if (!flags.ia) return respaldo;
-  if (!apiKey) return respaldo;
 
-  try {
-    const ai = new GoogleGenAI({ apiKey });
-    const respuesta = await withTimeout(
-      ai.models.generateContent({
-        model: aiConfig.modelo,
-        contents: buildPrompt(ctx),
-        config: {
-          systemInstruction: instruccionPara(ctx.idioma),
-          temperature: 0.4,
-          responseMimeType: "application/json",
-        },
-      }),
-      aiConfig.timeoutMs,
-    );
-
-    const raw = respuesta.text ?? "";
-    const parsed = parseModelJson(raw);
-    if (!parsed) return respaldo;
-
-    return { text: parsed.text, why: parsed.why, source: "ia" };
-  } catch {
-    // Cualquier fallo (timeout, red, clave, JSON inválido) usa la plantilla.
-    return respaldo;
+  // 1. Proveedor DeepSeek (si está configurada su clave)
+  const deepseekKey = process.env.DEEPSEEK_API_KEY;
+  if (deepseekKey) {
+    const copy = await callDeepseek(ctx, deepseekKey);
+    if (copy) return copy;
   }
+
+  // 2. Proveedor Gemini (si está configurada su clave)
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const respuesta = await withTimeout(
+        ai.models.generateContent({
+          model: aiConfig.modelo,
+          contents: buildPrompt(ctx),
+          config: {
+            systemInstruction: instruccionPara(ctx.idioma),
+            temperature: 0.4,
+            responseMimeType: "application/json",
+          },
+        }),
+        aiConfig.timeoutMs,
+      );
+
+      const raw = respuesta.text ?? "";
+      const parsed = parseModelJson(raw);
+      if (parsed) {
+        return { text: parsed.text, why: parsed.why, source: "ia" };
+      }
+    } catch {
+      // Cualquier fallo de Gemini continúa al respaldo.
+    }
+  }
+
+  return respaldo;
 }
 
 /** Promesa que se resuelve al agotarse el tiempo límite. */

@@ -73,6 +73,7 @@ export default function InicioPage() {
 
       const data = await res.json();
       sessionStorage.setItem('rutaGenerada', JSON.stringify(data.stops));
+      sessionStorage.setItem('interesesVisitante', JSON.stringify(selectedInterests));
       router.push("/ruta");
     } catch (error) {
       console.error(error);

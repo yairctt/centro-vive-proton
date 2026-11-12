@@ -19,6 +19,7 @@ import {
   ClockIcon,
   CompassIcon,
   MapPinIcon,
+  SparklesIcon,
   TargetIcon,
   ArrowLeftIcon,
 } from "@/components/paneles/icons";
@@ -315,10 +316,13 @@ export default function RutaPage() {
                       {stop.missionId && (
                         <Link
                           href={`/mision/${stop.missionId}`}
-                          className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100"
+                          className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100 shadow-2xs"
                         >
-                          <TargetIcon className="w-4 h-4" />
-                          {es.ruta.verMision}
+                          <SparklesIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                          <span>{es.ruta.verMision}</span>
+                          <span className="text-[10px] bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded font-black uppercase">
+                            IA
+                          </span>
                         </Link>
                       )}
                     </div>
@@ -329,10 +333,13 @@ export default function RutaPage() {
                     <div className="px-4 pb-4">
                       <Link
                         href={`/mision/${stop.missionId}`}
-                        className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100"
+                        className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100 shadow-2xs"
                       >
-                        <TargetIcon className="w-4 h-4" />
-                        {es.ruta.verMision}
+                        <SparklesIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <span>{es.ruta.verMision}</span>
+                        <span className="text-[10px] bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded font-black uppercase">
+                          IA
+                        </span>
                       </Link>
                     </div>
                   )}

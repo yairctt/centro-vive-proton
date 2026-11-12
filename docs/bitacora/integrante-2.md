@@ -80,3 +80,21 @@
 - **Resultado:** se integró la leyenda con acento de color de la identidad en `app/page.tsx` (portada), `app/(panel)/layout.tsx` (tableros admin y comercio), `components/auth/ui.tsx` (flujo de autenticación), `app/(visitante)/inicio/page.tsx`, `app/(visitante)/ruta/page.tsx`, `app/(visitante)/pasaporte/page.tsx`, `app/(visitante)/hoy/page.tsx`, `app/(visitante)/mision/[id]/page.tsx`, `app/escanear/page.tsx` y `app/(panel)/comercio/qr/page.tsx` (tarjetas QR imprimibles).
 - **Revisión humana:** `npm run build` ejecutado y validado con 0 errores (37 rutas compiladas correctamente).
 - **Commit:** `4673be5` — footer powered by proton
+
+### 05:53 · Soporte de DeepSeek API para redacción de misiones
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** integrar la API de DeepSeek (`DEEPSEEK_API_KEY`) para la redacción de misiones en la capa de IA con modo JSON y fallback automático.
+- **Prompt (resumen):** «puedes cambiar para que funcione con esta API DEEPSEEK_API_KEY=sk-...?»
+- **Resultado:** se integró el cliente HTTP nativo para DeepSeek (`https://api.deepseek.com/chat/completions`, modelo `deepseek-chat`) en `lib/ai/gemini.ts` y `lib/ai/config.ts`. Se configuró la clave en `.env.local` y se documentó en `.env.example`. Se añadieron pruebas unitarias en `lib/ai/__tests__/ai.test.ts`. Si la API falla o excede el timeout de 5 s, degrada de forma transparente a las plantillas locales sin romper la demo.
+- **Revisión humana:** validado en vivo con llamada real devolviendo misiones formateadas en JSON (`source: "ia"`), 143/143 pruebas en Vitest pasadas y `npm run build` sin errores.
+- **Commit:** pendiente
+
+### 06:02 · Conexión visual del generador de misiones con IA en la UI
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** conectar la pantalla de misión del visitante (`/mision/[id]`) y la vista de ruta (`/ruta`) con el endpoint de IA (`POST /api/ai/mission`) para mostrar retos personalizados en tiempo real.
+- **Prompt (resumen):** «Conectalo»
+- **Resultado:** se conectó `app/(visitante)/mision/[id]/page.tsx` para solicitar la redacción dinámica a `/api/ai/mission` pasando la ficha del lugar y las preferencias guardadas en `sessionStorage` desde `inicio/page.tsx`. Se agregó la tarjeta visual «Reto Sugerido por IA · DeepSeek» con feedback de carga (*skeleton*), texto de reto y justificación «¿Por qué?». En `ruta/page.tsx` se destacó el botón de misión con microbadge de IA y `SparklesIcon`.
+- **Revisión humana:** compilación `npm run build` exitosa con TypeScript estricto verificado y 143/143 pruebas en Vitest en verde.
+- **Commit:** pendiente
