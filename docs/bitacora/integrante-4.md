@@ -99,6 +99,15 @@
 - **Revisión humana:** Se verificó endpoint por endpoint contra el servidor corriendo, no contra el código: las 9 pantallas responden 200 y los 7 endpoints devuelven datos utilizables. Se comprobó además que el escáner cae al modo demo con el 404 sin cuerpo, porque un 404 con JSON de error se habría tomado como rechazo real y la demo habría mostrado un fallo en vez de la visita de ejemplo. Los cuatro endpoints corregidos son de la carpeta de I3, así que se le avisó para que incorpore los cambios en su rama.
 - **Commit:** pendiente
 
+### 21:10 · Interfaz de «Tu ruta sugerida»: sin emojis, interactiva y con Google Maps
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Rediseñar la pantalla de la ruta: quitar los emojis, hacerla más interactiva y añadir un enlace a Google Maps para que el turista ubique los lugares en su teléfono.
+- **Prompt (resumen):** «Trabajarás en la interfaz "Tu ruta sugerida": quiero que descartes los emojis, sea más interactiva y que agregues un enlace a Google Maps para facilitar al turista a identificar los lugares que le indica la ruta.»
+- **Resultado:** La pantalla (`app/(visitante)/ruta/page.tsx`) quedó con iconos SVG en lugar de emojis (reutilizando los del Integrante 5 en `components/paneles/icons.tsx` y creando los propios de la ruta en `components/visitante/icons.tsx`); cada parada ahora se despliega para mostrar la descripción, el evento asociado y el botón de abrir ese lugar en Google Maps; hay un mapa de Leaflet que se puede mostrar con un toque; y en la cabecera, un botón que abre **la ruta completa en Google Maps con todas las paradas como waypoints en el orden recomendado**, más otro para copiar ese enlace. Los enlaces se arman en `components/visitante/enlaces-maps.ts`, que además recorta a los nueve destinos que acepta Google Maps y avisa si se quedaron paradas fuera. Con 8 pruebas de los enlaces, 125 en total, y los scripts `scripts/probar-ruta.mjs` y `scripts/capturar-ruta.mjs`, que revisan la pantalla en un Chrome de verdad (que no queden emojis, que los enlaces se armen bien y que el desplegable y el mapa funcionen).
+- **Revisión humana:** Se comprobó en el navegador: la pantalla no tiene ni un emoji, muestra los iconos, el enlace de la cabecera abre `/maps/dir/` con origen, destino y modo a pie, y al desplegar una parada aparece el enlace del lugar suelto. Se respetó la decisión del proyecto de usar Leaflet con OpenStreetMap (libre, sin claves ni límites) y el enlace a Google Maps es un deep link que no necesita claves ni API, así que no se rompe el criterio del jurado. Los archivos tocados son de I1 (la pantalla y `components/visitante/`), así que se le avisó para que incorpore los cambios en su rama.
+- **Commit:** pendiente
+
 ### 20:33 · Arreglo del flujo de puntos: escanear → pasaporte
 
 - **Herramienta:** OpenCode (MiniMax M3.1 Flash)
