@@ -14,15 +14,20 @@
 // día de la demo, no una fecha real.
 
 import type { Event } from "../types";
+import { instanteEnZona } from "./zona-horaria";
 
 /**
  * Genera los eventos de muestra para una fecha dada.
  * El día de la demo (miércoles 11 de noviembre) hay uno nocturno.
+ *
+ * La referencia por defecto es el mediodía de Veracruz del 11 de noviembre,
+ * para que el día no cambie según la zona horaria del servidor.
  */
-export function eventosDemo(fecha: Date = new Date("2026-11-11T00:00:00")): Event[] {
-  const dia = fecha.toISOString().slice(0, 10);
-
-  const aLas = (hora: string) => new Date(`${dia}T${hora}:00`).toISOString();
+export function eventosDemo(
+  fecha: Date = new Date("2026-11-11T18:00:00.000Z"),
+): Event[] {
+  /** Convierte una hora de reloj de Veracruz al instante absoluto. */
+  const aLas = (hora: string) => instanteEnZona(fecha, hora).toISOString();
 
   return [
     {

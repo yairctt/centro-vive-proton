@@ -60,3 +60,40 @@ export function diaSemanaIso(fecha: Date, zona: string = ZONA_DESTINO): 1 | 2 | 
   const { diaSemana } = partesEnZona(fecha, zona);
   return (diaSemana === 0 ? 7 : diaSemana) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }
+
+/** Fecha en "YYYY-MM-DD" según la zona del destino. */
+export function fechaEnZona(fecha: Date, zona: string = ZONA_DESTINO): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: zona,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(fecha);
+}
+
+/**
+ * Convierte una hora de reloj ("HH:MM") del día de `fecha`, en la zona del
+ * destino, al instante absoluto correspondiente.
+ *
+ * Sin esto, `new Date("2026-11-11T18:00:00")` se interpretaría en la zona del
+ * servidor: en Vercel (UTC) el evento de las 18:00 caería a las 12:00 de
+ * Veracruz.
+ */
+export function instanteEnZona(
+  fecha: Date,
+  hora: string,
+  zona: string = ZONA_DESTINO,
+): Date {
+  const [horas, minutos] = hora.split(":").map(Number);
+  const [anio, mes, dia] = fechaEnZona(fecha, zona).split("-").map(Number);
+
+  // Se supone que la hora dada es UTC y se corrige con la diferencia real.
+  const suposicion = Date.UTC(anio, mes - 1, dia, horas, minutos);
+  const { hora: horaObtenida, minuto: minutoObtenido } = partesEnZona(
+    new Date(suposicion),
+    zona,
+  );
+
+  const diferencia = (horas * 60 + minutos) - (horaObtenida * 60 + minutoObtenido);
+  return new Date(suposicion + diferencia * 60_000);
+}
