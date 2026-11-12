@@ -73,6 +73,12 @@ export default function PasaportePage() {
         setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
         return;
       }
+      if (res.status === 401) {
+        // Sin sesión no hay error: el pasaporte se muestra en modo demo y
+        // quien quiera puede iniciar sesión desde la cabecera.
+        setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
+        return;
+      }
       if (!res.ok || !body?.profile) {
         setEstado({ fase: "error", mensaje: body?.error ?? "No pudimos cargar tu pasaporte." });
         return;

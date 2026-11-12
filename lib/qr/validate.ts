@@ -47,6 +47,13 @@ export async function validateToken(token: string): Promise<ValidateResult> {
       ? { kind: "ok", data: body, demo: false }
       : { kind: "error", message: body.message || errorMsg };
   }
+
+  // Un 401 sin cuerpo de validación significa «no hay sesión». No es un token
+  // malo: se cae al modo demo para que la demo siga siendo recorrible.
+  if (res.status === 401 && !esValidateResponse(body)) {
+    return { kind: "ok", data: mockValidate(token), demo: true };
+  }
+
   if ((res.status === 404 && !errorMsg) || res.status >= 500) {
     // Modo demo: el mock acumula los puntos en esta sesión para que el
     // pasaporte los muestre al volver. Se le pasa el token para que un token

@@ -12,6 +12,12 @@ import { generateMission } from "@/lib/ai/gemini";
 import { buscarLugarDemo } from "@/lib/engine/datos-demo";
 import type { Place } from "@/lib/types";
 
+/**
+ * Límite de tiempo para consultar la base al buscar la ficha del lugar.
+ * Si Supabase no responde, la pantalla no debe quedarse esperando.
+ */
+const TIMEOUT_BUSQUEDA_MS = 2500;
+
 const bodySchema = z.object({
   /** Id del lugar (obligatorio). */
   placeId: z.string().min(1),
@@ -78,9 +84,24 @@ export async function POST(request: Request) {
  * Si tampoco está ahí, quien llama puede mandar la ficha en el cuerpo.
  */
 async function buscarLugar(placeId: string, urlActual: string): Promise<Place | null> {
+  // Primero se busca en el catálogo y en `lib/mock`: son respuestas inmediatas.
+  // La base se consulta después, con un límite de tiempo, para que si Supabase
+  // no responde la pantalla no se quede esperando.
+  const delCatalogo = buscarLugarDemo(placeId);
+  if (delCatalogo) return delCatalogo;
+
+  // `lib/mock` del Integrante 1 (ids "p1", "p2"…) como segundo recurso.
+  const { mockPlaces } = await import("@/lib/mock");
+  const delMock = mockPlaces.find((lugar) => lugar.id === placeId);
+  if (delMock) return delMock;
+
+  // Y por último la base de datos, que es la fuente principal.
   try {
     const origen = new URL(urlActual).origin;
-    const respuesta = await fetch(`${origen}/api/places`, { cache: "no-store" });
+    const respuesta = await fetch(`${origen}/api/places`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_BUSQUEDA_MS),
+    });
     if (respuesta.ok) {
       const lugares = (await respuesta.json()) as Place[];
       if (Array.isArray(lugares)) {
@@ -89,13 +110,8 @@ async function buscarLugar(placeId: string, urlActual: string): Promise<Place | 
       }
     }
   } catch {
-    // Sin backend disponible: se intenta el catálogo de respaldo.
+    // Sin backend disponible: ya se probaron el catálogo y el mock.
   }
 
-  const delCatalogo = buscarLugarDemo(placeId);
-  if (delCatalogo) return delCatalogo;
-
-  // `lib/mock` del Integrante 1 (ids "p1", "p2"…) como último recurso.
-  const { mockPlaces } = await import("@/lib/mock");
-  return mockPlaces.find((lugar) => lugar.id === placeId) ?? null;
+  return null;
 }

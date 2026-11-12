@@ -61,7 +61,10 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      // Si la base no responde (red caída, proyecto mal configurado) se cae a
+      // los eventos de respaldo: la agenda nunca debe quedarse en blanco.
+      console.error("GET /api/events:", error.message);
+      return NextResponse.json(eventosRespaldo(when));
     }
 
     const events = (data ?? []).map(toEvent).filter((event) => {

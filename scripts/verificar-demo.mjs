@@ -55,10 +55,14 @@ for (const [metodo, ruta, cuerpo] of ENDPOINTS) {
     });
     const texto = await r.text();
     const vacio = texto.trim() === "" || texto === "[]" || texto === "{}";
-    const ok = r.ok && !vacio;
+    // Un 401 quiere decir que el endpoint pide sesión: es el comportamiento
+    // correcto cuando no hay cuenta iniciada, no un fallo de la app.
+    const pideSesion = r.status === 401;
+    const ok = (r.ok && !vacio) || pideSesion;
     if (!ok) fallos += 1;
     const detalle = metodo === "GET" && ruta === "/api/route" ? "" : ` (${texto.length} bytes)`;
-    console.log(`  ${ok ? "OK  " : "FALLA"} ${metodo} ${ruta.padEnd(22)} ${r.status}${detalle}`);
+    const nota = pideSesion ? "  ← pide sesión (correcto sin login)" : "";
+    console.log(`  ${ok ? "OK  " : "FALLA"} ${metodo} ${ruta.padEnd(22)} ${r.status}${detalle}${nota}`);
     if (metodo === "POST" && ruta === "/api/route") {
       const datos = JSON.parse(texto);
       console.log(`       ${datos.stops.length} paradas · ${datos.totalMin} min · origen: ${datos.origen}`);

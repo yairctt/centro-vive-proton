@@ -13,7 +13,23 @@ function peticion(cuerpo: unknown): Request {
   });
 }
 
+/** Ejecuta el handler con margen: algunas búsquedas internas van a la red. */
+async function llamar(cuerpo: unknown, timeout = 10000) {
+  const p = POST(peticion(cuerpo));
+  const resultado = await Promise.race([
+    p,
+    new Promise<never>((_, rej) =>
+      setTimeout(() => rej(new Error("El handler tardó demasiado")), timeout),
+    ),
+  ]);
+  return resultado;
+}
+
 describe("POST /api/ai/mission", () => {
+  // La búsqueda del lugar consulta GET /api/places, que puede tardar si la
+  // base no está configurada; por eso los tests tienen más margen.
+  const TIMEOUT = 20000;
+
   it("redacta la misión de un lugar con su ficha", async () => {
     const respuesta = await POST(
       peticion({
@@ -71,12 +87,14 @@ describe("POST /api/ai/mission", () => {
   it("encuentra también los lugares de lib/mock (ids cortos)", async () => {
     // `lib/mock` del Integrante 1 usa ids "p1", "p2"… y las pantallas que
     // todavía no están conectadas a la base los usan.
-    const respuesta = await POST(peticion({ placeId: "p1", interests: ["gastronomia"] }));
+    // La búsqueda interna consulta GET /api/places, que puede tardar si la
+    // base no está configurada, así que el test tiene margen.
+    const respuesta = await llamar({ placeId: "p1", interests: ["gastronomia"] }, TIMEOUT);
 
     expect(respuesta.status).toBe(200);
     const cuerpo = await respuesta.json();
     expect(cuerpo.text).toContain("Gran Café");
-  });
+  }, TIMEOUT);
 
   it("rechaza datos inválidos con 400", async () => {
     const respuesta = await POST(peticion({}));
@@ -87,8 +105,8 @@ describe("POST /api/ai/mission", () => {
   });
 
   it("devuelve 404 si el lugar no existe en ninguna fuente", async () => {
-    const respuesta = await POST(peticion({ placeId: "no-existe-xyz", interests: [] }));
+    const respuesta = await llamar({ placeId: "no-existe-xyz", interests: [] }, TIMEOUT);
 
     expect(respuesta.status).toBe(404);
-  });
+  }, TIMEOUT);
 });
