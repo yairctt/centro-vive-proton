@@ -104,4 +104,34 @@ describe("POST /api/route", () => {
     // Sin base de datos configurada, la ruta usa el catálogo de respaldo.
     expect(["base", "respaldo"]).toContain(cuerpo.origen);
   });
+
+  it("devuelve los minutos totales estimados", async () => {
+    const respuesta = await POST(
+      peticion({ minutes: 120, interests: ["gastronomia", "historia"], budget: "bajo" }),
+    );
+    const cuerpo = await respuesta.json();
+
+    expect(typeof cuerpo.totalMin).toBe("number");
+    expect(cuerpo.totalMin).toBeGreaterThan(0);
+    expect(cuerpo.totalMin).toBeLessThanOrEqual(120);
+  });
+
+  it("la ficha de cada parada trae los datos normalizados en su campo directo", async () => {
+    // La UI (app/(visitante)/ruta/page.tsx) lee `stop.place.avgVisitMin`
+    // directamente, no dentro de `meta`. Si el motor solo lo deja en `meta`,
+    // la pantalla muestra 30 min siempre.
+    const respuesta = await POST(
+      peticion({ minutes: 120, interests: ["gastronomia", "historia"], budget: "bajo" }),
+    );
+    const cuerpo = await respuesta.json();
+
+    expect(cuerpo.stops.length).toBeGreaterThan(0);
+    for (const parada of cuerpo.stops) {
+      if (parada.kind === "evento") continue;
+      expect(typeof parada.place.avgVisitMin).toBe("number");
+      expect(parada.place.avgVisitMin).toBeGreaterThan(0);
+      // Y debe coincidir con lo que el motor calculó.
+      expect(parada.place.avgVisitMin).toBe(parada.place.meta.avgVisitMin);
+    }
+  });
 });

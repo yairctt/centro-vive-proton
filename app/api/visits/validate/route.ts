@@ -41,12 +41,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const { token } = parsed.data;
 
-  // Solo usuarios con sesión suman puntos (invitado o cuenta registrada).
-  const auth = await requireProfile(["visitante", "admin"]);
-  if ("response" in auth) return auth.response;
-  const profileId = auth.profile.id;
+  try {
+    // Solo usuarios con sesión suman puntos (invitado o cuenta registrada).
+    const auth = await requireProfile(["visitante", "admin"]);
+    if ("response" in auth) return auth.response;
+    const profileId = auth.profile.id;
 
-  const supabase = getAdminClient();
+    const supabase = getAdminClient();
 
   // 2. Buscar el token QR
   const { data: qrRow, error: qrError } = await supabase
@@ -193,4 +194,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ? `¡Misión completada! +${pointsAdded} puntos`
       : `¡Visita registrada! +${pointsAdded} puntos`,
   } satisfies ValidateResponse);
+  } catch {
+    // Sin base de datos: se responde 404 SIN cuerpo para que el cliente caiga
+    // al modo demo (es la convención que espera `lib/qr/validate.ts`: un 404
+    // sin JSON de error significa "el endpoint no está disponible").
+    return new NextResponse(null, { status: 404 });
+  }
 }

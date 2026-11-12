@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { BotonSalir } from "@/components/auth/BotonSalir";
+import { mockProfile, mockVisits, mockPlaces, mockRewards } from "@/lib/mock";
+import { puntosDemo } from "@/lib/qr/mock";
 
 /** Respuesta de GET /api/me/passport (datos del usuario de la sesión). */
 interface Pasaporte {
@@ -25,7 +27,34 @@ interface Pasaporte {
   }[];
 }
 
-type Estado = { fase: "cargando" } | { fase: "error"; mensaje: string } | { fase: "listo"; datos: Pasaporte };
+type Estado =
+  | { fase: "cargando" }
+  | { fase: "error"; mensaje: string }
+  | { fase: "listo"; datos: Pasaporte; demo: boolean };
+
+/**
+ * Modo demo (sin base de datos): datos de `lib/mock` con los puntos que el
+ * escáner fue sumando en este navegador.
+ */
+function pasaporteDemo(): Pasaporte {
+  return {
+    profile: { ...mockProfile, points: puntosDemo() },
+    visits: mockVisits.map((v) => ({
+      id: v.id,
+      placeName: mockPlaces.find((p) => p.id === v.placeId)?.name ?? "Lugar del Centro",
+      pointsAwarded: v.pointsAwarded,
+      missionTitle: null,
+    })),
+    rewards: mockRewards.map((r) => ({
+      id: r.id,
+      title: r.title,
+      conditions: r.conditions,
+      pointsCost: r.pointsCost,
+      canjeable: false,
+    })),
+    redemptions: [],
+  };
+}
 
 export default function PasaportePage() {
   const [estado, setEstado] = useState<Estado>({ fase: "cargando" });
@@ -37,13 +66,19 @@ export default function PasaportePage() {
     try {
       const res = await fetch("/api/me/passport", { cache: "no-store" });
       const body = await res.json().catch(() => null);
+      if (res.status >= 500 || body?.demo) {
+        // Sin base de datos: modo demo (los puntos los lleva el navegador).
+        setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
+        return;
+      }
       if (!res.ok || !body?.profile) {
         setEstado({ fase: "error", mensaje: body?.error ?? "No pudimos cargar tu pasaporte." });
         return;
       }
-      setEstado({ fase: "listo", datos: body as Pasaporte });
+      setEstado({ fase: "listo", datos: body as Pasaporte, demo: false });
     } catch {
-      setEstado({ fase: "error", mensaje: "Sin conexión. Intenta de nuevo." });
+      // Sin servidor: modo demo.
+      setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
     }
   }, []);
 
@@ -103,6 +138,7 @@ export default function PasaportePage() {
   }
 
   const { profile, visits, rewards, redemptions } = estado.datos;
+  const modoDemo = estado.demo;
   const pendientePorReward = new Map(
     redemptions.filter((r) => r.status === "pendiente").map((r) => [r.rewardId, r.code]),
   );
@@ -147,10 +183,16 @@ export default function PasaportePage() {
                 🏆
               </div>
             </div>
+
+            {modoDemo && (
+              <p className="text-[11px] text-blue-200/90 mt-3 font-medium">
+                Modo demostración: los puntos se guardan en este navegador.
+              </p>
+            )}
           </div>
         </div>
 
-        {esInvitado && (
+        {esInvitado && !modoDemo && (
           <Link
             href="/registro?next=/pasaporte"
             className="mt-3 block rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-900"

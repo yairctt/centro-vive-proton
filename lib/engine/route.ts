@@ -7,6 +7,7 @@ import { engineConfig } from "./config";
 import { distanceM, walkMinutes, type LatLng } from "./geo";
 import { fitsBudget, isOpenAt, readPlaceInfo, type DiaSemana } from "./place";
 import { dayOfWeek, minutesOfDay, normalizeText, scorePlace, type ScoreBreakdown } from "./score";
+import { flags } from "../flags";
 
 /** Parada del motor: una parada del contrato más el evento que la acompaña. */
 export interface EngineRouteStop extends RouteStop {
@@ -23,6 +24,8 @@ export interface EngineRouteStop extends RouteStop {
 /** Respuesta del motor. Compatible con `RouteResponse` de lib/types.ts. */
 export interface EngineRouteResponse {
   stops: EngineRouteStop[];
+  /** Minutos totales estimados (visita + caminata). */
+  totalMin: number;
 }
 
 export interface BuildRouteOptions {
@@ -140,11 +143,14 @@ export function buildRoute(
     if (referencia) origin = { lat: referencia.lat, lng: referencia.lng };
   }
 
-  const eventos = (options.events ?? []).filter((event) => {
-    const inicio = Date.parse(event.startsAt);
-    if (Number.isNaN(inicio)) return false;
-    return inicio >= now.getTime() && inicio <= now.getTime() + minutosVentana * 60_000;
-  });
+  // Los eventos solo entran si el interruptor `agenda` está encendido.
+  const eventos = flags.agenda
+    ? (options.events ?? []).filter((event) => {
+        const inicio = Date.parse(event.startsAt);
+        if (Number.isNaN(inicio)) return false;
+        return inicio >= now.getTime() && inicio <= now.getTime() + minutosVentana * 60_000;
+      })
+    : [];
 
   const misiones = options.missions ?? [];
   const misionPorLugar = new Map<string, string>();
@@ -213,12 +219,24 @@ export function buildRoute(
       (i) => normalizeText(i) === normalizeText(place.category),
     );
 
+    // La ficha que viaja en la parada lleva los campos normalizados también en
+    // su campo directo (`Place.avgVisitMin`), no solo dentro de `meta`: así la
+    // UI puede leerlos sin tener que abrir `meta`.
+    const ficha: Place = {
+      ...place,
+      avgVisitMin: mejor.info.avgVisitMin,
+      priceLevel: mejor.info.priceLevel ?? place.priceLevel,
+      opportunity: mejor.info.opportunity,
+      opensAt: mejor.info.opensAt,
+      closesAt: mejor.info.closesAt,
+    };
+
     selected.push({
-      place,
+      place: ficha,
       order: selected.length + 1,
       distanceM: Math.round(dist),
       etaMin: Math.round(etaMin),
-      reason: buildReason(place, breakdown, { etaMin, interest: interes }),
+      reason: buildReason(ficha, breakdown, { etaMin, interest: interes }),
       missionId: misionPorLugar.get(place.id),
       kind: "lugar",
       score: breakdown,
@@ -257,6 +275,8 @@ export function buildRoute(
     const puntoAnterior = actual ?? origin;
     const dist = puntoAnterior ? distanceM(puntoAnterior, puntoEvento) : 0;
     const eta = walkMinutes(dist);
+    // Un evento no se "visita": se asiste a él. Por eso no suma tiempo de
+    // visita, solo el traslado, y así el total sigue cabiendo en la ventana.
     if (minutosTranscurridos + eta > minutosVentana) continue;
 
     const placeEvento = eventToPlace(evento);
@@ -279,5 +299,13 @@ export function buildRoute(
     parada.order = i + 1;
   });
 
-  return { stops: selected };
+  // Minutos consumidos: caminata + visita de cada parada.
+  // Un evento solo cuenta el traslado (asistir a él es la visita).
+  const totalMin = selected.reduce((suma, parada) => {
+    if (parada.kind === "evento") return suma + parada.etaMin;
+    const info = readPlaceInfo(parada.place, hoy);
+    return suma + parada.etaMin + info.avgVisitMin;
+  }, 0);
+
+  return { stops: selected, totalMin };
 }

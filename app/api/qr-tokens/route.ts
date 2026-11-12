@@ -64,8 +64,10 @@ export async function GET(): Promise<NextResponse> {
       a.place.name.localeCompare(b.place.name, "es"),
     );
     return NextResponse.json(tarjetas);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error inesperado al consultar los QR";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Modo demo: sin base configurada se responden las tarjetas de `lib/mock`,
+    // que el Integrante 2 preparó con tokens marcados como DEMO.
+    const { mockQrTarjetas } = await import("@/lib/qr/mock");
+    return NextResponse.json(mockQrTarjetas());
   }
 }

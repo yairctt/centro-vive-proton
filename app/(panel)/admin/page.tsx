@@ -7,15 +7,28 @@ import {
   ActivityByHourChart,
   LiveVisitsFeed,
   MOCK_ADMIN_STATS,
+  ActivityIcon,
+  TargetIcon,
+  GiftIcon,
+  BuildingIcon,
+  InfoIcon,
+  PauseIcon,
+  PlayIcon,
+  RefreshCwIcon,
+  DownloadIcon,
   type ExtendedStats,
 } from "@/components/paneles";
 import type { Stats } from "@/lib/types";
 
+type TimeRange = "hoy" | "ayer" | "semana";
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<ExtendedStats>(MOCK_ADMIN_STATS);
   const [isLive, setIsLive] = useState(true);
+  const [timeRange, setTimeRange] = useState<TimeRange>("hoy");
   const [lastUpdated, setLastUpdated] = useState<string>("Recién cargado");
   const [isFetching, setIsFetching] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   // Consulta a GET /api/stats cada 5 segundos (Requisito CP2: actualización < 10s)
   const fetchStats = useCallback(async () => {
@@ -62,6 +75,37 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
+  const handleExportCsv = () => {
+    const csvContent = [
+      ["Lugar", "Escaneos Registrados", "Porcentaje"].join(","),
+      ...stats.scansByPlace.map((p) => {
+        const pct = stats.totalInteractions > 0
+          ? ((p.scans / stats.totalInteractions) * 100).toFixed(1)
+          : "0.0";
+        return `"${p.placeName}",${p.scans},${pct}%`;
+      }),
+      [],
+      ["Métrica General", "Valor"].join(","),
+      ["Interacciones Totales", stats.totalInteractions].join(","),
+      ["Misiones Aceptadas", stats.missionsAccepted].join(","),
+      ["Misiones Completadas", stats.missionsCompleted].join(","),
+      ["Canjes en Comercio", stats.redemptions].join(","),
+      ["Lugares Activos", stats.activePlaces].join(","),
+      ["Comercios Activos", stats.activeBusinesses].join(","),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `pulso-jarocho-afluencia-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setDownloadSuccess(true);
+    setTimeout(() => setDownloadSuccess(false), 3000);
+  };
+
   useEffect(() => {
     fetchStats();
     if (!isLive) return;
@@ -76,50 +120,105 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-neutral-900 dark:text-white">
               Tablero de Afluencia Digital
             </h1>
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold border transition-colors ${
                 isLive
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-                  : "bg-neutral-100 text-neutral-600 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-400"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                  : "bg-neutral-100 text-neutral-600 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700"
               }`}
             >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  isLive ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"
-                }`}
-              ></span>
-              {isLive ? "● En Vivo (cada 5s)" : "Pausado"}
+              <span className="relative flex h-2 w-2">
+                {isLive && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                )}
+                <span
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
+                    isLive ? "bg-emerald-500" : "bg-neutral-400"
+                  }`}
+                ></span>
+              </span>
+              {isLive ? "En vivo (cada 5s)" : "Pausado"}
             </span>
           </div>
           <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-            Señales de interacción urbana y participación en el Centro Histórico de Veracruz.
+            Señales de interacción urbana y dinamismo comercial en el Centro Histórico de Veracruz.
           </p>
         </div>
 
+        {/* Action Controls & Filters */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Time Range Selector */}
+          <div className="inline-flex rounded-xl border border-neutral-200/80 bg-neutral-100/80 p-0.5 text-xs dark:border-neutral-800 dark:bg-neutral-800/80">
+            {(["hoy", "ayer", "semana"] as TimeRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`cursor-pointer rounded-lg px-2.5 py-1 font-semibold transition ${
+                  timeRange === range
+                    ? "bg-white text-neutral-900 shadow-2xs dark:bg-neutral-900 dark:text-white"
+                    : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                }`}
+              >
+                {range === "hoy" ? "Hoy" : range === "ayer" ? "Ayer" : "Semana"}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={() => setIsLive(!isLive)}
-            className="cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+            title={isLive ? "Pausar actualización automática" : "Reanudar actualización en vivo"}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
           >
-            {isLive ? "Pausar actualización" : "Reanudar en vivo"}
+            {isLive ? (
+              <>
+                <PauseIcon className="h-3.5 w-3.5 text-neutral-500" />
+                <span className="hidden sm:inline">Pausar</span>
+              </>
+            ) : (
+              <>
+                <PlayIcon className="h-3.5 w-3.5 text-teal-600" />
+                <span className="hidden sm:inline">En vivo</span>
+              </>
+            )}
           </button>
-          <span className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-500 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
-            {isFetching ? "Actualizando…" : `Último pulso: ${lastUpdated}`}
-          </span>
+
+          <button
+            onClick={fetchStats}
+            title="Actualizar datos ahora"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-neutral-300/80 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 active:scale-95 transition dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+          >
+            <RefreshCwIcon className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-teal-600" : "text-neutral-500"}`} />
+            <span className="hidden sm:inline">Actualizar</span>
+          </button>
+
+          <button
+            onClick={handleExportCsv}
+            title="Exportar métricas de afluencia a archivo CSV"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-teal-800 active:scale-95 transition dark:bg-teal-600 dark:hover:bg-teal-700"
+          >
+            <DownloadIcon className="h-3.5 w-3.5" />
+            <span>{downloadSuccess ? "¡Descargado!" : "Exportar CSV"}</span>
+          </button>
         </div>
       </div>
 
       {/* Regla 9 Aviso Metodológico */}
-      <div className="rounded-xl border border-teal-200 bg-teal-50/60 p-3.5 text-xs text-teal-900 dark:border-teal-900/60 dark:bg-teal-950/20 dark:text-teal-200">
-        <span className="font-bold">📊 Indicadores de actividad:</span> Las métricas presentadas
-        corresponden a <span className="underline font-semibold">actividad registrada en la app</span> (escaneos QR,
-        rutas creadas y misiones validadas en el prototipo); no constituyen un censo peatonal general ni registro fiscal de ventas.
+      <div className="flex items-start gap-3 rounded-2xl border border-teal-200/70 bg-gradient-to-r from-teal-50/80 to-teal-50/30 p-4 text-xs text-teal-900 shadow-2xs dark:border-teal-900/50 dark:from-teal-950/30 dark:to-teal-950/10 dark:text-teal-200">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
+          <InfoIcon className="h-4 w-4" />
+        </div>
+        <div className="space-y-0.5">
+          <p className="font-bold text-teal-950 dark:text-teal-100">Indicadores de actividad en prototipo</p>
+          <p className="text-teal-800/90 dark:text-teal-300/90 leading-relaxed">
+            Las métricas presentadas corresponden a <strong className="font-semibold underline">actividad registrada en la app</strong> (escaneos QR, rutas generadas y misiones completadas); no representan un conteo peatonal total ni facturación comercial.
+          </p>
+        </div>
       </div>
 
       {/* KPI Cards Grid */}
@@ -130,15 +229,15 @@ export default function AdminDashboardPage() {
           subtitle="Escaneos y validaciones registradas hoy"
           badge="+28% hoy"
           badgeType="positive"
-          icon={<span className="text-sm">⚡</span>}
+          icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Completadas"
           value={`${stats.missionsCompleted}/${stats.missionsAccepted}`}
           subtitle="64.5% de conversión de visitantes"
-          badge="Objetivo 50%"
+          badge="Meta 50%"
           badgeType="brand"
-          icon={<span className="text-sm">🎯</span>}
+          icon={<TargetIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Canjes en Comercio"
@@ -146,15 +245,15 @@ export default function AdminDashboardPage() {
           subtitle="Beneficios validados presencialmente"
           badge="+12 hoy"
           badgeType="warning"
-          icon={<span className="text-sm">🎁</span>}
+          icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Puntos Conectados"
           value={`${stats.activePlaces} / ${stats.activeBusinesses}`}
           subtitle="12 atractivos y 6 comercios demo"
-          badge="100% verificados"
+          badge="Verificados"
           badgeType="neutral"
-          icon={<span className="text-sm">📍</span>}
+          icon={<BuildingIcon className="h-5 w-5" />}
         />
       </div>
 

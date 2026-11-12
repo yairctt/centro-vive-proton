@@ -40,11 +40,18 @@ export async function validateToken(token: string): Promise<ValidateResult> {
   const errorMsg =
     body && typeof (body as { error?: unknown }).error === "string" ? (body as { error: string }).error : null;
 
-  if (res.ok && esValidateResponse(body)) {
-    return body.ok ? { kind: "ok", data: body, demo: false } : { kind: "error", message: body.message || null };
+  // El backend responde los rechazos (404 token no encontrado, 409 ya usado, 410 expirado,
+  // 422 sin perfil) con un ValidateResponse { ok:false, message } y código 4xx: es un error real.
+  if (esValidateResponse(body)) {
+    return res.ok && body.ok
+      ? { kind: "ok", data: body, demo: false }
+      : { kind: "error", message: body.message || errorMsg };
   }
   if ((res.status === 404 && !errorMsg) || res.status >= 500) {
-    return { kind: "ok", data: mockValidate(), demo: true };
+    // Modo demo: el mock acumula los puntos en esta sesión para que el
+    // pasaporte los muestre al volver. Se le pasa el token para que un token
+    // solo cuente una vez, como en el servidor.
+    return { kind: "ok", data: mockValidate(token), demo: true };
   }
   return { kind: "error", message: errorMsg };
 }

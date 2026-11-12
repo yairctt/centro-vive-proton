@@ -103,10 +103,24 @@ export async function GET(): Promise<NextResponse> {
           createdAt: String(c.created_at),
         };
       }),
+      demo: false,
     });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error inesperado al consultar el pasaporte";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Modo demo: sin base configurada se responde con los datos de `lib/mock`
+    // (misma forma que la respuesta real). Los puntos de la sesión los lleva
+    // el cliente (sessionStorage), así que aquí solo se avisa con `demo`.
+    const { mockProfile, mockVisits, mockRewards, mockPlaces } = await import("@/lib/mock");
+    return NextResponse.json({
+      profile: mockProfile,
+      visits: mockVisits.map((v) => ({
+        ...v,
+        placeName: mockPlaces.find((p) => p.id === v.placeId)?.name ?? "Lugar del Centro",
+        missionTitle: null,
+      })),
+      rewards: mockRewards.map((r) => ({ ...r, canjeable: false })),
+      redemptions: [],
+      demo: true,
+    });
   }
 }
 
