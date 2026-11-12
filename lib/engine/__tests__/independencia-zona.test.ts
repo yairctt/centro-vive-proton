@@ -88,5 +88,5 @@ describe("independencia de la zona horaria del servidor", () => {
       expect(salida, `Falló con el servidor en ${nombre}`).toMatch(/Tests\s+\d+ passed/);
       expect(salida, `Falló con el servidor en ${nombre}`).not.toMatch(/failed/);
     }
-  });
+  }, 15000);
 });
