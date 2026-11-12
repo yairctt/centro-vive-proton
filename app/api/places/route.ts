@@ -1,6 +1,7 @@
 import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toPlace } from "@/lib/db/mappers";
+import { CATALOGO_DEMO } from "@/lib/engine/datos-demo";
 
 export async function GET() {
   await connection();
@@ -16,9 +17,17 @@ export async function GET() {
     }
 
     const places = (data ?? []).map(toPlace);
+
+    // Modo demo: sin base configurada o sin lugares cargados, se responde con
+    // el catálogo de respaldo para que las pantallas nunca se queden en blanco.
+    // El contrato no cambia: sigue siendo un arreglo de Place.
+    if (places.length === 0) {
+      return NextResponse.json(CATALOGO_DEMO);
+    }
+
     return NextResponse.json(places);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error inesperado al consultar lugares";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Sin base de datos se responde con el catálogo de respaldo (modo demo).
+    return NextResponse.json(CATALOGO_DEMO);
   }
 }

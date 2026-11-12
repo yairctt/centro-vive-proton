@@ -23,6 +23,8 @@ npm run dev                  # http://localhost:3000
 
 Variables (`.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `GEMINI_API_KEY` (las dos últimas solo en el servidor). Cada push a `main` se despliega en Vercel.
 
+**Para probar la demo**, paso a paso: [`docs/guia-pruebas.md`](docs/guia-pruebas.md). Con el servidor arriba, `node scripts/verificar-demo.mjs` comprueba que las 9 pantallas y los 7 endpoints principales responden.
+
 ## Estructura
 
 ```
@@ -44,9 +46,10 @@ lib/
 supabase/             # schema.sql y seed.sql
 docs/
   propuesta.md        # propuesta completa
+  guia-pruebas.md     # cómo levantar y recorrer la demo paso a paso
   bitacora/           # bitácora de IA por integrante
   explicaciones/      # explicación de cada módulo
-scripts/              # utilidades (compilar-bitacora.mjs)
+scripts/              # utilidades (compilar-bitacora.mjs, verificar-demo.mjs)
 ```
 
 ## Bitácora de IA
@@ -73,6 +76,33 @@ Bitácoras por integrante:
 
 ### Bitácora de IA — Integrante 1 (Frontend del visitante)
 
+##### 15:00 · Fase 1: Esqueleto vivo y datos mock (CP1)
+
+- **Herramienta:** Gemini 3.1 Pro (Antigravity IDE)
+- **Objetivo:** Crear la estructura de carpetas `app/(visitante)` y las vistas iniciales (Inicio, Ruta, Misión, Pasaporte) con datos de prueba estáticos para no depender del backend todavía.
+- **Prompt (resumen):** «Crea en `app/(visitante)` las pantallas inicio (tiempo, intereses, presupuesto), ruta, `mision/[id]` y pasaporte, usando datos de `lib/mock` con los tipos de `lib/types.ts`. Diseño mobile-first.»
+- **Resultado:** `lib/mock/index.ts` con `mockProfile`, `mockPlaces` y `mockRouteStops`, más los `page.tsx` iniciales de cada vista con la navegación base (`useRouter` y `Link`). Se resolvió un problema con `mkdir` en PowerShell creando las carpetas directamente en el IDE.
+- **Revisión humana:** Completada (archivos creados y servidor levantado con éxito).
+- **Commit:** `c7b2a91` — feat(visitante): agrega vistas del esqueleto vivo y datos mock
+
+##### 16:20 · Fase 2: Diseño UI final y limpieza de errores (CP1)
+
+- **Herramienta:** Gemini 3.1 Pro (Antigravity IDE)
+- **Objetivo:** Pulir la interfaz para cumplir con el documento de diseño (mobile-first, botones grandes, alto contraste) y resolver las advertencias de compilación antes del merge.
+- **Prompt (resumen):** «Proporciona el diseño final para las pantallas restantes (Ruta, Misión y Pasaporte) y ayúdame a solucionar el error de compilación "MisionPage defined multiple times".»
+- **Resultado:** Clases de Tailwind avanzadas (efectos `active:scale-95`, tarjetas, gradientes, layout fijo inferior) y corrección del error de duplicación de funciones borrando el código sobrante. Build local exitoso sin errores.
+- **Revisión humana:** Completada (UI revisada en modo dispositivo móvil en Chrome y build exitoso).
+- **Commit:** `a1f8c3d` — feat(visitante): vistas del esqueleto vivo CP1 completas
+
+##### 17:12 · Fase 3: Conexión del motor y lugares reales (CP2)
+
+- **Herramienta:** Gemini 3.1 Pro (Antigravity IDE)
+- **Objetivo:** Abandonar los datos mock y conectar el formulario de preferencias con el endpoint real `POST /api/route`, pasando la respuesta a la pantalla de ruta.
+- **Prompt (resumen):** «Actualiza el código de la página de inicio y de ruta para conectarlo con el backend real de mis compañeros. Pásale los minutos, intereses y presupuesto, y lee el resultado.»
+- **Resultado:** En `/inicio` se agregó el `fetch` al endpoint de I4 con manejo de estado de carga y se guardó la respuesta en `sessionStorage`; en `/ruta` se refactorizó para leer de la sesión. Se corrigió además un error de React (cascading renders por `setState` síncrono) usando `isClient` para evitar problemas de hidratación de Next.js.
+- **Revisión humana:** PENDIENTE: Confirmar visualización de ruta real con base de datos.
+- **Commit:** `e5a9b42` — feat(visitante): conecta preferencias con POST /api/route real
+
 ### Bitácora de IA — Integrante 2 (Mapa, QR, integración y despliegue)
 
 ##### 14:48 · Fase 0: estructura inicial, dependencias y tipos
@@ -81,7 +111,7 @@ Bitácoras por integrante:
 - **Objetivo:** dejar listo el repositorio para que los 5 integrantes trabajen en paralelo: proyecto Next.js, dependencias instaladas, carpetas por integrante, tipos compartidos y reglas para agentes.
 - **Prompt (resumen):** «Crea la estructura inicial de Pulso Jarocho según docs/propuesta.md: Next.js + TS + Tailwind, dependencias del stack, carpetas por integrante, lib/types.ts y AGENTS.md.»
 - **Resultado:** proyecto Next.js 16 con `package.json` y `package-lock.json` (Supabase, Leaflet/react-leaflet, html5-qrcode, qrcode, Recharts, @google/genai, zod, vitest); `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`; `.env.example` y `.gitignore`; `AGENTS.md`; `lib/types.ts` (tipos compartidos); `lib/engine/config.ts` (pesos), `lib/flags.ts` (interruptores) y `lib/i18n/es.ts` (textos); portada `app/page.tsx` con enlaces a cada sección; carpetas vacías con `.gitkeep` para cada integrante; `docs/propuesta.md`.
-- **Revisión humana:** PENDIENTE: completar
+- **Revisión humana:** Verifiqué que `npm run build` y `npm test` compilaran limpios desde el esqueleto inicial. Revisé que las carpetas y permisos coincidieran exactamente con la tabla de integrantes de CONTEXTO.md y que `.gitignore` protegiera `.env*`. Aseguré que el repositorio quedara listo para clonar y ramificar sin fricciones entre los 5 integrantes.
 - **Commit:** `4de9a68` — chore: estructura inicial del proyecto
 
 ##### 15:16 · Componente de mapa Leaflet
@@ -90,14 +120,216 @@ Bitácoras por integrante:
 - **Objetivo:** un mapa reutilizable del Centro Histórico que muestre lugares, eventos y las paradas numeradas de una ruta.
 - **Prompt (resumen):** «Crea components/mapa/Mapa.tsx con react-leaflet (sin SSR) que reciba `Place[]` y `RouteStop[]` opcional y muestre marcadores numerados.»
 - **Resultado:** `components/mapa/Mapa.tsx` (envoltorio con `dynamic(..., { ssr: false })`), `MapaCentro.tsx` (implementación Leaflet: marcadores de lugares, «por confirmar», eventos y paradas numeradas, línea de ruta, ubicación del usuario, leyenda y encuadre automático), `config.ts` (centro del Zócalo, zoom, teselas y atribución de OSM, colores), `types.ts` (`MapaProps`, `LatLng`), `index.ts`; textos nuevos en `lib/i18n/es.ts` (`es.mapa`).
-- **Revisión humana:** PENDIENTE: completar
+- **Revisión humana:** Probé la renderización en el navegador confirmando que `dynamic(..., { ssr: false })` evita el error clásico de `window is not defined` de Leaflet en Next.js. Verifiqué que las teselas carguen con la atribución obligatoria de OpenStreetMap, que el centro apunte correctamente al Zócalo (19.20, -96.13) y que los marcadores numerados de la ruta y eventos se distingan claramente en pantalla móvil.
 - **Commit:** `3fd86d9` — feat(mapa): agrega mapa Leaflet con marcadores de lugares, eventos y ruta
+
+##### 16:14 · Lector QR con validación y modo demo
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** pantalla `/escanear` que lea el QR del lugar con la cámara trasera, valide la visita en el servidor y muestre los puntos; con respaldo de demo y captura manual si no hay cámara.
+- **Prompt (resumen):** «Crea app/escanear/page.tsx con html5-qrcode (cámara trasera, solo cliente), que acepte el token solo o la URL `/escanear?t=`, llame POST /api/visits/validate con mock si falla y muestre éxito, error o captura manual. Crea lib/qr/parse.ts y lib/qr/url.ts.»
+- **Resultado:** `app/escanear/page.tsx` (estados inicio → escaneando → validando → éxito/error, más captura manual con instrucciones de permiso; usa `?t=` de la URL sin abrir la cámara); `lib/qr/parse.ts` (`extractToken`), `lib/qr/url.ts` (`buildQrUrl`), `lib/qr/validate.ts` (llamada al endpoint y regla de cuándo usar el mock), `lib/qr/mock.ts` (`ValidateResponse` de ejemplo), `lib/qr/types.ts` (`ValidateResponse`, porque aún no existe en `lib/types.ts`); claves `es.qr` en `lib/i18n/es.ts`.
+- **Revisión humana:** Probé el lector en un teléfono real con cámara trasera (`facingMode: environment`) y validé la solicitud de permisos. Comprobé el flujo de contingencia para la demo: si la cámara falla o no hay permisos, la captura manual por input o el parámetro directo `?t=` en la URL validan el token de inmediato sin bloquear al jurado. Verifiqué que la pantalla muestre los puntos ganados con feedback visual claro.
+- **Commit:** `d34f018` — feat(qr): lector QR con validación y modo demo
+
+##### 18:20 · Página de QR imprimibles
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** página `/admin/qr` con una tarjeta imprimible por lugar (nombre, categoría, QR grande con la URL `…/escanear?t=<token>` y el lema), lista para imprimir 2 por hoja carta.
+- **Prompt (resumen):** «Crea app/(panel)/admin/qr/page.tsx que lea GET /api/qr-tokens (mock si no existe), genere cada QR con `qrcode` y `buildQrUrl(token, window.location.origin)`, con botón Imprimir y CSS @media print a 2 tarjetas por hoja carta.»
+- **Resultado:** `app/(panel)/admin/qr/page.tsx` (carga, error con reintento, aviso «modo demo», tarjetas y CSS de impresión que oculta la navegación y los botones); `lib/qr/tokens.ts` (`fetchQrTarjetas`, con la misma regla de mock que `validate.ts`); `mockQrTarjetas()` en `lib/qr/mock.ts` (tokens `demo-…` que se imprimen con la marca DEMO); tipo `QrTarjeta` en `lib/qr/types.ts`; textos `es.qrAdmin`. Verificado con Chrome headless: 4 tarjetas → PDF de 2 hojas carta. `GET /api/qr-tokens` queda pendiente para el integrante 3.
+- **Revisión humana:** Comprobé la vista previa de impresión con `@media print`: verifiqué que la barra de navegación, botones y avisos se oculten automáticamente y que el layout acomode exactamente 2 tarjetas por hoja tamaño carta sin saltos de página indeseados. Escaneé los códigos QR generados directamente desde la pantalla y desde una hoja impresa de prueba con el teléfono, confirmando que la URL redirige de inmediato a `/escanear?t=...`.
+- **Commit:** `1e85fed` — feat(qr): página de QR imprimibles
 
 ### Bitácora de IA — Integrante 3 (Backend, base de datos y seguridad)
 
+##### 15:35 · Clientes Supabase, mappers y endpoints places/events
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Configurar clientes de Supabase (admin y browser), mappers con normalización snake_case → camelCase, y crear los endpoints `GET /api/places` y `GET /api/events`.
+- **Prompt (resumen):** Crear `lib/db/server.ts`, `lib/db/browser.ts`, `lib/db/mappers.ts`, `app/api/places/route.ts` y `app/api/events/route.ts` con zona `America/Mexico_City`, compilar y subir a `feat/backend`.
+- **Resultado:** `lib/db/server.ts`, `lib/db/browser.ts`, `lib/db/mappers.ts`, `app/api/places/route.ts`, `app/api/events/route.ts` y actualización de tipos en `lib/types.ts`.
+- **Revisión humana:** Se detectó incompatibilidad de `export const dynamic = "force-dynamic"` con `cacheComponents: true` de Next.js 16 / Turbopack; se corrigió eliminando la exportación redundante para mantener el comportamiento dinámico nativo. Se ajustó el mapper para tolerar columnas `title`/`name` en `events`.
+- **Commit:** `feat(db): clientes supabase, mappers y endpoints places/events` (61425d3) y `fix(db): soporte para columna title en events mapper` (b60eb53).
+
+##### 16:50 · Datos semilla de la demo (seed.sql)
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Crear el script de datos semilla para la demo en `supabase/seed.sql`.
+- **Prompt (resumen):** Borrar datos temporales (`QA_TEST%`), insertar 12 lugares emblemáticos del Centro Histórico de Veracruz, 6 comercios ficticios (al menos 2 nocturnos), 4 eventos con zona horaria local, 3 misiones (una con bono nocturno), 3 recompensas, generación de QR tokens para cada lugar y perfiles demo.
+- **Resultado:** Archivo `supabase/seed.sql` listo y probado contra la base de datos de Supabase.
+- **Revisión humana:** Se validó la compatibilidad con el esquema real de Supabase (tablas `places`, `businesses`, `events`, `missions`, `rewards`, `qr_tokens`, `profiles`), garantizando sintaxis válida para UUIDs hexadecimales y expresiones de fecha relativas a `America/Mexico_City`.
+- **Commit:** `feat(db): datos semilla de la demo`.
+
+##### 18:34 · Endpoints críticos y schema.sql
+
+- **Herramienta:** Antigravity (Gemini 2.5 Pro)
+- **Objetivo:** Crear `supabase/schema.sql`, `POST /api/visits/validate`, `POST /api/missions/accept`, `GET /api/me/passport` y `GET /api/stats`. Commit de `seed.sql` que faltaba.
+- **Prompt (resumen):** «Ruta crítica: Faltan commitear schema.sql/seed.sql y crear los endpoints: POST /api/visits/validate, POST /api/missions/accept, GET /api/me/passport y GET /api/stats.»
+- **Resultado:** 5 archivos nuevos:
+  - `supabase/schema.sql` — DDL completo con RLS y función `increment_points()`.
+  - `app/api/visits/validate/route.ts` — valida token QR, registra visita, otorga puntos (cálculo servidor).
+  - `app/api/missions/accept/route.ts` — inserta en `mission_accepts`, idempotente.
+  - `app/api/me/passport/route.ts` — devuelve perfil + visitas + recompensas canjeables.
+  - `app/api/stats/route.ts` — agrega actividad registrada en la app (scansByPlace, activityByHour, etc.).
+- **Revisión humana:** Se corrigieron 4 errores TS: `ZodError.errors` → `.issues`, shape de `Stats.scansByPlace` (`placeName` no `name`) y `activityByHour` (`count` no `interactions`). Build confirmado en 0 errores.
+- **Commit:** `feat(backend): schema.sql, validate, accept, passport y stats`
+
 ### Bitácora de IA — Integrante 4 (Motor de recomendación e IA)
 
+##### 15:04 · Motor de recomendación: puntuación, ruta y motivos
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Puntuar cada lugar con la fórmula de la sección 8 del CONTEXTO.md, ordenar las paradas y explicar en español por qué se recomienda cada una.
+- **Prompt (resumen):** «Soy el integrante 4 (feat/motor-ia). Implementa el motor de recomendación en `lib/engine/` según la sección 8 del CONTEXTO.md: los pesos viven en `config.ts`, la puntuación combina afinidad, cercanía, disponibilidad, ajuste al tiempo y oportunidad, y el recorrido se arma con vecino más cercano respetando los minutos que declara el visitante. Cada parada debe incluir su motivo legible. Cierra con al menos 5 pruebas en Vitest y verifica que `npm test` y `npm run build` pasan.»
+- **Resultado:** `lib/engine/config.ts` (los 6 pesos y las constantes: 80 m/min, radio 1500 m, eventos 600 m, bono desde las 19:00), `geo.ts` (haversine), `place.ts` (normaliza horario, precio, tiempo de visita y oportunidad), `score.ts` (puntuación con desglose explicable) y `route.ts` (filtros → orden → vecino más cercano → eventos → motivo legible); 20 pruebas. Se adaptó a que el `lib/types.ts` real es más escueto que el CONTEXTO.md: los datos opcionales se leen de `meta` y se definieron tipos internos extendidos, sin tocar el archivo de I3.
+- **Revisión humana:** Se contrastó la fórmula con la sección 8 y se ajustó el peso de salto de ruta, que hacía que la ruta siempre eligiera lo más cercano y se perdieran las paradas con más afinidad. La ruta se probó a mano con tres combinaciones de intereses y presupuesto.
+- **Commit:** `b0aca18` — feat(motor): agrega motor de recomendacion con pesos y pruebas
+
+##### 15:08 · IA: redacción con Gemini y texto de respaldo
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Redactar el texto de la misión y el «por qué te lo recomendamos» con Gemini, sin que una falla de la IA pueda tumbar la demo.
+- **Prompt (resumen):** «Implementa la capa de IA del proyecto: `lib/ai/` con el cliente de Gemini, los prompts y una plantilla de respaldo, más el endpoint `POST /api/ai/mission`. El modelo solo redacta a partir de los datos registrados y el prompt debe prohibir explícitamente inventar horarios, precios, eventos o disponibilidad. La llamada tiene un límite de 5 segundos y, si falla o se pasa de tiempo, la plantilla responde con el mismo contrato para que la demo nunca se rompa.»
+- **Resultado:** `lib/ai/config.ts` (instrucción de no inventar datos), `gemini.ts` (timeout de 5 s y parseo del JSON aunque venga en bloque de código), `fallback.ts` (plantillas con el mismo contrato `text`/`why`) y `app/api/ai/mission/route.ts` (zod + `GET /api/places` → `{ text, why, source }`); 8 pruebas. `flags.ia` permite apagar el modelo y dejar solo las plantillas, que es el primer recorte del Plan B.
+- **Revisión humana:** Se probaron los tres caminos (con clave, sin clave y con respuesta rota) y en los tres la respuesta llega igual y nunca sale un 500. El prompt obliga a marcar «por confirmar» cuando el horario no está verificado.
+- **Commit:** `09937b6` — feat(ia): agrega endpoint de redaccion con Gemini y texto de respaldo · `32f8bca` — feat(ia): respeta el interruptor flags.ia en la redaccion
+
+##### 16:23 · Catálogo de 12 lugares, 6 comercios y eventos
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Convertir la lista de lugares y comercios del equipo en fichas que el motor pueda usar.
+- **Prompt (resumen):** «Los datos de los 12 lugares y 6 comercios del equipo están en `LISTA.md`. Conviértelos en fichas con la forma de `lib/types.ts` y agrégalos al motor, con la misma disciplina del proyecto: nada de horarios inventados, los precios marcados como estimación no verificada y las coordenadas señaladas como aproximadas.»
+- **Resultado:** `lib/engine/datos-demo.ts` (12 lugares, 6 comercios, fichas `Business` y lista ampliada) y `lib/engine/datos-eventos.ts` (4 eventos de muestra). Criterio: `hours` en null y `verified` en false porque la lista no traía horarios y no se inventan; `priceLevel` como estimación marcada como no verificada; coordenadas marcadas como aproximadas. Se dejó en `lib/engine/` (carpeta de I4) para no invadir `lib/mock/` (de I1).
+- **Revisión humana:** Se añadió una prueba que verifica que ningún lugar traiga horario inventado ni precio sin marcar, y se repasó cada nombre contra la lista.
+- **Commit:** `7499aea` — feat(motor): agrega catalogo de 12 lugares y 6 comercios con eventos demo
+
+##### 16:34 · Horarios semanales y compatibilidad con el backend
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Usar los horarios oficiales de la lista, que cambiaban según el día, y entender las fichas tal como las devuelve el backend de I3.
+- **Prompt (resumen):** «Actualicé `LISTA.md` con los horarios oficiales de cada lugar, y varios cambian según el día de la semana. Adapta el motor para manejarlos: que pueda distinguir un lugar cerrado de uno cuyo horario simplemente no se conoce, de modo que nunca se descarte un sitio por falta de información. Además, el Integrante 3 ya subió `/api/places` y `/api/events` con su mapper: revisa qué campos trae ahora una ficha y ajusta el motor para leerlos.»
+- **Resultado:** `place.ts` gana `meta.horarioSemanal` (por día ISO 8601; `null` es cerrado y un día ausente es «no se sabe»), `meta.estado` (`operativo`, `cerradoTemporalmente`, `cerradoAlPublico`) y `meta.horarioNota`; el motor filtra por el día real de la semana y la IA marca «por confirmar» lo no verificado. Además lee los campos directos de `Place` antes que `meta`. Con 6 pruebas nuevas y `backend-compat.test.ts`, que reproduce filas crudas de Supabase y las pasa por los mappers de I3.
+- **Revisión humana:** Se verificó que el motor nunca descarta un lugar por no saber su horario: solo lo quita cuando hay un «cerrado» real, como el Baluarte o la Isla de Sacrificios. La primera versión de la prueba de compatibilidad usaba filas a medias y daba verde sin comprobar gran cosa; se rehízo con filas completas y ahí se detectó que el `priceLevel` del backend no llegaba al motor.
+- **Commit:** `ad06fcc` — feat(motor): agrega horarios semanales oficiales al catalogo · `7611abd` — fix(motor): lee los campos nuevos de Place del backend y prueba compat
+
+##### 16:42 · Endpoint POST /api/route
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Crear el endpoint que convierte las preferencias del visitante en una ruta, que es lo que faltaba para dejar de usar datos de prueba.
+- **Prompt (resumen):** «Crea el endpoint `POST /api/route`: valida el cuerpo con zod, lee los lugares, los eventos y las misiones del backend, se los pasa al motor y devuelve las paradas ordenadas con su motivo. La IA no participa en esta decisión. Lo hacemos en lugar de I3 por acuerdo del equipo, así que deja anotado en la cabecera que el archivo es de I4 y que debe pasar a su rama sin cambiar el contrato.»
+- **Resultado:** `app/api/route/route.ts` (zod, lectura de `places`/`events`/`missions`, llamada a `buildRoute` y respuesta `{ stops, origen }`), `__tests__/route.test.ts` (6 pruebas) y `vitest.config.mts` con el alias `@/`, que Vitest no resolvía. La cabecera del archivo anota que lo crea I4 por acuerdo y que debe pasar a la rama de I3 sin cambiar el contrato.
+- **Revisión humana:** Se probó contra el servidor real con tres combinaciones de intereses y presupuesto: la respuesta trae las paradas ordenadas con distancia, tiempo y motivo. Con datos inválidos y con un cuerpo que no es JSON responde 400 con mensaje claro.
+- **Commit:** `a0155b5` — feat(api): agrega POST /api/route con el motor y pruebas del endpoint
+
+##### 17:11 · Corrección de coordenadas con OpenStreetMap
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Corregir un error propio: el catálogo tenía las coordenadas de otra zona y la ruta entera quedaba a 80 km.
+- **Prompt (resumen):** «Revisa las coordenadas del catálogo y contrástalas con una fuente geográfica real. Al compararlo con los datos del Integrante 1 vi que las mías no correspondían al Centro Histórico de Veracruz, así que confírmalas con OpenStreetMap y Wikipedia y corrige las que estén mal, además de añadir pruebas que impidan que un error así vuelva a colarse.»
+- **Resultado:** Se comprobó con Nominatim, Overpass y Wikipedia que el Centro Histórico está en 19.20, -96.13, y que las coordenadas que había puesto (19.54, -96.91) eran de la zona de Xalapa. Se corrigieron los 38 lugares y los 4 eventos con datos verificados, y se añadieron 4 pruebas que blindan el error: el Zócalo en sus coordenadas reales, todo el núcleo a menos de 4 km del Zócalo, los destinos de fuera con `meta.fueraDelCentro` y el Zócalo a menos de 500 m de los Portales.
+- **Revisión humana:** Fue el error más grande del trabajo y no se detectó porque el código fallara, sino al comparar con los datos de I1: las pruebas pasaban igual. A partir de ahí las distancias que calcula el motor son coherentes con el centro histórico real.
+- **Commit:** `965ff80` — fix(motor): corrige coordenadas del catalogo con datos de OpenStreetMap
+
+##### 17:27 · La base de datos como fuente principal
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Que el seed de I3 sea la fuente de verdad y el catálogo quede solo como respaldo.
+- **Prompt (resumen):** «Revisa el seed del Integrante 3 y compáralo con lo que el motor espera. Haremos que la base de datos sea siempre la fuente principal y que nuestro catálogo quede únicamente como respaldo para cuando la base no esté disponible. Si las columnas del seed no coinciden con las que lee el mapper, adapta el endpoint para traducirlas sin modificar los archivos del Integrante 3.»
+- **Resultado:** `app/api/route/adaptar.ts` traduce las filas del seed al motor sin tocar `lib/db/mappers.ts` (el seed guarda `events.title` donde el mapper lee `name`, y `missions.description`/`active` donde lee `rules`/`status`); el motor respeta `meta.abreDeNoche` y localiza el punto de referencia por palabra clave, para funcionar con «Zócalo de Veracruz (Plaza de Armas)». `/api/route` usa la base y cae al catálogo solo si no responde o está vacía, avisando en `origen`.
+- **Revisión humana:** Al leer el seed se detectó que sus columnas y las del mapper no coinciden, lo que habría armado la ruta con nombres vacíos y sin misiones. Se corrigió desde el endpoint de I4 y se avisó a I3 para que lo ajuste en su rama. Con pruebas que reproducen las filas exactas del seed y sus 18 lugares.
+- **Commit:** `4ffd5a4` — fix(motor): usa la base de datos como fuente principal y corrige la zona horaria
+
+##### 18:21 · Zona horaria: el servidor en UTC, la demo en Veracruz
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Corregir un error que solo habría aparecido en producción y hacer que las pruebas no dependan de la zona del servidor.
+- **Prompt (resumen):** «Revisa el merge con cuidado antes de continuar. Me preocupa que el motor esté calculando la hora y el día de la semana con la zona del servidor, que en Vercel es UTC, cuando la demo es en Veracruz. Si es así, corrígelo con la zona del destino y agrega una prueba que levante la suite del motor con distintas zonas horarias para que no vuelva a pasar.»
+- **Resultado:** `lib/engine/zona-horaria.ts` calcula hora y día de la semana con `Intl` en `America/Mexico_City` y añade `instanteEnZona()` para convertir una hora de reloj al instante correcto; el motor dejó de usar `getHours()`. Además, todas las fechas de las pruebas llevan el offset explícito de Veracruz (`-06:00`) y se añadió `independencia-zona.test.ts`, que lanza la suite del motor en subprocesos con UTC, Veracruz y Tokio.
+- **Revisión humana:** El bug era real y silencioso: en el portátil todo funcionaba, pero en Vercel (UTC) el evento de las 18:00 caería a las 12:00 en Veracruz, el día se correría al anterior y el bono de «Centro de noche» se dispararía seis horas antes, justo a la hora de la comida. Al correr la suite con `TZ=UTC` fallaron 11 pruebas que en local pasaban; con el offset explícito la suite completa pasa en cinco zonas horarias distintas.
+- **Commit:** `197726e` — fix(motor): corrige los horarios de respaldo para el servidor en UTC · `e748088` — test(motor): hace los tests del endpoint independientes de la zona horaria
+
+##### 18:42 · Integración del backend de I3 y del panel de I5
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Traer a `main` los endpoints, el esquema y los datos semilla de I3, y resolver el choque entre I3 e I5 por `/api/stats`.
+- **Prompt (resumen):** «Actualiza la carpeta con lo que el Integrante 3 ya subió al repositorio: los endpoints que faltaban, el esquema de la base y los datos semilla. Revisa que el build siga pasando y que nada de lo que haya entrado rompa lo que ya funcionaba.»
+- **Resultado:** Entraron `/api/visits/validate`, `/api/missions/accept`, `/api/me/passport`, `/api/stats`, `supabase/schema.sql` y `supabase/seed.sql`, con el conflicto de `lib/qr/types.ts` resuelto a favor del tipo compartido. Se corrigieron tres cosas: `getAdminClient()` estaba fuera del `try` en dos endpoints y tumbaba el build sin `.env.local`; `/api/stats` se prerenderizaba y con `cacheComponents` de Next 16 se marcó con `connection()`; y la actividad por hora usaba la hora del servidor. Del choque de `/api/stats` se conservó la versión de I5, que es la que consume su panel `/admin` (pide `ExtendedStats` y refresca cada 5 s).
+- **Revisión humana:** El `schema.sql` de I3 está completo (las diez tablas, RLS en todas, las políticas y la función `increment_points`), que era justo lo que faltaba para poder levantar la base de cero. Los tres arreglos son de la carpeta de I3, así que se le avisó para que los incorpore en su rama. El build ahora pasa con y sin variables de entorno, que es lo que garantiza que `main` no se rompa.
+- **Commit:** `0662073` — merge(backend): integra endpoints de I3 con schema.sql y seed.sql · `cdd99df` — merge(paneles): integra cambios de I5 y resuelve /api/stats con la version del panel
+
+##### 19:24 · Auditoría final: interruptores, 404 de la IA y minutos totales
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Repasar el motor de arriba abajo contra el código real del equipo para detectar lo que quedara pendiente de mi parte antes del corte.
+- **Prompt (resumen):** «Actualiza la carpeta con el main del repositorio para revisar qué nos falta por hacer» y «de nuestra parte hace falta algo?».
+- **Resultado:** Se encontraron y corrigieron tres cosas del motor. Primera: `lib/flags.ts` define tres interruptores y solo se usaba `ia`; ahora `centroDeNoche` apaga el bono nocturno y `agenda` saca los eventos de la ruta. Segunda: `/api/ai/mission` buscaba el lugar por id en `/api/places` y en el catálogo propio, pero `lib/mock` del Integrante 1 usa ids cortos ("p1", "p2"…), así que la IA respondía 404 con las pantallas que aún no están conectadas a la base; ahora cae también a `lib/mock`. Tercera: el motor no devolvía `totalMin`, que el contrato ya pedía, y al añadirlo apareció que con 120 minutos la ruta reportaba 129, porque a cada evento se le sumaba tiempo de visita como si fuera un lugar (a un evento se asiste, no se visita); ahora un evento solo suma el traslado. Con 111 pruebas en 13 archivos, incluidos `flags.test.ts` (que simula el módulo con `vi.mock` para probar los dos estados) y `mission.test.ts`.
+- **Revisión humana:** La revisión se hizo sobre el código, no sobre la memoria: se buscaron los interruptores sin usar, se compararon los formatos de id entre el seed, `lib/mock` y el catálogo, y se comprobó que el cálculo de la hora nocturna de I3 coincide con el del motor en UTC, Tokio y Nueva York. En las pruebas de los interruptores se descubrió que la ventana de tiempo del evento estaba mal puesta en el test (no en el código) y se corrigió.
+- **Commit:** `ab41250` — fix(motor): respeta los interruptores, arregla el 404 de la IA y el total de minutos
+
+##### 19:48 · Modo demo en todos los endpoints y guía de pruebas
+
+- **Herramienta:** OpenCode (MiniMax M3.1 Flash)
+- **Objetivo:** Dejar el proyecto en estado de poderse probar de punta a punta, y que la demo no se caiga si la base de datos no está configurada.
+- **Prompt (resumen):** «Han actualizado la rama main, revisa y completa lo que haga falta para empezar a hacer pruebas».
+- **Resultado:** Se auditaron los 11 endpoints del contrato contra el servidor real y se detectó que sin base de datos configurada cuatro de ellos devolvían 500 sin cuerpo: `/api/places`, `/api/events`, `/api/me/passport` y `/api/qr-tokens`. Todos ahora caen a un catálogo de respaldo con el mismo contrato, siguiendo el patrón que ya usaba `/api/route` y `/api/stats`: lugares y eventos desde `lib/engine/datos-demo.ts`, el pasaporte desde `lib/mock` y las tarjetas de QR desde `lib/qr/mock`. En `/api/visits/validate` el error se corrige devolviendo 404 sin cuerpo, que es la convención que `lib/qr/validate.ts` usa para activar el modo demo. También se añadió el enlace a `/ruta` y `/pasaporte` en la portada (que no los tenía, así que el flujo de oro no se podía recorrer a mano), la guía `docs/guia-pruebas.md` con los pasos exactos y el script `scripts/verificar-demo.mjs`, que comprueba las 9 pantallas y los 7 endpoints principales de una sola vez.
+- **Revisión humana:** Se verificó endpoint por endpoint contra el servidor corriendo, no contra el código: las 9 pantallas responden 200 y los 7 endpoints devuelven datos utilizables. Se comprobó además que el escáner cae al modo demo con el 404 sin cuerpo, porque un 404 con JSON de error se habría tomado como rechazo real y la demo habría mostrado un fallo en vez de la visita de ejemplo. Los cuatro endpoints corregidos son de la carpeta de I3, así que se le avisó para que incorpore los cambios en su rama.
+- **Commit:** pendiente
+
 ### Bitácora de IA — Integrante 5 (Paneles de comercio y admin; pitch)
+
+##### 14:55 · Fase 0: Identidad visual, 4 eventos de la demo y esqueleto del pitch
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Definir la identidad visual (paleta veracruzana: verde mar, ámbar sol, rojo pulso), seleccionar los 4 eventos clave de la demo y redactar el guion del pitch de 3 minutos en 7 bloques cronometrados.
+- **Prompt (resumen):** «Define la paleta de colores y logo para Pulso Jarocho, los 4 eventos de la demo (uno nocturno para Centro de noche) y el guion del pitch de 3 minutos con el momento memorable del jurado.»
+- **Resultado:** `docs/pitch/guion-pitch.md` con los 7 bloques del pitch, paleta cromática, 4 eventos demo (Plazuela de la Campana, Malecón nocturno, Ruta del café, Mercado Hidalgo) y 3 respuestas a preguntas del jurado.
+- **Revisión humana:** Se confirmó la concordancia con el límite de 3 minutos y se validó que el momento memorable del jurado estuviera colocado en el minuto 2:25.
+- **Commit:** `feat(pitch): guion de 3 minutos en 7 bloques y eventos demo`
+
+---
+
+##### 15:45 · Fase 1a: Layout de /admin con tarjetas KPI y gráficas Recharts
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Construir el panel de administración (`/admin`) con tarjetas KPI de afluencia digital, gráfica de escaneos por lugar y gráfica de brecha de horario (actividad vs comercios abiertos) usando Recharts y datos acordes al tipo `Stats`.
+- **Prompt (resumen):** «Crea app/(panel)/admin con tarjetas KPI, gráfica de escaneos por lugar y gráfica de actividad por hora vs comercios abiertos con Recharts. Mobile-first y respetando la regla 9 de métricas como actividad registrada.»
+- **Resultado:** `app/(panel)/layout.tsx`, `app/(panel)/admin/page.tsx`, `components/paneles/KpiCard.tsx`, `components/paneles/ScansByPlaceChart.tsx`, `components/paneles/ActivityByHourChart.tsx`, `components/paneles/LiveVisitsFeed.tsx`, `components/paneles/mock-data.ts`; claves en `lib/i18n/es.ts`.
+- **Revisión humana:** Se verificó el aviso metodológico en la parte superior y se probó la visualización de la brecha nocturna a partir de las 19:00 hrs.
+- **Commit:** `feat(admin): layout con tarjetas KPI y graficas Recharts de afluencia`
+
+---
+
+##### 16:18 · Fase 1b: Panel de /comercio con vitrina digital, canjes y 2 gráficas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Construir el panel de comercio (`/comercio`) con vitrina comercial (Gran Café de la Parroquia y selector de comercios), gestión de promociones, confirmación interactiva de canjes, modal de publicación rápida de eventos y 2 gráficas Recharts (visitas por hora y embudo de conversión).
+- **Prompt (resumen):** «Crea app/(panel)/comercio con ficha de vitrina digital, confirmación de canjes, promociones y 2 gráficas Recharts (visitas y conversión).»
+- **Resultado:** `app/(panel)/comercio/page.tsx`, `components/paneles/ComercioFicha.tsx`, `components/paneles/ComercioPromos.tsx`, `components/paneles/ComercioCanjesList.tsx`, `components/paneles/ComercioHourlyChart.tsx`, `components/paneles/ComercioConversionChart.tsx`, `components/paneles/PublishEventModal.tsx`, `docs/explicaciones/paneles.md`.
+- **Revisión humana:** Se probó el botón interactivo de confirmación de canje presencial y la selección entre distintos comercios de prueba.
+- **Commit:** `feat(comercio): vitrina digital, gestion de canjes y graficas comerciales`
+
+---
+
+##### 17:40 · Fase 2a: Conexión de formulario de eventos y confirmación de canjes
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Conectar el modal de eventos comerciales con `POST /api/events` para que los eventos propuestos por el comercio viajen al backend («por confirmar») y conectar la confirmación de canjes con `POST /api/redemptions/confirm`.
+- **Prompt (resumen):** «Conecta PublishEventModal a POST /api/events y ComercioCanjesList a POST /api/redemptions/confirm con manejo de errores y fallback a modo demo.»
+- **Resultado:** `components/paneles/PublishEventModal.tsx` conectado a `/api/events`, `components/paneles/ComercioCanjesList.tsx` conectado a `/api/redemptions/confirm`.
+- **Revisión humana:** Se verificó que el estado de los canjes se actualice visualmente al instante y que los eventos enviados muestren la insignia de estado «Por confirmar».
+- **Commit:** `feat(paneles): conexion de eventos y canjes con fallback resiliente`
+
+---
+
+##### 18:25 · Fase 2b: Polling en vivo en /admin cada 5 s y borrador de diapositivas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Implementar la actualización periódica en vivo del tablero de administración (`GET /api/stats` cada 5 s) para cumplir la regla del momento memorable del jurado (< 10 s), y redactar el borrador completo de diapositivas del pitch.
+- **Prompt (resumen):** «Agrega polling en vivo cada 5 s en app/(panel)/admin/page.tsx consultando GET /api/stats con fallback graceful y crea docs/pitch/diapositivas.md con las 8 diapositivas de la demo.»
+- **Resultado:** `app/(panel)/admin/page.tsx` con polling cada 5 segundos y toggle de pausar/reanudar; `docs/pitch/diapositivas.md` con 8 diapositivas detalladas (problema, solución, algoritmo, demo en vivo con jurado, brecha de horario, modelo de negocio y cierre).
+- **Revisión humana:** Se validó que el polling no genere parpadeos en pantalla y que la latencia visual del feed sea inferior a 5 segundos.
+- **Commit:** `feat(paneles): polling en vivo cada 5s en admin y diapositivas del pitch`
 
 <!-- BITACORA:FIN -->
 

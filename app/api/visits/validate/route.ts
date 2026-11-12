@@ -14,7 +14,7 @@ import type { ValidateResponse } from "@/lib/types";
 
 const bodySchema = z.object({
   token: z.string().min(1),
-  profileId: z.string().uuid().optional(),
+  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 // Puntos base por visita con QR
@@ -40,7 +40,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const { token, profileId: rawProfileId } = parsed.data;
-  const supabase = getAdminClient();
+
+  try {
+    const supabase = getAdminClient();
 
   // 2. Buscar el token QR
   const { data: qrRow, error: qrError } = await supabase
@@ -144,12 +146,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // 7. Registrar visita
+  // La tabla `visits` en Supabase no tiene `points_awarded`; guarda el token
+  // usado (`qr_token_id`). Los puntos quedan en `profiles.points`.
   const { error: visitError } = await supabase.from("visits").insert({
     profile_id: profileId,
     place_id: placeId,
     mission_id: missionRow?.id ?? null,
     method: "qr",
-    points_awarded: pointsAdded,
+    qr_token_id: qrRow.id,
   });
 
   if (visitError) {
@@ -201,4 +205,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ? `¡Misión completada! +${pointsAdded} puntos`
       : `¡Visita registrada! +${pointsAdded} puntos`,
   } satisfies ValidateResponse);
+  } catch {
+    // Sin base de datos: se responde 404 SIN cuerpo para que el cliente caiga
+    // al modo demo (es la convención que espera `lib/qr/validate.ts`: un 404
+    // sin JSON de error significa "el endpoint no está disponible").
+    return new NextResponse(null, { status: 404 });
+  }
 }

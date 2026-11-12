@@ -3,8 +3,11 @@ import { es } from "@/lib/i18n/es";
 
 const links = [
   { href: "/inicio", label: "Explorar el Centro" },
+  { href: "/ruta", label: "Ver la ruta sugerida" },
+  { href: "/pasaporte", label: "Mi pasaporte" },
   { href: "/escanear", label: "Escanear QR" },
   { href: "/admin", label: "Panel de administración" },
+  { href: "/admin/qr", label: "QR imprimibles" },
   { href: "/comercio", label: "Panel de comercio" },
 ];
 

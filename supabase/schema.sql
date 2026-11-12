@@ -51,8 +51,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   owner_id   UUID REFERENCES profiles(id) ON DELETE SET NULL,
   contact    TEXT,
   active     BOOLEAN NOT NULL DEFAULT TRUE,
-  meta       JSONB NOT NULL DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  meta       JSONB NOT NULL DEFAULT '{}'
 );
 
 -- ---------------------------------------------------------------------------
@@ -67,8 +66,7 @@ CREATE TABLE IF NOT EXISTS events (
   category   TEXT NOT NULL DEFAULT 'cultura',
   source     TEXT NOT NULL DEFAULT '',
   verified   BOOLEAN NOT NULL DEFAULT FALSE,
-  meta       JSONB NOT NULL DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  meta       JSONB NOT NULL DEFAULT '{}'
 );
 
 -- ---------------------------------------------------------------------------
@@ -81,8 +79,7 @@ CREATE TABLE IF NOT EXISTS missions (
   description TEXT NOT NULL DEFAULT '',
   points      INTEGER NOT NULL DEFAULT 10,
   night_bonus BOOLEAN NOT NULL DEFAULT FALSE,
-  active      BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  active      BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- ---------------------------------------------------------------------------
@@ -104,8 +101,7 @@ CREATE TABLE IF NOT EXISTS qr_tokens (
   place_id   UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
   token      TEXT NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
   expires_at TIMESTAMPTZ,
-  active     BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  active     BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- ---------------------------------------------------------------------------
@@ -117,7 +113,7 @@ CREATE TABLE IF NOT EXISTS visits (
   place_id       UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
   mission_id     UUID REFERENCES missions(id) ON DELETE SET NULL,
   method         TEXT NOT NULL DEFAULT 'qr' CHECK (method IN ('qr','manual')),
-  points_awarded INTEGER NOT NULL DEFAULT 0,
+  qr_token_id    UUID REFERENCES qr_tokens(id) ON DELETE SET NULL, -- token escaneado
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -130,8 +126,7 @@ CREATE TABLE IF NOT EXISTS rewards (
   title       TEXT NOT NULL,
   conditions  TEXT NOT NULL DEFAULT '',
   cost_points INTEGER NOT NULL DEFAULT 50,
-  valid_until TIMESTAMPTZ,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  valid_until TIMESTAMPTZ
 );
 
 -- ---------------------------------------------------------------------------
@@ -141,7 +136,7 @@ CREATE TABLE IF NOT EXISTS redemptions (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   profile_id  UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   reward_id   UUID NOT NULL REFERENCES rewards(id) ON DELETE CASCADE,
-  confirmed   BOOLEAN NOT NULL DEFAULT FALSE,
+  status      TEXT NOT NULL DEFAULT 'pendiente', -- 'pendiente' | 'confirmado'
   confirmed_at TIMESTAMPTZ,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
