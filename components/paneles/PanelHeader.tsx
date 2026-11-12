@@ -4,16 +4,23 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChartIcon, StoreIcon, QrCodeIcon, HomeIcon } from "./icons";
+import { useSesion } from "@/components/auth/sesion";
+import { BotonSalir } from "@/components/auth/BotonSalir";
+import type { Role } from "@/lib/types";
+
+/** Pestañas por rol (mismas reglas que proxy.ts / lib/auth/roles.ts). */
+const LINKS = [
+  { href: "/admin", label: "Tablero Admin", icon: BarChartIcon, roles: ["admin"] as Role[] },
+  { href: "/comercio", label: "Mi Comercio", icon: StoreIcon, roles: ["comercio", "admin"] as Role[] },
+  { href: "/comercio/qr", label: "QR imprimibles", icon: QrCodeIcon, roles: ["comercio", "admin"] as Role[] },
+  { href: "/", label: "Inicio", icon: HomeIcon, roles: ["visitante", "comercio", "admin"] as Role[] },
+];
 
 export function PanelHeader() {
   const pathname = usePathname();
-
-  const navLinks = [
-    { href: "/admin", label: "Tablero Admin", icon: BarChartIcon },
-    { href: "/comercio", label: "Mi Comercio", icon: StoreIcon },
-    { href: "/escanear", label: "Lector QR", icon: QrCodeIcon },
-    { href: "/", label: "Inicio", icon: HomeIcon },
-  ];
+  const perfil = useSesion();
+  // Mientras carga la sesión (o en modo demo sin sesión) se muestran todas.
+  const navLinks = perfil ? LINKS.filter((l) => l.roles.includes(perfil.role)) : LINKS;
 
   const currentRole = pathname.startsWith("/admin")
     ? { name: "Administrador", color: "bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800" }
@@ -70,6 +77,7 @@ export function PanelHeader() {
               </Link>
             );
           })}
+          {perfil && <BotonSalir />}
         </nav>
       </div>
     </header>

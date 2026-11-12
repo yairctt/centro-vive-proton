@@ -31,3 +31,39 @@
   - `app/api/stats/route.ts` — agrega actividad registrada en la app (scansByPlace, activityByHour, etc.).
 - **Revisión humana:** Se corrigieron 4 errores TS: `ZodError.errors` → `.issues`, shape de `Stats.scansByPlace` (`placeName` no `name`) y `activityByHour` (`count` no `interactions`). Build confirmado en 0 errores.
 - **Commit:** `feat(backend): schema.sql, validate, accept, passport y stats`
+
+### 18:54 · Build de Vercel: rutas API dinámicas
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Que el PR pase el build (fallaba al prerenderizar `/api/me/passport` sin variables de Supabase).
+- **Prompt (resumen):** Log de Vercel con el error «Variables de entorno … son requeridas» al prerenderizar.
+- **Resultado:** Con `cacheComponents` (Next 16) `export const dynamic` no evita el prerender; se usa `await connection()` en los GET. Se resolvió el conflicto de merge en `api/stats` y faltaba importar `connection`.
+- **Revisión humana:** Pendiente — verificado con `npm run build` (todas las `/api/*` como `ƒ Dynamic`).
+- **Commit:** `73b5544`, `669c0eb`
+
+### 19:25 · QR imprimibles y confirmación de canjes
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Crear `GET /api/qr-tokens` y `POST /api/redemptions/confirm`, y corregir la validación de ids.
+- **Prompt (resumen):** «Faltan POST /api/redemptions/confirm y GET /api/qr-tokens.»
+- **Resultado:** Un token activo por lugar con forma `QrTarjeta`; confirmación de canje solo por el comercio dueño, una sola vez, con descuento de puntos en el servidor. `z.string().uuid()` (zod 4) rechazaba los ids del seed → `z.guid()`.
+- **Revisión humana:** Pendiente — probado contra Supabase con un canje temporal (200 → 409 al repetir) y limpieza posterior.
+- **Commit:** `e2dfb14`, `fa4d2c3`
+
+### 19:34 · Visitas con la base real, canjes y schema.sql
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Revisar los pendientes del backend contra la base real.
+- **Prompt (resumen):** «Sigamos con los pendientes.»
+- **Resultado:** `visits` no tiene `points_awarded` → todo escaneo QR fallaba; ahora guarda `qr_token_id`. `stats` usa datos reales (canjes, misiones aceptadas). Nuevos `POST/GET /api/redemptions`. `schema.sql` igual a la base.
+- **Revisión humana:** Pendiente — flujo completo probado (QR → puntos → tablero → pasaporte → canje → confirmación) y datos de prueba borrados.
+- **Commit:** `c7d7936`
+
+### 20:50 · Cuentas de usuario, recuperación de contraseña y acceso por rol
+
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Objetivo:** Registro, inicio de sesión, invitado, recuperación de contraseña y separar la app por rol (rama `feat/auth`).
+- **Prompt (resumen):** «Registro de usuario para que cada quien tenga todo guardado, recuperar contraseña y dividir por rol: visitante (explorar, rutas, pasaporte), admin (panel) y comercio (QR imprimibles y panel).»
+- **Resultado:** Supabase Auth con `@supabase/ssr`; `proxy.ts` por rol; páginas `/login`, `/registro`, `/recuperar`, `/restablecer`; APIs con el perfil de la sesión (ya no aceptan `profileId`); QR imprimibles movidos a `/comercio/qr` (solo los del comercio); pasaporte con datos reales y botón «Canjear»; `scripts/crear-cuenta.mjs` para cuentas de comercio/admin. Ver `docs/explicaciones/auth.md`.
+- **Revisión humana:** Pendiente — verificado: build, redirecciones sin sesión y 401 en las APIs protegidas.
+- **Commit:** `feat(auth): cuentas, recuperación de contraseña y acceso por rol`
