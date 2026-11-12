@@ -227,7 +227,7 @@ export default function InicioPage() {
         </section>
       </div>
 
-      <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-8 max-w-lg mx-auto w-full sticky bottom-0 z-20">
+      <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
         <button
           type="button"
           onClick={handleStartRoute}
@@ -241,6 +241,9 @@ export default function InicioPage() {
           )}
           <span>{loading ? 'Calculando...' : 'Crear Mi Ruta Inteligente'}</span>
         </button>
+        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
+          Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+        </p>
       </footer>
     </main>
   );

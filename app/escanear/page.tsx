@@ -360,6 +360,12 @@ function Escaner() {
           </button>
         </section>
       )}
+
+      <footer className="mt-8 text-center text-xs text-neutral-400 dark:text-neutral-500 pb-8">
+        <p>
+          Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+        </p>
+      </footer>
     </main>
   );
 }

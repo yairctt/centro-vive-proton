@@ -33,8 +33,11 @@ export default function Home() {
         <MenuPorRol />
       </div>
 
-      <footer className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
+      <footer className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500 space-y-1">
         <p>Turismo, reactivación comercial y afluencia viva</p>
+        <p className="text-[11px] font-medium text-neutral-400/90 dark:text-neutral-500/90">
+          Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+        </p>
       </footer>
     </main>
   );

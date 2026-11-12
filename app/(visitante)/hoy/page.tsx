@@ -148,6 +148,12 @@ export default function HoyEnElCentroPage() {
                 )}
             </div>
 
+            <footer className="mt-8 text-center text-xs text-neutral-400 dark:text-neutral-500 pb-8">
+                <p>
+                    Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+                </p>
+            </footer>
+
             {mensajeNotificacion && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-teal-900 text-white px-4 py-2.5 rounded-2xl shadow-lg border border-teal-700 flex items-center gap-2 text-xs font-semibold animate-pulse">
                     <BellIcon className="w-4 h-4 text-teal-300 shrink-0" />

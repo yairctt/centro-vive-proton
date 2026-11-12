@@ -100,7 +100,7 @@ export function AuthShell({
         {/* Footer inferior izquierdo */}
         <div className="relative z-10 pt-4 border-t border-white/10 text-xs text-teal-200/70 flex items-center justify-between">
           <p>© 2026 Pulso Jarocho. Reto 6 · Centro Vivo.</p>
-          <span className="hidden sm:inline">Veracruz, Ver.</span>
+          <span className="font-semibold text-teal-200">Powered by Protón</span>
         </div>
       </div>
 
@@ -152,6 +152,10 @@ export function AuthShell({
               {pie}
             </div>
           )}
+
+          <div className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
+            Powered by <span className="font-semibold text-teal-700 dark:text-teal-400">Protón</span>
+          </div>
         </div>
       </div>
     </div>
