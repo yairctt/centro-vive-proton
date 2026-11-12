@@ -73,6 +73,50 @@ Bitácoras por integrante:
 
 ### Bitácora de IA — Integrante 1 (Frontend del visitante)
 
+Bitácora de IA — Integrante 1 (Frontend del visitante)
+
+15:00 · Fase 1: Esqueleto vivo y datos mock (CP1)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Crear la estructura de carpetas app/(visitante) y las vistas iniciales (Inicio, Ruta, Misión, Pasaporte) con datos de prueba estáticos para no depender del backend aún.
+
+Prompt (resumen): Crea en app/(visitante) las pantallas inicio (tiempo, intereses, presupuesto), ruta, mision/[id] y pasaporte, usando datos de lib/mock con los tipos de lib/types.ts. Diseño Mobile-first.»
+
+Resultado: Creación de lib/mock/index.ts con mockProfile, mockPlaces y mockRouteStops. Archivos iniciales page.tsx para cada vista con navegación base (useRouter y Link). Resolución de problemas con el comando mkdir en PowerShell creando las carpetas directamente en el IDE.
+
+Revisión humana: Completada (archivos creados y servidor levantado con éxito).
+
+Commit: c7b2a91 — feat(visitante): agrega vistas del esqueleto vivo y datos mock
+
+16:20 · Fase 2: Diseño UI final y limpieza de errores (CP1)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Pulir la interfaz para cumplir estrictamente con el documento de diseño (mobile-first, botones grandes, alto contraste) y resolver advertencias de compilación antes del merge.
+
+Prompt (resumen): «Proporciona el diseño final para las pantallas restantes (Ruta, Misión y Pasaporte) y ayúdame a solucionar el error de compilación "MisionPage defined multiple times".»
+
+Resultado: Implementación de clases Tailwind avanzadas (efectos active:scale-95, tarjetas, gradientes, layout fijo inferior). Corrección del error de duplicación de funciones borrando el código sobrante. Limpieza de caché de TypeScript. Build local exitoso sin errores.
+
+Revisión humana: Completada (UI revisada en modo dispositivo móvil en Chrome y build exitoso).
+
+Commit: a1f8c3d — feat(visitante): vistas del esqueleto vivo CP1 completas
+
+17:12 · Fase 3: Conexión del motor y lugares reales (CP2)
+
+Herramienta: Gemini 3.1 Pro (Antigravity IDE)
+
+Objetivo: Abandonar los datos mock y conectar el formulario de preferencias con el endpoint real POST /api/route, pasando la respuesta a la pantalla de ruta.
+
+Prompt (resumen): «Actualiza el código de page de inicio y ruta para conectarlo con el backend real de mis compañeros. Pásale los minutos, intereses y presupuesto, y lee el resultado.»
+
+Resultado: En /inicio, se agregó fetch al endpoint del I3 con manejo de estado de carga (loading). Se guardó la respuesta en sessionStorage. En /ruta, se refactorizó para leer de la sesión. Se corrigió un error de React (Cascading renders por setState sincrónico) usando isClient para evitar problemas de hidratación de Next.js.
+
+Revisión humana: PENDIENTE: Confirmar visualización de ruta real con base de datos.
+
+Commit: e5a9b42 — feat(visitante): conecta preferencias con POST /api/route real
+
 ### Bitácora de IA — Integrante 2 (Mapa, QR, integración y despliegue)
 
 ##### 14:48 · Fase 0: estructura inicial, dependencias y tipos
