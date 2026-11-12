@@ -6,6 +6,7 @@ import { engineConfig, weights } from "./config";
 import { distanceM, type LatLng } from "./geo";
 import { abiertoDeNoche, isOpenAt, readPlaceInfo, type DiaSemana, type PlaceInfo } from "./place";
 import { diaSemanaIso, minutosDelDia } from "./zona-horaria";
+import { flags } from "../flags";
 
 export interface ScoreContext {
   /** Categorías que le interesan al visitante (texto libre, se normaliza). */
@@ -108,9 +109,10 @@ export function scorePlace(
   const oportunidad = info.opportunity;
 
   // Bono nocturno: a partir de las 19:00 y abierto después de esa hora.
+  // El interruptor `centroDeNoche` permite apagarlo sin tocar el motor.
   const esNoche = ahora >= engineConfig.horaBonoNocturno * 60;
   const sigueAbierto = abiertoDeNoche(info, hoy, place.meta);
-  const bonoNocturno = esNoche && sigueAbierto === true ? 1 : 0;
+  const bonoNocturno = flags.centroDeNoche && esNoche && sigueAbierto === true ? 1 : 0;
 
   const total =
     weights.afinidad * afinidad +

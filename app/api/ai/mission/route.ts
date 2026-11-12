@@ -72,6 +72,9 @@ export async function POST(request: Request) {
  *    Integrante 3).
  * 2. Si no está (base sin configurar, caída o seed sin correr), en el catálogo
  *    de respaldo de `lib/engine/datos-demo.ts`.
+ * 3. Y si tampoco, en `lib/mock` del Integrante 1, que usa ids cortos
+ *    ("p1", "p2"…) y sirve para las pantallas que aún no están conectadas a
+ *    la base.
  * Si tampoco está ahí, quien llama puede mandar la ficha en el cuerpo.
  */
 async function buscarLugar(placeId: string, urlActual: string): Promise<Place | null> {
@@ -89,5 +92,10 @@ async function buscarLugar(placeId: string, urlActual: string): Promise<Place | 
     // Sin backend disponible: se intenta el catálogo de respaldo.
   }
 
-  return buscarLugarDemo(placeId) ?? null;
+  const delCatalogo = buscarLugarDemo(placeId);
+  if (delCatalogo) return delCatalogo;
+
+  // `lib/mock` del Integrante 1 (ids "p1", "p2"…) como último recurso.
+  const { mockPlaces } = await import("@/lib/mock");
+  return mockPlaces.find((lugar) => lugar.id === placeId) ?? null;
 }
