@@ -3,6 +3,12 @@
 // Fechas en ISO 8601 (string). Coordenadas como lat/lng numéricos.
 
 export type Role = "visitante" | "comercio" | "admin";
+export type Interest =
+  | "historia"
+  | "gastronomia"
+  | "cultura"
+  | "paseo"
+  | "compras";
 export type Budget = "bajo" | "medio" | "alto";
 
 export interface Profile {
@@ -45,6 +51,7 @@ export interface Business {
 
 export interface Event {
   id: string;
+  title?: string;
   name: string;
   description: string;
   category: string;
@@ -68,11 +75,14 @@ export interface Mission {
   placeId: string;
   businessId: string | null;
   title: string;
+  description?: string;
   rules: string;
   points: number;
+  nightBonus?: boolean;
   validFrom: string;
   validUntil: string | null;
   status: MissionStatus;
+  active?: boolean;
 }
 
 export interface QrToken {
@@ -82,6 +92,7 @@ export interface QrToken {
   missionId: string | null;
   expiresAt: string | null;
   used: boolean;
+  active?: boolean;
 }
 
 export type ValidationMethod = "qr" | "manual";
@@ -102,6 +113,7 @@ export interface Reward {
   title: string;
   conditions: string;
   pointsCost: number;
+  costPoints?: number;
   validUntil: string | null;
   redemptions: number;
 }
@@ -114,6 +126,7 @@ export interface RouteRequest {
   budget: Budget;
   lat?: number;
   lng?: number;
+  now?: string;
 }
 
 export interface RouteStop {
@@ -123,10 +136,20 @@ export interface RouteStop {
   etaMin: number;
   reason: string;
   missionId?: string;
+  eventId?: string;
 }
 
 export interface RouteResponse {
   stops: RouteStop[];
+  totalMin?: number;
+}
+
+export interface ValidateResponse {
+  ok: boolean;
+  pointsAdded: number;
+  totalPoints: number;
+  missionCompleted: boolean;
+  message: string;
 }
 
 export interface Stats {
@@ -136,4 +159,5 @@ export interface Stats {
   redemptions: number;
   /** Actividad por hora del día (0–23). */
   activityByHour: { hour: number; count: number }[];
+  recentVisits?: { placeName: string; createdAt: string }[];
 }

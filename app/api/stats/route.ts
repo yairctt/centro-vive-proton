@@ -8,6 +8,7 @@
 // Regla 9: todas las métricas son "actividad registrada en la app".
 
 import { NextResponse } from "next/server";
+import { connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
@@ -44,9 +45,17 @@ function toRecentVisit(row: Record<string, unknown>, idx: number) {
 
 export async function GET() {
   try {
+    // El tablero se refresca cada pocos segundos: siempre se genera en la
+    // petición, nunca se prerenderiza. `connection()` lo marca como dinámico
+    // (con cacheComponents de Next 16 no se usa `export const dynamic`).
+    await connection();
+
     const supabase = getAdminClient();
     const now = new Date();
-    const todayStart = new Date(now);
+    // Medianoche en hora de Veracruz (el servidor puede estar en UTC).
+    const todayStart = new Date(
+      new Date(now).toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+    );
     todayStart.setHours(0, 0, 0, 0);
 
     // Consultas paralelas para minimizar latencia
@@ -94,10 +103,15 @@ export async function GET() {
       .sort((a, b) => b.scans - a.scans)
       .slice(0, 12);
 
-    // Actividad por hora (horas presentes en visits de hoy)
+    // Actividad por hora. La hora es la de Veracruz, no la del servidor
+    // (en Vercel es UTC): si no, el pico de actividad saldría corrido.
     const countByHour = new Map<number, number>();
     for (const v of visits) {
-      const h = new Date(v.created_at as string).getHours();
+      const h = new Date(
+        new Date(v.created_at as string).toLocaleString("en-US", {
+          timeZone: "America/Mexico_City",
+        }),
+      ).getHours();
       countByHour.set(h, (countByHour.get(h) ?? 0) + 1);
     }
     const activityByHour = [...countByHour.entries()]
