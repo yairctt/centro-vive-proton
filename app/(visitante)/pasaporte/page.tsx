@@ -1,62 +1,147 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
+import { BotonSalir } from "@/components/auth/BotonSalir";
 import { mockProfile, mockVisits, mockPlaces, mockRewards } from "@/lib/mock";
 import { puntosDemo } from "@/lib/qr/mock";
-import type { Profile, Reward, Visit } from "@/lib/types";
+
+/** Respuesta de GET /api/me/passport (datos del usuario de la sesión). */
+interface Pasaporte {
+  profile: { id: string; alias: string; points: number };
+  visits: { id: string; placeName: string; pointsAwarded: number; missionTitle: string | null }[];
+  rewards: {
+    id: string;
+    title: string;
+    conditions: string;
+    pointsCost: number;
+    canjeable: boolean;
+  }[];
+  redemptions: {
+    id: string;
+    code: string;
+    rewardId: string;
+    rewardTitle: string;
+    costPoints: number;
+    status: "pendiente" | "confirmado";
+  }[];
+}
+
+type Estado =
+  | { fase: "cargando" }
+  | { fase: "error"; mensaje: string }
+  | { fase: "listo"; datos: Pasaporte; demo: boolean };
 
 /**
- * Pasaporte digital.
- *
- * Lee los puntos del servidor (GET /api/me/passport). Si la base de datos no
- * está disponible, la pantalla cae a los datos de demostración, y en ese caso
- * los puntos son los que el escáner haya ido sumando en esta sesión: así
- * escanear un QR y volver al pasaporte muestra el total nuevo.
+ * Modo demo (sin base de datos): datos de `lib/mock` con los puntos que el
+ * escáner fue sumando en este navegador.
  */
+function pasaporteDemo(): Pasaporte {
+  return {
+    profile: { ...mockProfile, points: puntosDemo() },
+    visits: mockVisits.map((v) => ({
+      id: v.id,
+      placeName: mockPlaces.find((p) => p.id === v.placeId)?.name ?? "Lugar del Centro",
+      pointsAwarded: v.pointsAwarded,
+      missionTitle: null,
+    })),
+    rewards: mockRewards.map((r) => ({
+      id: r.id,
+      title: r.title,
+      conditions: r.conditions,
+      pointsCost: r.pointsCost,
+      canjeable: false,
+    })),
+    redemptions: [],
+  };
+}
+
 export default function PasaportePage() {
-  const [perfil, setPerfil] = useState<Profile>(mockProfile);
-  const [visitas, setVisitas] = useState<Visit[]>(mockVisits);
-  const [recompensas, setRecompensas] = useState<Reward[]>(mockRewards);
-  const [modoDemo, setModoDemo] = useState(false);
+  const [estado, setEstado] = useState<Estado>({ fase: "cargando" });
+  const [canjeando, setCanjeando] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [esInvitado, setEsInvitado] = useState(false);
+
+  const cargar = useCallback(async () => {
+    try {
+      const res = await fetch("/api/me/passport", { cache: "no-store" });
+      const body = await res.json().catch(() => null);
+      if (res.status >= 500 || body?.demo) {
+        // Sin base de datos: modo demo (los puntos los lleva el navegador).
+        setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
+        return;
+      }
+      if (!res.ok || !body?.profile) {
+        setEstado({ fase: "error", mensaje: body?.error ?? "No pudimos cargar tu pasaporte." });
+        return;
+      }
+      setEstado({ fase: "listo", datos: body as Pasaporte, demo: false });
+    } catch {
+      // Sin servidor: modo demo.
+      setEstado({ fase: "listo", datos: pasaporteDemo(), demo: true });
+    }
+  }, []);
 
   useEffect(() => {
-    let vigente = true;
-
-    async function cargar() {
-      try {
-        const res = await fetch("/api/me/passport", { cache: "no-store" });
-        if (!res.ok) throw new Error("El pasaporte no está disponible");
-        const datos = await res.json();
-        if (!vigente) return;
-        setPerfil(datos.profile);
-        setVisitas(datos.visits ?? []);
-        setRecompensas(datos.rewards ?? []);
-
-        if (datos.demo) {
-          // Modo demo: los puntos los lleva el navegador, no el servidor.
-          setModoDemo(true);
-          setPerfil({ ...datos.profile, points: puntosDemo() });
-        } else {
-          setModoDemo(false);
-        }
-      } catch {
-        // Sin servidor: se usan los datos de demo y los puntos que el escáner
-        // sumó en esta sesión.
-        if (!vigente) return;
-        setPerfil({ ...mockProfile, points: puntosDemo() });
-        setVisitas(mockVisits);
-        setRecompensas(mockRewards);
-        setModoDemo(true);
-      }
-    }
-
     cargar();
-    return () => {
-      vigente = false;
-    };
-  }, []);
+    fetch("/api/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((b) => setEsInvitado(Boolean(b?.profile?.esInvitado)))
+      .catch(() => {});
+  }, [cargar]);
+
+  async function canjear(rewardId: string) {
+    setAviso(null);
+    setCanjeando(rewardId);
+    try {
+      const res = await fetch("/api/redemptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rewardId }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        setAviso(body?.error ?? "No se pudo solicitar el canje.");
+      } else {
+        setAviso(`Muestra el código ${body.redemption.code} en el comercio para recibir tu recompensa.`);
+        await cargar();
+      }
+    } catch {
+      setAviso("Sin conexión. Intenta de nuevo.");
+    } finally {
+      setCanjeando(null);
+    }
+  }
+
+  if (estado.fase !== "listo") {
+    return (
+      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        {estado.fase === "cargando" ? (
+          <p className="text-sm font-semibold text-gray-500">Cargando tu pasaporte…</p>
+        ) : (
+          <>
+            <p className="text-base font-bold text-gray-800">{estado.mensaje}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setEstado({ fase: "cargando" });
+                cargar();
+              }}
+              className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white"
+            >
+              Reintentar
+            </button>
+          </>
+        )}
+      </main>
+    );
+  }
+
+  const { profile, visits, rewards, redemptions } = estado.datos;
+  const modoDemo = estado.demo;
+  const pendientePorReward = new Map(
+    redemptions.filter((r) => r.status === "pendiente").map((r) => [r.rewardId, r.code]),
+  );
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-blue-200">
@@ -68,31 +153,31 @@ export default function PasaportePage() {
           <span>←</span>
           <span>Volver a la ruta</span>
         </Link>
-        <span className="text-xs bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-          Pasaporte Digital
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+            Pasaporte Digital
+          </span>
+          <BotonSalir />
+        </div>
       </header>
 
       <div className="px-6 mb-6 max-w-lg mx-auto w-full">
         {/* Tarjeta de Identidad */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-3xl p-7 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
-          {/* Patrón de fondo */}
           <div className="absolute -right-10 -top-10 w-40 h-40 border-[20px] border-white/10 rounded-full opacity-50 pointer-events-none"></div>
 
           <div className="relative z-10">
             <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">
-              Explorador Jarocho
+              {esInvitado ? "Invitado" : "Explorador Jarocho"}
             </span>
-            <h2 className="text-3xl font-black mt-4 mb-6 truncate">{perfil.alias}</h2>
+            <h2 className="text-3xl font-black mt-4 mb-6 truncate">{profile.alias}</h2>
 
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">
                   Puntos Acumulados
                 </p>
-                <p className="text-5xl font-black text-yellow-400 drop-shadow-md">
-                  {perfil.points}
-                </p>
+                <p className="text-5xl font-black text-yellow-400 drop-shadow-md">{profile.points}</p>
               </div>
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/30 text-2xl shadow-inner">
                 🏆
@@ -106,6 +191,15 @@ export default function PasaportePage() {
             )}
           </div>
         </div>
+
+        {esInvitado && !modoDemo && (
+          <Link
+            href="/registro?next=/pasaporte"
+            className="mt-3 block rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-900"
+          >
+            Crea tu cuenta para no perder tus puntos
+          </Link>
+        )}
       </div>
 
       <div className="px-6 flex-1 space-y-6 max-w-lg mx-auto w-full pb-8">
@@ -129,16 +223,17 @@ export default function PasaportePage() {
         {/* Sellos de visitas */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-black text-gray-800 text-base">
-              Sellos de Visita ({visitas.length})
-            </h3>
+            <h3 className="font-black text-gray-800 text-base">Sellos de Visita ({visits.length})</h3>
             <span className="text-[11px] font-semibold text-emerald-600">Verificados por QR</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {visitas.map((visit) => {
-              const place = mockPlaces.find((p) => p.id === visit.placeId);
-              return (
+          {visits.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-gray-200 bg-white p-5 text-center text-sm text-gray-500">
+              Aún no tienes sellos. Escanea el QR de un lugar del centro para ganar tu primero.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {visits.map((visit) => (
                 <div
                   key={visit.id}
                   className="p-3.5 bg-white border border-gray-100 rounded-2xl shadow-xs text-center flex flex-col items-center"
@@ -146,36 +241,83 @@ export default function PasaportePage() {
                   <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-sm mb-2">
                     ✓
                   </div>
-                  <h4 className="font-bold text-xs text-gray-900 line-clamp-1">
-                    {place?.name || "Lugar del Centro"}
-                  </h4>
-                  <span className="text-[10px] font-bold text-blue-600 mt-0.5">
-                    +{visit.pointsAwarded} pts
+                  <h4 className="font-bold text-xs text-gray-900 line-clamp-1">{visit.placeName}</h4>
+                  <span className="text-[10px] font-bold text-blue-600 mt-0.5">+{visit.pointsAwarded} pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Mis canjes */}
+        {redemptions.length > 0 && (
+          <div>
+            <h3 className="font-black text-gray-800 mb-3 text-base">Mis canjes</h3>
+            <div className="space-y-2.5">
+              {redemptions.map((r) => (
+                <div
+                  key={r.id}
+                  className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between gap-3"
+                >
+                  <div>
+                    <h4 className="font-bold text-xs text-gray-900 leading-snug">{r.rewardTitle}</h4>
+                    <p className="font-mono text-sm font-black text-gray-800 mt-0.5">{r.code}</p>
+                  </div>
+                  <span
+                    className={`text-[11px] font-black px-2.5 py-1 rounded-lg shrink-0 ${
+                      r.status === "pendiente" ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-800"
+                    }`}
+                  >
+                    {r.status === "pendiente" ? "Muéstralo en el comercio" : "Entregado"}
                   </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recompensas */}
+        <div>
+          <h3 className="font-black text-gray-800 mb-3 text-base">Recompensas para canjear</h3>
+          {aviso && (
+            <p role="status" className="mb-3 rounded-2xl bg-blue-50 p-3 text-sm font-semibold text-blue-900">
+              {aviso}
+            </p>
+          )}
+          <div className="space-y-2.5">
+            {rewards.map((reward) => {
+              const codigo = pendientePorReward.get(reward.id);
+              return (
+                <div
+                  key={reward.id}
+                  className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between gap-3"
+                >
+                  <div>
+                    <h4 className="font-bold text-xs text-gray-900 leading-snug">{reward.title}</h4>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{reward.conditions}</p>
+                    <span className="mt-1 inline-block bg-amber-100 text-amber-900 font-black text-[11px] px-2 py-0.5 rounded-lg">
+                      {reward.pointsCost} pts
+                    </span>
+                  </div>
+                  {codigo ? (
+                    <span className="font-mono text-xs font-black text-amber-800 shrink-0">{codigo}</span>
+                  ) : reward.canjeable ? (
+                    <button
+                      type="button"
+                      onClick={() => canjear(reward.id)}
+                      disabled={canjeando !== null}
+                      className="shrink-0 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white active:scale-95 disabled:opacity-60"
+                    >
+                      {canjeando === reward.id ? "Canjeando…" : "Canjear"}
+                    </button>
+                  ) : (
+                    <span className="shrink-0 text-[11px] font-semibold text-gray-400">
+                      Te faltan {reward.pointsCost - profile.points} pts
+                    </span>
+                  )}
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Recompensas disponibles */}
-        <div>
-          <h3 className="font-black text-gray-800 mb-3 text-base">Recompensas para canjear</h3>
-          <div className="space-y-2.5">
-            {recompensas.map((reward) => (
-              <div
-                key={reward.id}
-                className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between gap-3"
-              >
-                <div>
-                  <h4 className="font-bold text-xs text-gray-900 leading-snug">{reward.title}</h4>
-                  <p className="text-[11px] text-gray-500 mt-0.5">{reward.conditions}</p>
-                </div>
-                <span className="bg-amber-100 text-amber-900 font-black text-xs px-2.5 py-1 rounded-lg shrink-0">
-                  {reward.pointsCost} pts
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
