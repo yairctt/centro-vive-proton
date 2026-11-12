@@ -4,7 +4,7 @@ import Link from "next/link";
 // Renombramos Event a AppEvent para que no choque con el Event nativo del navegador
 import { Event as AppEvent, Place } from "@/lib/types";
 import { es } from "@/lib/i18n/es";
-import { CalendarIcon, MapPinIcon, XIcon } from "@/components/paneles/icons";
+import { CalendarIcon, MapPinIcon, XIcon, BellIcon, CheckIcon } from "@/components/paneles/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
 // Usamos el apodo AppEvent y agregamos title?: string
@@ -13,6 +13,19 @@ type EventoConLugar = AppEvent & { place?: Place; name?: string; title?: string 
 export default function HoyEnElCentroPage() {
     const [eventos, setEventos] = useState<EventoConLugar[]>([]);
     const [cargando, setCargando] = useState(true);
+    const [notificados, setNotificados] = useState<Record<string, boolean>>({});
+    const [mensajeNotificacion, setMensajeNotificacion] = useState<string | null>(null);
+
+    const toggleNotificar = (eventoId: string, titulo: string) => {
+        setNotificados((prev) => {
+            const nuevo = !prev[eventoId];
+            if (nuevo) {
+                setMensajeNotificacion(`Te avisaremos antes de que inicie: ${titulo}`);
+                setTimeout(() => setMensajeNotificacion(null), 3000);
+            }
+            return { ...prev, [eventoId]: nuevo };
+        });
+    };
 
     useEffect(() => {
         const fetchEventos = async () => {
@@ -83,11 +96,31 @@ export default function HoyEnElCentroPage() {
                 ) : (
                     eventos.map((evento) => (
                         <div key={evento.id} className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xs border border-neutral-200/80 dark:border-neutral-800 overflow-hidden relative active:scale-[0.98] transition duration-100">
-                            {!evento.verified && (
-                                <div className="absolute top-3 right-3 bg-neutral-100 text-neutral-600 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700 text-[11px] font-bold px-2 py-1 rounded-md z-10">
-                                    Por confirmar
-                                </div>
-                            )}
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleNotificar(evento.id, evento.title || evento.name || "Evento");
+                                }}
+                                className={`absolute top-3 right-3 text-xs font-bold px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 z-10 shadow-2xs cursor-pointer ${
+                                    notificados[evento.id]
+                                        ? "bg-teal-50 text-teal-800 border-teal-300 dark:bg-teal-950/70 dark:text-teal-300 dark:border-teal-700"
+                                        : "bg-white/95 text-neutral-700 border-neutral-300/80 hover:bg-neutral-50 hover:text-teal-800 hover:border-teal-400 dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-teal-500"
+                                }`}
+                                title={notificados[evento.id] ? "Notificación activada" : "Haz clic para recibir aviso antes de que empiece"}
+                            >
+                                {notificados[evento.id] ? (
+                                    <>
+                                        <CheckIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+                                        <span>Notificado</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <BellIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+                                        <span>Notificarme</span>
+                                    </>
+                                )}
+                            </button>
 
                             <div className="flex items-stretch">
                                 <div className="bg-amber-600 text-white w-24 flex flex-col items-center justify-center p-3 shrink-0">
@@ -114,6 +147,13 @@ export default function HoyEnElCentroPage() {
                     ))
                 )}
             </div>
+
+            {mensajeNotificacion && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-teal-900 text-white px-4 py-2.5 rounded-2xl shadow-lg border border-teal-700 flex items-center gap-2 text-xs font-semibold animate-pulse">
+                    <BellIcon className="w-4 h-4 text-teal-300 shrink-0" />
+                    <span>{mensajeNotificacion}</span>
+                </div>
+            )}
         </main>
     );
 }

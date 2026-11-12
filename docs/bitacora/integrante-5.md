@@ -298,3 +298,22 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se validó la correspondencia visual con el boceto, la responsividad fluida y la aprobación de los 126 tests de Vitest y tipos de TypeScript.
 - **Commit:** `feat(auth): login split-screen moderno inspirado en boceto y fotografia de veracruz`
+
+---
+
+### 03:10 · Fase 11: Corrección de UX en eventos (acción "Notificarme" en vista del usuario)
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** En la vista de eventos del visitante (`/hoy` y popup del mapa), reemplazar la indicación administrativa «Por confirmar» / «confirmar» por la acción centrada en el usuario «Notificarme», permitiendo a los turistas solicitar aviso interactivo previo al inicio del evento.
+- **Prompt (resumen):** «Debemos corregir en la parte de eventos, que en ves de decir confirmar debe decir Notificarme ya que esto corresponde a la vista del usuario.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Sustitución de badge estático por botón de acción (`app/(visitante)/hoy/page.tsx`):** Se reemplazó la etiqueta «Por confirmar» por un botón interactivo «Notificarme» equipado con `BellIcon`. Al hacer clic, el botón cambia a estado «Notificado» con `CheckIcon` y se despliega un toast temporal que confirma: *"Te avisaremos antes de que inicie: [Título del evento]"*.
+  - **Alineación en mapa (`components/mapa/MapaCentro.tsx`):** En `FichaEvento`, se retiró el texto administrativo `porConfirmar` y se añadió un enlace directo `Notificarme en Agenda →` dirigido a `/hoy`.
+  - **Icono vectorial SVG (`components/paneles/icons.tsx`):** Creación del componente `BellIcon` para una campana de notificación nítida y homogénea con el resto de la interfaz.
+- **Resultado:**
+  - `components/paneles/icons.tsx` (nuevo `BellIcon`)
+  - `app/(visitante)/hoy/page.tsx` (botón de notificación y toast flotante)
+  - `components/mapa/MapaCentro.tsx` (enlace interactivo de agenda en ficha de evento)
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se verificó que el botón active y desactive el recordatorio adecuadamente con retroalimentación visual, y que la suite de 126 pruebas y el chequeo estricto de TypeScript concluyan al 100% sin errores.
+- **Commit:** `fix(eventos): cambiar por confirmar por notificarme en vista de usuario`

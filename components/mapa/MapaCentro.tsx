@@ -86,11 +86,16 @@ function FichaEvento({ event }: { event: Event }) {
     <div className="min-w-40 space-y-1">
       <p className="text-sm font-semibold">{nombreLimpio}</p>
       <p className="text-xs text-neutral-600">
-        {event.category} · {formatHora(event.startsAt)} · {event.verified ? t.verificado : t.porConfirmar}
+        {event.category} · {formatHora(event.startsAt)}
       </p>
-      <p className="text-xs">
-        {t.fuente}: {event.source}
-      </p>
+      <div className="pt-1">
+        <a
+          href="/hoy"
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 hover:text-teal-900 dark:text-teal-400"
+        >
+          Notificarme en Agenda →
+        </a>
+      </div>
     </div>
   );
 }
