@@ -2,22 +2,21 @@
  * POST /api/redemptions/confirm
  * Un comercio confirma el canje de una recompensa en su local.
  *
- * Body: { redemptionId: string; profileId?: string }
- *   profileId = perfil del comercio (si se omite usa «comercio-demo»).
+ * Body: { redemptionId: string }   ·   Comercio = el de la sesión.
  * Response: { ok: true; totalPoints: number } | { error: string }
  *
  * Reglas:
- *  - Solo rol `comercio`, y solo para recompensas de sus propios negocios.
+ *  - Solo rol `comercio` (de sus propios negocios) o `admin`.
  *  - Un canje se confirma una sola vez.
  *  - Los puntos del visitante se descuentan aquí, en el servidor.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
 
 const bodySchema = z.object({
   redemptionId: z.guid({ message: "redemptionId inválido" }),
-  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 const PENDIENTE = "pendiente";
@@ -39,26 +38,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 400 },
     );
   }
-  const { redemptionId, profileId: rawProfileId } = parsed.data;
+  const { redemptionId } = parsed.data;
 
   try {
     const supabase = getAdminClient();
 
-    // 2. Perfil del comercio (enviado o perfil demo) y verificación de rol
-    const perfilQuery = supabase.from("profiles").select("id, role");
-    const { data: comercio } = rawProfileId
-      ? await perfilQuery.eq("id", rawProfileId).maybeSingle()
-      : await perfilQuery.eq("alias", "comercio-demo").maybeSingle();
-
-    if (!comercio) {
-      return NextResponse.json({ error: "Perfil de comercio no encontrado" }, { status: 401 });
-    }
-    if (comercio.role !== "comercio") {
-      return NextResponse.json(
-        { error: "Solo un comercio puede confirmar canjes" },
-        { status: 403 },
-      );
-    }
+    // 2. Comercio de la sesión (el admin puede confirmar cualquiera)
+    const auth = await requireProfile(["comercio", "admin"]);
+    if ("response" in auth) return auth.response;
+    const comercio = auth.profile;
 
     // 3. Canje con su recompensa y el negocio dueño
     const { data: canje, error: canjeError } = await supabase
@@ -88,7 +76,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const negocio = (Array.isArray(reward.businesses) ? reward.businesses[0] : reward.businesses) as
       | { owner_id: string | null }
       | null;
-    if (!negocio || negocio.owner_id !== comercio.id) {
+    if (comercio.role !== "admin" && (!negocio || negocio.owner_id !== comercio.id)) {
       return NextResponse.json(
         { error: "Este canje no pertenece a tu comercio" },
         { status: 403 },

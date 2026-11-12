@@ -3,16 +3,23 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSesion } from "@/components/auth/sesion";
+import { BotonSalir } from "@/components/auth/BotonSalir";
+import type { Role } from "@/lib/types";
+
+/** Pestañas por rol (mismas reglas que proxy.ts / lib/auth/roles.ts). */
+const LINKS: { href: string; label: string; icon: string; roles: Role[] }[] = [
+  { href: "/admin", label: "Tablero Admin", icon: "📊", roles: ["admin"] },
+  { href: "/comercio", label: "Mi Comercio", icon: "🏪", roles: ["comercio", "admin"] },
+  { href: "/comercio/qr", label: "QR imprimibles", icon: "🖨️", roles: ["comercio", "admin"] },
+  { href: "/", label: "Inicio", icon: "🏠", roles: ["visitante", "comercio", "admin"] },
+];
 
 export function PanelHeader() {
   const pathname = usePathname();
-
-  const navLinks = [
-    { href: "/admin", label: "Tablero Admin", icon: "📊" },
-    { href: "/comercio", label: "Mi Comercio", icon: "🏪" },
-    { href: "/escanear", label: "Lector QR", icon: "📷" },
-    { href: "/", label: "Inicio", icon: "🏠" },
-  ];
+  const perfil = useSesion();
+  // Mientras carga la sesión (o en modo demo sin sesión) se muestran todas.
+  const navLinks = perfil ? LINKS.filter((l) => l.roles.includes(perfil.role)) : LINKS;
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/90">
@@ -51,6 +58,7 @@ export function PanelHeader() {
               </Link>
             );
           })}
+          {perfil && <BotonSalir />}
         </nav>
       </div>
     </header>

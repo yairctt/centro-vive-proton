@@ -8,6 +8,8 @@
  */
 import { NextResponse, connection } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
+import { puntosDeVisita, unoDe, type MisionDeVisita } from "@/lib/db/puntos";
 import { MOCK_ADMIN_STATS } from "@/components/paneles/mock-data";
 import type { ExtendedStats } from "@/components/paneles/mock-data";
 
@@ -21,26 +23,9 @@ function comerciosAbiertos(hora: number): number {
   return 0;
 }
 
-/** Mismas reglas de puntos que /api/visits/validate. */
-const BASE_POINTS = 10;
-const NIGHT_BONUS_POINTS = 5;
-
-type MisionVisita = { title: string; points: number; night_bonus: boolean };
-
-/** Misión ligada a una visita (join `missions(title, points)`). */
-function misionDe(row: Record<string, unknown>): MisionVisita | null {
-  const m = row.missions as MisionVisita | MisionVisita[] | null;
-  return (Array.isArray(m) ? m[0] : m) ?? null;
-}
-
-/** Puntos de una visita: misión (o base) + bono si fue después de las 19:00 en Veracruz. */
-function puntosDe(mision: MisionVisita | null, createdAt: string): number {
-  if (!mision) return BASE_POINTS;
-  const horaMx = new Date(
-    new Date(createdAt).toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
-  ).getHours();
-  const base = Number(mision.points) || BASE_POINTS;
-  return mision.night_bonus && horaMx >= 19 ? base + NIGHT_BONUS_POINTS : base;
+/** Misión ligada a una visita (join `missions(title, points, night_bonus)`). */
+function misionDe(row: Record<string, unknown>): MisionDeVisita | null {
+  return unoDe(row.missions as MisionDeVisita | MisionDeVisita[] | null);
 }
 
 /** Convierte una fila de `visits` al formato del feed reciente. */
@@ -60,7 +45,7 @@ function toRecentVisit(row: Record<string, unknown>, idx: number) {
     createdAt: agoLabel,
     method: (row.method as "qr" | "manual") ?? "qr",
     // `visits` no guarda los puntos: se recalculan con las reglas de validate.
-    pointsAwarded: puntosDe(mision, row.created_at as string),
+    pointsAwarded: puntosDeVisita(mision, row.created_at as string),
     missionTitle: mision?.title,
   };
 }
@@ -71,6 +56,10 @@ export async function GET() {
     // petición, nunca se prerenderiza. `connection()` lo marca como dinámico
     // (con cacheComponents de Next 16 no se usa `export const dynamic`).
     await connection();
+
+    // Tablero de afluencia: solo admin.
+    const auth = await requireProfile(["admin"]);
+    if ("response" in auth) return auth.response;
 
     const supabase = getAdminClient();
     const now = new Date();
