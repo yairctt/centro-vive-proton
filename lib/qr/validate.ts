@@ -48,7 +48,10 @@ export async function validateToken(token: string): Promise<ValidateResult> {
       : { kind: "error", message: body.message || errorMsg };
   }
   if ((res.status === 404 && !errorMsg) || res.status >= 500) {
-    return { kind: "ok", data: mockValidate(), demo: true };
+    // Modo demo: el mock acumula los puntos en esta sesión para que el
+    // pasaporte los muestre al volver. Se le pasa el token para que un token
+    // solo cuente una vez, como en el servidor.
+    return { kind: "ok", data: mockValidate(token), demo: true };
   }
   return { kind: "error", message: errorMsg };
 }

@@ -219,12 +219,24 @@ export function buildRoute(
       (i) => normalizeText(i) === normalizeText(place.category),
     );
 
+    // La ficha que viaja en la parada lleva los campos normalizados también en
+    // su campo directo (`Place.avgVisitMin`), no solo dentro de `meta`: así la
+    // UI puede leerlos sin tener que abrir `meta`.
+    const ficha: Place = {
+      ...place,
+      avgVisitMin: mejor.info.avgVisitMin,
+      priceLevel: mejor.info.priceLevel ?? place.priceLevel,
+      opportunity: mejor.info.opportunity,
+      opensAt: mejor.info.opensAt,
+      closesAt: mejor.info.closesAt,
+    };
+
     selected.push({
-      place,
+      place: ficha,
       order: selected.length + 1,
       distanceM: Math.round(dist),
       etaMin: Math.round(etaMin),
-      reason: buildReason(place, breakdown, { etaMin, interest: interes }),
+      reason: buildReason(ficha, breakdown, { etaMin, interest: interes }),
       missionId: misionPorLugar.get(place.id),
       kind: "lugar",
       score: breakdown,

@@ -3,23 +3,23 @@
  *
  * POST  (visitante) solicita un canje → queda «pendiente» hasta que el
  *       comercio lo confirma en POST /api/redemptions/confirm.
- *   Body: { rewardId: string; profileId?: string }   (defecto: visitante-demo)
+ *   Body: { rewardId: string }   ·   Perfil = el de la sesión (visitante).
  *   Response 201: { ok: true; redemption: { id; code; status; rewardTitle; costPoints } }
  *   Los puntos NO se descuentan aquí: se descuentan al confirmar.
  *
  * GET   (comercio) lista los canjes de sus negocios, más recientes primero.
- *   Query: ?profileId=<uuid> (defecto: comercio-demo) &status=pendiente|confirmado
+ *   Query: ?status=pendiente|confirmado   ·   Comercio = el de la sesión (admin ve todos).
  *   Response: { id; code; visitorAlias; rewardTitle; costPoints; status; timestamp }[]
  */
 import { NextRequest, NextResponse, connection } from "next/server";
 import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
 
 const PENDIENTE = "pendiente";
 
 const postSchema = z.object({
   rewardId: z.guid({ message: "rewardId inválido" }),
-  profileId: z.guid({ message: "profileId inválido" }).optional(),
 });
 
 const statusSchema = z.enum(["pendiente", "confirmado"]).optional();
@@ -57,16 +57,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 400 },
     );
   }
-  const { rewardId, profileId: rawProfileId } = parsed.data;
+  const { rewardId } = parsed.data;
 
   try {
     const supabase = getAdminClient();
 
-    // 1. Perfil del visitante (enviado o demo)
-    const perfilQuery = supabase.from("profiles").select("id, points");
-    const { data: visitante } = rawProfileId
-      ? await perfilQuery.eq("id", rawProfileId).maybeSingle()
-      : await perfilQuery.eq("alias", "visitante-demo").maybeSingle();
+    // 1. Perfil del visitante (sesión) con sus puntos al día
+    const auth = await requireProfile(["visitante", "admin"]);
+    if ("response" in auth) return auth.response;
+    const { data: visitante } = await supabase
+      .from("profiles")
+      .select("id, points")
+      .eq("id", auth.profile.id)
+      .maybeSingle();
 
     if (!visitante) {
       return NextResponse.json({ error: "Perfil no encontrado" }, { status: 404 });
@@ -143,30 +146,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   await connection();
 
   const { searchParams } = new URL(req.url);
-  const rawProfileId = searchParams.get("profileId");
   const status = statusSchema.safeParse(searchParams.get("status") ?? undefined);
   if (!status.success) {
     return NextResponse.json({ error: "status inválido" }, { status: 400 });
-  }
-  if (rawProfileId && !z.guid().safeParse(rawProfileId).success) {
-    return NextResponse.json({ error: "profileId inválido" }, { status: 400 });
   }
 
   try {
     const supabase = getAdminClient();
 
-    // 1. Comercio (enviado o demo) y verificación de rol
-    const perfilQuery = supabase.from("profiles").select("id, role");
-    const { data: comercio } = rawProfileId
-      ? await perfilQuery.eq("id", rawProfileId).maybeSingle()
-      : await perfilQuery.eq("alias", "comercio-demo").maybeSingle();
-
-    if (!comercio) {
-      return NextResponse.json({ error: "Perfil de comercio no encontrado" }, { status: 401 });
-    }
-    if (comercio.role !== "comercio") {
-      return NextResponse.json({ error: "Solo un comercio puede ver sus canjes" }, { status: 403 });
-    }
+    // 1. Comercio de la sesión (el admin ve los canjes de todos)
+    const auth = await requireProfile(["comercio", "admin"]);
+    if ("response" in auth) return auth.response;
+    const comercio = auth.profile;
 
     // 2. Canjes de recompensas cuyos negocios pertenecen a este comercio
     let query = supabase
@@ -174,9 +165,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .select(
         "id, status, created_at, profiles(alias), rewards!inner(title, cost_points, businesses!inner(owner_id))",
       )
-      .eq("rewards.businesses.owner_id", comercio.id)
       .order("created_at", { ascending: false })
       .limit(50);
+    if (comercio.role !== "admin") query = query.eq("rewards.businesses.owner_id", comercio.id);
     if (status.data) query = query.eq("status", status.data);
 
     const { data, error } = await query;

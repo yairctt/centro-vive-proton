@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { LayersIcon, TrendUpIcon } from "./icons";
 
 interface ConversionItem {
   name: string;
@@ -24,12 +25,17 @@ interface ComercioConversionChartProps {
 
 export function ComercioConversionChart({ data }: ComercioConversionChartProps) {
   return (
-    <div className="flex h-full flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="flex h-full flex-col justify-between rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-4">
-        <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-          Embudo de Conversión de Visitas
-        </h3>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+            Embudo de Conversión de Visitas
+          </h3>
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+            Conversión
+          </span>
+        </div>
+        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
           De la recomendación digital a la visita presencial y canje
         </p>
       </div>
@@ -80,8 +86,12 @@ export function ComercioConversionChart({ data }: ComercioConversionChartProps) 
       </div>
 
       <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3 text-xs text-neutral-400 dark:border-neutral-800">
-        <span>Tasa de visita presencial: ~76%</span>
-        <span className="font-medium text-emerald-600 dark:text-emerald-400">
+        <span className="flex items-center gap-1.5">
+          <LayersIcon className="h-3.5 w-3.5 text-teal-600" />
+          Tasa de visita presencial: ~76%
+        </span>
+        <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+          <TrendUpIcon className="h-3.5 w-3.5" />
           Conversión a canje: 34%
         </span>
       </div>
