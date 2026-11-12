@@ -112,11 +112,11 @@ export async function POST(request: Request) {
     origen = "respaldo";
   }
 
-  const { stops } = buildRoute(
+  const { stops, totalMin } = buildRoute(
     places,
     { minutes, interests, budget, lat, lng },
     { now, events, missions },
   );
 
-  return NextResponse.json({ stops, origen });
+  return NextResponse.json({ stops, totalMin, origen });
 }
