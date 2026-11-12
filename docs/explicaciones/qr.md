@@ -6,7 +6,7 @@ Cada lugar participante tiene un QR impreso. Cuando el visitante lo escanea, la 
 
 ## Cómo funciona (en 5 líneas)
 
-1. Para cada lugar, el servidor guarda en `qr_tokens` un token aleatorio (`crypto.randomUUID()`). `/admin/qr` lo convierte en una URL con `buildQrUrl(token, dominio)` → `https://<dominio>/escanear?t=<token>` y la imprime como QR.
+1. Para cada lugar, el servidor guarda en `qr_tokens` un token aleatorio (`crypto.randomUUID()`). `/admin/qr` lo pide a `GET /api/qr-tokens`, lo convierte en la URL `https://<dominio>/escanear?t=<token>` con `buildQrUrl` y la imprime como QR (2 tarjetas por hoja carta).
 2. El visitante puede escanearlo con la **cámara normal del teléfono** (abre `/escanear?t=…` y valida sin abrir el lector) o con el botón «Escanear QR» de la app (html5-qrcode con la cámara trasera).
 3. `extractToken()` acepta tanto el token solo como la URL completa y rechaza cualquier otro QR («Este código no es un QR de Pulso Jarocho»).
 4. La página manda solo `{ token }` a `POST /api/visits/validate`. El servidor comprueba que el token exista, esté activo y no lo haya usado ese perfil, guarda la visita y calcula los puntos.
@@ -17,8 +17,9 @@ Cada lugar participante tiene un QR impreso. Cuando el visitante lo escanea, la 
 ```
 /admin/qr            Teléfono del visitante                      Servidor (/api/visits/validate)
 ─────────            ──────────────────────                      ──────────────────────────────
-token = randomUUID   cámara lee el QR
-buildQrUrl() ──QR──▶ extractToken(texto) → token
+GET /api/qr-tokens   cámara lee el QR
+buildQrUrl(origin)
+qrcode → imprimir ─QR─▶ extractToken(texto) → token
                      POST { token } ───────────────────────────▶ ¿token existe y está activo?
                                                                  ¿ya lo usó este perfil? → error
                                                                  inserta visits, suma puntos
@@ -37,9 +38,14 @@ buildQrUrl() ──QR──▶ extractToken(texto) → token
 
 **Modo demo.** Si `/api/visits/validate` todavía no existe (404 sin JSON), hay error de red o el servidor falla (5xx), se usa `lib/qr/mock.ts` y se muestra la etiqueta «modo demo». Un rechazo real del servidor (token inválido o ya usado: 4xx con `{ error }`) **no** cae al mock: se muestra el error. El mock nunca toca la base de datos ni el tablero.
 
+**Página de impresión (`/admin/qr`).** Pide a `GET /api/qr-tokens` (endpoint de I3, solo admin) la lista `{ place, token }[]`, con un token activo por lugar. Por cada lugar arma la URL con `buildQrUrl(token, window.location.origin)` y la convierte en imagen con el paquete `qrcode` (data URL de 640 px, corrección de errores nivel M, que aguanta algo de suciedad o reflejo). Tomar el origin del navegador hace que la misma página genere QR de `localhost` en desarrollo y del dominio de Vercel en producción, sin configurar nada. **Hay que imprimir los definitivos desde la URL de producción**: un QR impreso en local apunta a `localhost`. El CSS `@media print` usa hoja carta con 2 tarjetas por hoja y esconde la navegación y los botones. Debajo de cada QR va el token en letra pequeña para escribirlo a mano si la cámara falla. Si el endpoint no existe aún, usa `mockQrTarjetas()` con tokens `demo-…` y cada tarjeta lleva la marca DEMO para que nadie pegue un QR falso en un comercio.
+
 **Otras:** html5-qrcode se carga con `import()` solo al pulsar el botón (no pesa en la carga inicial ni rompe el render del servidor); `facingMode: "environment"` elige la cámara trasera; la cámara se apaga en cuanto se lee un código o se sale de la pantalla. La cámara solo funciona con HTTPS (Vercel) o en `localhost`. Los textos están en `es.qr`.
 
 ## Preguntas probables del jurado
+
+**¿Cómo se generan e imprimen los QR de cada comercio?**
+El admin abre `/admin/qr`. La app pide los tokens al servidor, dibuja un QR por lugar en el navegador y el botón «Imprimir» saca 2 tarjetas por hoja carta, sin menús ni botones. Si un QR se filtra, basta con desactivar ese token en la base de datos y volver a imprimir la tarjeta.
 
 **¿Qué impide que alguien le tome foto al QR y sume puntos desde su casa?**
 Cada token cuenta una vez por perfil, así que la foto no sirve para repetir puntos. Para lo demás, el token es aleatorio (no se pueden fabricar QR de otros lugares) y el registro de visitas permite ver patrones raros. Si hiciera falta más control, `qr_tokens` ya tiene `expiresAt` para rotar los códigos, o se puede pedir la ubicación del teléfono al validar.
