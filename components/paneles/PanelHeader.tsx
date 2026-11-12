@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChartIcon, StoreIcon, QrCodeIcon, HomeIcon } from "./icons";
+import { BarChartIcon, StoreIcon, QrCodeIcon, HomeIcon, LayersIcon, CalendarIcon } from "./icons";
 import { useSesion } from "@/components/auth/sesion";
 import { BotonSalir } from "@/components/auth/BotonSalir";
 import type { Role } from "@/lib/types";
@@ -11,7 +11,9 @@ import type { Role } from "@/lib/types";
 /** Pestañas por rol (mismas reglas que proxy.ts / lib/auth/roles.ts). */
 const LINKS = [
   { href: "/admin", label: "Tablero Admin", icon: BarChartIcon, roles: ["admin"] as Role[] },
+  { href: "/admin/gestion", label: "Gestión", icon: LayersIcon, roles: ["admin"] as Role[] },
   { href: "/comercio", label: "Mi Comercio", icon: StoreIcon, roles: ["comercio", "admin"] as Role[] },
+  { href: "/comercio/gestion", label: "Eventos y Promos", icon: CalendarIcon, roles: ["comercio", "admin"] as Role[] },
   { href: "/comercio/qr", label: "QR imprimibles", icon: QrCodeIcon, roles: ["comercio", "admin"] as Role[] },
   { href: "/", label: "Inicio", icon: HomeIcon, roles: ["visitante", "comercio", "admin"] as Role[] },
 ];

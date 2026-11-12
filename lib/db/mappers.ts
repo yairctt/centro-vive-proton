@@ -143,7 +143,7 @@ export function toEvent(row: Record<string, unknown>): Event {
     id:          String(row.id ?? ""),
     title:       name,
     name,
-    description: String(row.description ?? row.details ?? ""),
+    description: String(row.description ?? row.details ?? meta.description ?? ""),
     category:    String(row.category ?? "cultura"),
     startsAt:    toIsoString(row.starts_at ?? row.startsAt),
     endsAt:      endsAt ?? null,
