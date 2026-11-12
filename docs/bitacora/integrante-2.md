@@ -53,3 +53,12 @@
 - **Resultado:** `app/(visitante)/hoy/page.tsx` — badge «Agenda viva» en amber con CalendarIcon, cierre con XIcon, bloque de hora en amber-600 (mismo acento que los eventos en /ruta), categoría traducida con `es.ruta.categoria`, lugar con MapPinIcon, «Por confirmar» con borde visible, estado vacío con icono circular y botón hacia /inicio. Lógica de fetch y formato de hora intactas.
 - **Revisión humana:** `npm run build` sin errores.
 - **Commit:** pendiente en `feat/ux-visitante`
+
+### 00:40 · CRUD completo de contenido (lugares, eventos, misiones, recompensas) + script de eventos
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** poder dar de alta, editar y borrar lugares, eventos, misiones y recompensas desde los paneles de admin y comercio sin entrar al dashboard de Supabase; además un script CLI para insertar eventos del día.
+- **Prompt (resumen):** «¿Cómo agrego un evento del día? ¿Se puede sin entrar a Supabase? Hazlo y crea CRUD para todo (lugares, eventos, etc.) para el panel de admin y comercio según corresponda.»
+- **Resultado:** APIs nuevas/extendidas: `POST /api/events` (contrato sección 7, `verified=false`) y `GET /api/events?when=all`, `PATCH/DELETE /api/events/[id]`, `POST /api/places` y `PATCH/DELETE /api/places/[id]` (admin), `GET/POST /api/missions` y `PATCH/DELETE /api/missions/[id]` (admin), `GET/POST /api/rewards` y `PATCH/DELETE /api/rewards/[id]`, `GET /api/me/businesses`; helpers `app/api/_lib/{comercio,esquemas}.ts` (propiedad por owner_id + esquemas zod). UI: `/admin/gestion` (4 pestañas CRUD) y `/comercio/gestion` (mis eventos y recompensas) con componentes en `components/paneles/gestion/`; `PublishEventModal` conectado al API real (selector de lugar propio y manejo de errores); enlaces nuevos en `PanelHeader`. Fallback de descripción de evento vía `meta.description` en `lib/db/mappers.ts` (la tabla no tiene esa columna). Script `scripts/crear-evento.mjs` (inserta evento de hoy por nombre de lugar usando `.env.local`).
+- **Revisión humana:** reglas de propiedad verificadas en el código (comercio solo toca eventos/recompensas de sus negocios; verificación de eventos reservada al admin); `npm run build` y `npm test` (125 pruebas) sin errores. Nota: se tocaron carpetas de I3 (`app/api`) e I5 (`components/paneles`, `app/(panel)`) por pedido explícito; avisar a ambos antes del merge.
+- **Commit:** pendiente en `feat/ux-visitante`

@@ -16,20 +16,28 @@ interface PublishEventModalProps {
   }) => void;
 }
 
+interface OpcionLugar {
+  id: string;
+  nombre: string;
+}
+
 export function PublishEventModal({
   isOpen,
   onClose,
   defaultPlaceName = "Gran Café de la Parroquia",
-  placeId = "gran-cafe-de-la-parroquia",
+  placeId,
   onEventCreated,
 }: PublishEventModalProps) {
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState("2026-11-11");
+  const [date, setDate] = useState("");
   const [time, setTime] = useState("19:00");
   const [category, setCategory] = useState("cultura");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [lugares, setLugares] = useState<OpcionLugar[]>([]);
+  const [lugarId, setLugarId] = useState<string>(placeId ?? "");
 
   // Cerrar modal con tecla Escape
   useEffect(() => {
@@ -41,34 +49,58 @@ export function PublishEventModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Lugares reales del comercio en sesión (para mandar un placeId válido al API).
+  useEffect(() => {
+    if (!isOpen) return;
+    // La fecha de hoy se fija aquí (no en el estado inicial) por el prerender de Next.
+    setDate((prev) => prev || new Date().toISOString().slice(0, 10));
+    let cancelado = false;
+    fetch("/api/me/businesses", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((negocios: { placeId: string; name: string }[]) => {
+        if (cancelado || !Array.isArray(negocios)) return;
+        const opciones = negocios
+          .filter((n) => n.placeId)
+          .map((n) => ({ id: n.placeId, nombre: n.name || defaultPlaceName }));
+        setLugares(opciones);
+        setLugarId((prev) => (prev && opciones.some((o) => o.id === prev) ? prev : opciones[0]?.id ?? ""));
+      })
+      .catch(() => {
+        // Sin sesión o sin base: el envío mostrará el error del servidor.
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [isOpen, defaultPlaceName]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg(null);
 
     try {
       const payload = {
-        name: title,
-        title, // compatibilidad con schemas que usan title
+        title,
         description: description || `Actividad publicada por ${defaultPlaceName}`,
         category,
         startsAt: new Date(`${date}T${time}:00`).toISOString(),
         endsAt: null,
-        placeId,
+        placeId: lugarId,
         source: defaultPlaceName,
-        lat: 19.5432,
-        lng: -96.9104,
-        meta: { publicadoPorComercio: true, verificado: false },
       };
 
-      await fetch("/api/events", {
+      const res = await fetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      }).catch(() => {
-        // En caso de modo mock o backend en progreso, continuamos
       });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error ?? `No se pudo publicar el evento (error ${res.status})`);
+      }
 
       if (onEventCreated) {
         onEventCreated({ title, date, time, category });
@@ -82,13 +114,9 @@ export function PublishEventModal({
         setTitle("");
         setDescription("");
       }, 1800);
-    } catch {
-      setIsSuccess(true);
-      setTimeout(() => {
-        setIsSuccess(false);
-        setIsSubmitting(false);
-        onClose();
-      }, 1800);
+    } catch (err) {
+      setIsSubmitting(false);
+      setErrorMsg(err instanceof Error ? err.message : "No se pudo publicar el evento");
     }
   };
 
@@ -246,12 +274,27 @@ export function PublishEventModal({
                 <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
                   Lugar
                 </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={defaultPlaceName}
-                  className="mt-1 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-3 py-1.5 text-xs text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
-                />
+                {lugares.length > 0 ? (
+                  <select
+                    required
+                    value={lugarId}
+                    onChange={(e) => setLugarId(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 shadow-2xs dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                  >
+                    {lugares.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nombre}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    readOnly
+                    value={defaultPlaceName}
+                    className="mt-1 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-3 py-1.5 text-xs text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
+                  />
+                )}
               </div>
             </div>
 
@@ -284,6 +327,12 @@ export function PublishEventModal({
                   <span>{defaultPlaceName}</span>
                 </div>
               </div>
+            )}
+
+            {errorMsg && (
+              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+                {errorMsg}
+              </p>
             )}
 
             <div className="flex justify-end gap-2 pt-2">

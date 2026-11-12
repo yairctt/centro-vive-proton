@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse, connection } from "next/server";
+import { z } from "zod";
 import { getAdminClient } from "@/lib/db/server";
+import { requireProfile } from "@/lib/db/auth";
 import { toEvent } from "@/lib/db/mappers";
 import { eventosDemo } from "@/lib/engine/datos-eventos";
+import { lugaresDelComercio } from "@/app/api/_lib/comercio";
+import { eventoSchema, eventoAFila, errorDeValidacion } from "@/app/api/_lib/esquemas";
 import type { Event } from "@/lib/types";
 
 function getMexicoCityDateRange() {
@@ -61,6 +65,9 @@ export async function GET(request: NextRequest) {
     }
 
     const events = (data ?? []).map(toEvent).filter((event) => {
+      // "all": agenda completa, para las pantallas de gestión de los paneles.
+      if (when === "all") return true;
+
       const startMs = new Date(event.startsAt).getTime();
       if (isNaN(startMs)) return false;
 
@@ -98,12 +105,61 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * POST /api/events — publica un evento en la agenda (contrato sección 7).
+ * comercio: solo en los lugares de sus negocios. admin: en cualquier lugar.
+ * Siempre entra con verified=false («por confirmar»); un admin lo verifica después.
+ */
+export async function POST(request: NextRequest) {
+  await connection();
+  try {
+    const auth = await requireProfile(["comercio", "admin"]);
+    if ("response" in auth) return auth.response;
+
+    const cuerpo = await request.json().catch(() => null);
+    const parsed = eventoSchema.safeParse(cuerpo);
+    if (!parsed.success) {
+      return NextResponse.json(errorDeValidacion(parsed.error), { status: 400 });
+    }
+
+    if (auth.profile.role === "comercio") {
+      const misLugares = await lugaresDelComercio(auth.profile.id);
+      if (!misLugares.includes(parsed.data.placeId)) {
+        return NextResponse.json(
+          { error: "Solo puedes publicar eventos en los lugares de tu comercio" },
+          { status: 403 },
+        );
+      }
+    }
+
+    const fila = {
+      ...eventoAFila(parsed.data),
+      source: parsed.data.source || auth.profile.alias || auth.profile.role,
+      verified: false,
+    };
+
+    const { data, error } = await getAdminClient()
+      .from("events")
+      .insert(fila)
+      .select("*, places(*)")
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(toEvent(data as Record<string, unknown>), { status: 201 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error inesperado al crear el evento";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 /** Eventos de respaldo filtrados igual que los de la base. */
 function eventosRespaldo(when: string): Event[] {
   const { now, startOfDay, endOfDay } = getMexicoCityDateRange();
   const in3Hours = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
   return eventosDemo(now).filter((event) => {
+    if (when === "all") return true;
+
     const startMs = new Date(event.startsAt).getTime();
     if (isNaN(startMs)) return false;
 
