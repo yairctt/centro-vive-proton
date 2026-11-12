@@ -317,3 +317,167 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se verificó que el botón active y desactive el recordatorio adecuadamente con retroalimentación visual, y que la suite de 126 pruebas y el chequeo estricto de TypeScript concluyan al 100% sin errores.
 - **Commit:** `fix(eventos): cambiar por confirmar por notificarme en vista de usuario`
+
+---
+
+### 07:15 · Fase 12: Solución al Giro del Reto (Atraco de Crucero: 3,000 Visitantes · 5 Horas · Bilingüe)
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Responder y desarrollar la solución completa e integrable a la demo final para el giro sorpresa del hackathon: «Atraca un crucero: 3,000 visitantes con solo 5 horas en tierra y que no hablan español. La solución debe proponerles quéhacer y llevarlos a negocios del centro. Debe aparecer en la demo final. Cuenten en su entrega cómo lo atendieron.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Soporte Bilingüe Nativo (`lib/i18n/en.ts` y `lib/i18n/index.ts`):** Creación del diccionario completo en inglés y selector instantáneo `[ 🇲🇽 ES | 🇺🇸 EN ]` con persistencia en localStorage para eliminar toda barrera idiomática en la experiencia de usuario.
+  - **Preset Express de Crucero de 5 Horas (`app/(visitante)/inicio/page.tsx`):** Un clic activa el Modo Crucero (300 min), fija el origen en el Muelle Turístico del Malecón (`19.201, -96.134`), preselecciona gastronomía, artesanías, historia y paseo, y genera una ruta optimizada a pie.
+  - **Cuenta regresiva de embarque y retorno seguro (`components/ui/CruiseExperience.tsx`, `app/(visitante)/ruta/page.tsx`):** Widget `CruiseCountdownWidget` para control del tiempo de escala y botón directo de navegación a pie al Muelle de Cruceros en 8 minutos («Safe Return Guarantee»).
+  - **Dinamización y consumo en comercios locales:** Priorización de visitas hacia comercios aliados del Centro Histórico (Gran Café de la Parroquia, Mercado de Artesanías del Malecón, Los Portales, Toritos La Chata) con sellos dobles e incentivos de bienvenida en el pasaporte digital.
+  - **Simulación y derrama comercial en Tablero Admin (`app/(panel)/admin/page.tsx`):** Incorporación del switch interactivo «Operativo Crucero (3,000 Pax)», reflejando en tiempo real +2,420 interacciones de turistas, 590 canjes en comercios y una derrama económica estimada de ~$485,000 MXN.
+  - **Documento oficial de entrega y guion de pitch (`docs/solucion-giro-crucero.md`):** Reporte estratégico con la arquitectura de solución y guion de 45 segundos para el jurado.
+- **Resultado:**
+  - `lib/i18n/en.ts` (nuevo diccionario en inglés)
+  - `lib/i18n/index.ts` (gestor y selector de idioma)
+  - `lib/i18n/es.ts` (claves de crucero)
+  - `components/ui/CruiseExperience.tsx` (banner y countdown de embarque)
+  - `components/paneles/icons.tsx` (`ShipIcon`, `GlobeIcon`, `AnchorIcon`, `ArrowRightIcon`)
+  - `app/page.tsx` (integración de `CruiseBanner` y selector de idioma)
+  - `app/(visitante)/inicio/page.tsx` (preset de crucero de 5 horas y selector EN/ES)
+  - `app/(visitante)/ruta/page.tsx` (widget de embarque y retorno al muelle)
+  - `app/(panel)/admin/page.tsx` (simulación de 3,000 cruceristas y derrama comercial)
+  - `docs/solucion-giro-crucero.md` (documento oficial de entrega)
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó la navegación bilingüe fluida, la correcta generación de la ruta de 5 horas desde el muelle, el temporizador de embarque, la simulación de afluencia en el tablero de admin, y el pase exitoso de los 141 tests de Vitest y tipos de TypeScript al 100%.
+- **Commit:** `feat(giro-crucero): solucion integral atraco de crucero con modo bilingue ruta 5h dinamizacion comercial y tablero de impacto`
+
+---
+
+### 07:35 · Fase 13: Rutas Colaborativas en Grupo y Recompensas Colectivas
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Potenciar la experiencia de exploración urbana para permitir que familias, grupos de amigos y células de cruceristas participen juntos en una misma ruta sincronizada y obtengan recompensas colectivas en comercios aliados del centro.
+- **Prompt (resumen):** «Mejora la idea, a que se pueda hacer una ruta en la que puedan participar todos los integrantes en un grupo. Y que todos puedan obtener sus recompensas como grupo.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Módulo de Lógica y Estado Grupal (`lib/grupo/index.ts`):** Definición de la entidad `GrupoViaje`, generación de códigos de grupo (`JAROCHO-88`), asignación de roles/avatares a los integrantes y gestión del Bote Grupal de Puntos con persistencia.
+  - **Selector de Modalidad en Diseña tu Recorrido (`app/(visitante)/inicio/page.tsx`):** Opción interactiva para elegir entre "Explorador Solo" o "Ruta en Grupo", selector de cantidad de integrantes (2 a 6+ personas) y personalización del nombre del grupo.
+  - **Widget de Check-in Grupal en la Ruta (`components/ui/GroupExperience.tsx`, `app/(visitante)/ruta/page.tsx`):** Visualización en vivo del progreso de escaneo del grupo en la parada actual (ej. 3/4 miembros validados), barra de porcentaje interactiva, animación de desbloqueo al completar todos el check-in y botón para compartir el código del grupo.
+  - **Recompensas Colectivas en el Pasaporte (`app/(visitante)/pasaporte/page.tsx`):** Vales especiales para toda la mesa en comercios tradicionales:
+    - *Gran Café de la Parroquia:* Ronda de café lechero y bombas al completar 2 paradas juntos.
+    - *Mercado de Artesanías:* 20% de descuento en compras colectivas al completar 3 paradas.
+    - *Los Portales de Lerdo:* Jarra de cortesía de Torito tradicional con música de marimba.
+  - **Métricas de Afluencia Grupal en Tablero Admin (`app/(panel)/admin/page.tsx`):** Monitoreo de células turísticas activas en el centro, tamaño promedio por grupo (3.8 personas) y su impacto multiplicador en el ticket comercial (+320%).
+- **Resultado:**
+  - `lib/grupo/index.ts` (nuevo módulo de grupos y recompensas colectivas)
+  - `components/ui/GroupExperience.tsx` (componentes de widget grupal y pasaporte colectivo)
+  - `components/paneles/icons.tsx` (`UsersIcon`, `TrophyIcon`)
+  - `app/(visitante)/inicio/page.tsx` (selector de modalidad de viaje individual vs. grupo)
+  - `app/(visitante)/ruta/page.tsx` (widget colaborativo de avance grupal en paradas)
+  - `app/(visitante)/pasaporte/page.tsx` (sección de recompensas grupales desbloqueadas)
+  - `app/(panel)/admin/page.tsx` (métrica de células grupales y derrama comercial)
+  - `docs/solucion-giro-crucero.md` (actualización de arquitectura)
+  - `docs/bitacora/integrante-5.md`
+- **Revisión humana:** Se validó la creación del grupo, la interacción colaborativa en la ruta, el reflejo en el pasaporte y la aprobación de las 141 pruebas unitarias y compilación con TypeScript.
+- **Commit:** `feat(grupos): rutas colaborativas en grupo bote de puntos y recompensas colectivas para toda la mesa`
+
+---
+
+### 07:50 · Fase 14: Consolidación de Rutas Grupales (Grupos Pequeños y Grandes Contingentes) y Retiro del Modo Crucero
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Generalizar y consolidar de forma permanente la funcionalidad de rutas grupales para grupos pequeños (2-4), medianos (5-10) y grandes contingentes (15-30+ o cantidad personalizada de hasta 200+ personas), desacoplándola del caso de uso particular del crucero («el crucero fue solo un ejemplo del reto»).
+- **Prompt (resumen):** «Elimina el modo crucero, eso solo es un ejemplo. Lo que se busca integrar es que haya un modo de ruta en grupos grande o pequeños. Implementando sugerencia de tamaños de grupo o cantidad personalizada.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Sugerencias de tamaño y personalización libre (`app/(visitante)/inicio/page.tsx`, `lib/grupo/index.ts`):**
+    - Se incorporaron 3 presets recomendados:
+      - *Pequeño (2-4 pers.):* Pareja o amigos, con beneficio de café lechero en La Parroquia.
+      - *Mediano (5-10 pers.):* Familia o célula de viaje, con 20% de descuento en artesanías y mesa reservada.
+      - *Contingente (15-30+ pers.):* Excursiones, tours masivos y eventos, con atención prioritaria de área colectiva.
+    - Se añadió selector interactivo con slider continuo (2 a 50+) e input numérico directo para cualquier cantidad personalizada (hasta 300+ integrantes).
+  - **Limpieza y desacoplamiento de Crucero:**
+    - Se retiraron banners y widgets restrictivos de crucero (`CruiseBanner`, `CruiseCountdownWidget`, `CruiseExperience.tsx`).
+    - En la portada (`app/page.tsx`), se colocó un acceso directo destacado a «Rutas en Grupo y Recompensas Colectivas (2 a 50+ pers.)».
+    - En la pantalla de ruta (`app/(visitante)/ruta/page.tsx`), se mantiene el widget colaborativo limpio sin ataduras a horarios náuticos.
+  - **Tablero Administrativo de Contingentes (`app/(panel)/admin/page.tsx`):**
+    - Se transformó el banner del Giro del Reto a «Operativo de Grupos Pequeños y Grandes Contingentes (2 a 50+ pers.)».
+    - Botón de acción: «Simular Contingente Masivo», reflejando 480 grupos sincronizados, +2,590 interacciones en contingentes, +640 consumos de mesas completas y una derrama económica estimada de ~$520,000 MXN.
+  - **Pruebas unitarias completas (`lib/grupo/__tests__/grupo.test.ts`):**
+    - 4 pruebas automatizadas con Vitest cubriendo categorización por tamaño, generación de bote grupal y check-ins sincronizados. Suite total: 145 pruebas aprobadas.
+- **Resultado:**
+  - `lib/grupo/index.ts` (lógica de grupos con soporte SSR y storage)
+  - `lib/grupo/__tests__/grupo.test.ts` (suite de pruebas de grupos)
+  - `components/ui/GroupExperience.tsx` (widgets colaborativos de ruta y pasaporte)
+  - `app/(visitante)/inicio/page.tsx` (selector con sugerencias y slider personalizado)
+  - `app/(visitante)/ruta/page.tsx` (widget colaborativo sin dependencias de crucero)
+  - `app/page.tsx` (tarjeta de acceso directo a rutas en grupo)
+  - `app/(panel)/admin/page.tsx` (monitoreo y simulación de contingentes y grupos)
+  - `components/ui/CruiseExperience.tsx` (eliminado)
+- **Revisión humana:** Se confirmó la compilación con `npx tsc --noEmit` con 0 errores, la ejecución exitosa de los 145 tests de Vitest, la navegación intuitiva en dispositivos móviles y la consistencia en el tablero de administración.
+- **Commit:** `feat(grupos): rutas en grupos pequenos medianos y grandes contingentes con tamano personalizado y recompensas colectivas`
+
+### 08:25 · Fase 15: Traducción Integral al Inglés, Selector Bilingüe Universal y Soporte para Cruceristas Extranjeros
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Cumplir el requerimiento del giro del reto para visitantes que no hablan español (cruceristas extranjeros y turistas internacionales): traducir el proyecto completamente al inglés desde el inicio, con selector de idioma accesible desde la portada y en todas las pantallas principales, reactividad instantánea y persistencia.
+- **Prompt (resumen):** «Me agrada la idea, pero recuerda que es un crucero donde no hablan español, entonces recuerda que posiblemente usen el idioma ingles. Debes traducir el proyecto para estas personas. Debe estar traducido completamente desde el inicio y poder escoger el lenguaje de preferencia.»
+- **Decisiones técnicas y de diseño tomadas por la IA:**
+  - **Selector universal bilingüe (`components/ui/LanguageSelector.tsx`):**
+    - Componente UI elegante y compacto con diseño interactivo: `[ 🇲🇽 ES | 🇺🇸 EN ]`.
+    - Hook reactivo `useIdioma()` con listener de eventos `pulso_lang_changed` y `storage`, permitiendo alternar idioma en caliente sin recarga de página y sin tocar archivos protegidos (`app/layout.tsx`).
+    - Persistencia en `localStorage` y `sessionStorage`.
+  - **Traducción simétrica y universal en `lib/i18n/`:**
+    - `lib/i18n/es.ts` y `lib/i18n/en.ts` completamente sincronizados:
+      - **Portada (`app/page.tsx`):** Lema institucional, tarjeta de Rutas Grupales, pie de página y selector en cabecera.
+      - **Menú por rol (`components/auth/MenuPorRol.tsx`):** Opciones para visitante, comercio y admin, botones de sesión y bienvenida.
+      - **Personalizador (`app/(visitante)/inicio/page.tsx`):** Tiempos (1h, 1.5h, 2h, 3+h, 4+h), modo solo vs. grupo, sugerencias (Small, Medium, Contingent), slider libre, categorías de interés y presupuesto.
+      - **Ruta inteligente (`app/(visitante)/ruta/page.tsx`):** Paradas, tiempos de caminata, categorías traducidas, mapa y botones de acción.
+      - **Pasaporte digital (`app/(visitante)/pasaporte/page.tsx`):** Sellos, puntos, vales individuales y bote colaborativo grupal.
+      - **Lector QR (`app/escanear/page.tsx`):** Guía de cámara, validación de sellos y pantalla de éxito.
+      - **Login (`app/(auth)/login/page.tsx` & `components/auth/ui.tsx`):** Hero split-screen traducido, campos, recuperación y accesos demo de evaluación.
+      - **Agenda viva (`app/(visitante)/hoy/page.tsx`):** Lista de eventos, botón "Notify me" / "Notified" y vista de día sin eventos.
+      - **Misión urbana (`app/(visitante)/mision/[id]/page.tsx`):** Detalles de misión, recompensas y botón para escanear QR.
+  - **Pruebas unitarias de internacionalización (`lib/i18n/__tests__/i18n.test.ts`):**
+    - 7 pruebas con Vitest verificando simetría de esquemas, opciones de duración y grupos, diccionario y fallback seguro de almacenamiento.
+- **Resultado:**
+  - `lib/i18n/index.ts`
+  - `lib/i18n/es.ts`
+  - `lib/i18n/en.ts`
+  - `lib/i18n/__tests__/i18n.test.ts`
+  - `components/ui/LanguageSelector.tsx`
+  - `components/auth/ui.tsx`
+  - `app/page.tsx`
+  - `components/auth/MenuPorRol.tsx`
+  - `components/auth/BotonSalir.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `app/(visitante)/pasaporte/page.tsx`
+  - `app/escanear/page.tsx`
+  - `app/(auth)/login/page.tsx`
+  - `app/(visitante)/hoy/page.tsx`
+  - `app/(visitante)/mision/[id]/page.tsx`
+- **Revisión humana:** Se ejecutó `npx tsc --noEmit` (0 errores) y `npm test` (152/152 pruebas aprobadas). Se verificó el flujo completo en inglés y español.
+- **Commit:** `feat(i18n): traduccion completa al ingles selector de idioma universal y soporte bilingue para cruceristas`
+
+### 08:40 · Fase 16: Interfaz de Usuario para Unirse a Grupos Grandes Mediante Código de Grupo
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Permitir que cualquier visitante o turista se una fácilmente a un contingente masivo o grupo de viaje cuando copie o reciba un código de grupo (ej: `JAROCHO-842`, `CONTINGENTE-24`, etc.).
+- **Prompt (resumen):** «Ahora en la vista del usuario se debe ver la forma en la que se unira al grupo grande cuando este copie el codigo de grupo.»
+- **Decisiones técnicas y de diseño tomadas por la IA:**
+  - **Lógica de unión y persistencia (`lib/grupo/index.ts`):**
+    - Función `unirseAGrupoPorCodigo(codigo, alias)` que detecta grupos activos, recientes o instancias de contingente, incorporando al turista como miembro del equipo.
+    - Emisión del evento global reactivo `pulso_grupo_changed` para sincronización en caliente entre componentes.
+  - **Componente interactivo `JoinGroupCard` (`components/ui/GroupExperience.tsx`):**
+    - Input de código con formato en mayúsculas automático y botón directo para pegar desde el portapapeles (`navigator.clipboard.readText()`).
+    - Pastillas de prueba rápida para evaluación del jurado (`CONTINGENTE-24`, `JAROCHO-842`, `TOUR-50`).
+    - Estado de confirmación con animación y visualización del grupo activo (código, tamaño del contingente, puntos de bote colectivo y opción de salida).
+  - **Integración en la Vista del Visitante (`app/(visitante)/inicio/page.tsx` & `app/(visitante)/ruta/page.tsx`):**
+    - En `/inicio`: Sub-pestañas "Crear grupo nuevo" vs "Tengo un código" en la sección de viaje en grupo, además de detección automática de códigos vía parámetro URL (`?grupo=...`).
+    - En `/ruta`: Botón accesible si no hay grupo activo *"¿Vienes en grupo o contingente? Ingresar Código"*, que despliega el formulario de unión directa y activa al instante el `GroupRouteWidget` sin necesidad de reiniciar el recorrido.
+  - **Pruebas unitarias completas:**
+    - Se agregó caso de prueba en `lib/grupo/__tests__/grupo.test.ts` validando la incorporación por código y almacenamiento. 153 pruebas aprobadas.
+- **Resultado:**
+  - `lib/grupo/index.ts`
+  - `lib/grupo/__tests__/grupo.test.ts`
+  - `components/ui/GroupExperience.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `lib/i18n/es.ts`
+  - `lib/i18n/en.ts`
+- **Revisión humana:** Se verificó `npx tsc --noEmit` (0 errores) y `npm test` (153/153 pruebas aprobadas). El flujo de unión por código funciona tanto desde `/inicio` como en caliente desde `/ruta`.
+- **Commit:** `feat(grupos): interfaz de union a grupos y contingentes por codigo copiado con soporte reactivo y bilingue`

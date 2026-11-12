@@ -4,11 +4,11 @@ import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getBrowserClient } from "@/lib/db/browser";
-import { es } from "@/lib/i18n/es";
 import { flags } from "@/lib/flags";
 import { AuthShell, Aviso, Boton, Campo, Separador } from "@/components/auth/ui";
 import { irTrasLogin } from "@/components/auth/sesion";
 import { mensajeDeError } from "@/components/auth/errores";
+import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 import {
   CompassIcon,
   StoreIcon,
@@ -17,7 +17,6 @@ import {
   LockIcon,
   UserCheckIcon,
   ShieldCheckIcon,
-  SparklesIcon,
 } from "@/components/paneles/icons";
 
 /**
@@ -37,13 +36,14 @@ const CUENTAS_DEMO = {
 } as const;
 
 function LoginForm() {
+  const { lang, t } = useIdioma();
   const params = useSearchParams();
   const next = params.get("next");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState<"correo" | "invitado" | "comercio" | "admin" | null>(null);
   const [error, setError] = useState<string | null>(
-    params.get("error") === "enlace" ? es.auth.enlaceInvalido : null,
+    params.get("error") === "enlace" ? t.auth.enlaceInvalido : null,
   );
 
   const conRegistro = next ? `/registro?next=${encodeURIComponent(next)}` : "/registro";
@@ -92,30 +92,32 @@ function LoginForm() {
 
   return (
     <AuthShell
-      titulo="¡Bienvenido de nuevo!"
+      lang={lang}
+      headerRight={<LanguageSelector size="sm" />}
+      titulo={t.auth.tituloLogin}
       subtitulo={
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          ¿No tienes una cuenta?{" "}
+          {t.auth.creaCuentaGratis}{" "}
           <Link
             href={conRegistro}
             className="font-bold text-neutral-900 hover:text-teal-700 dark:text-neutral-100 underline underline-offset-2"
           >
-            Crea una cuenta nueva gratis
+            {t.auth.creaCuentaEnlace}
           </Link>
-          , ¡toma menos de un minuto!
+          {t.auth.tomaMenosMinuto}
         </p>
       }
       pie={
         <div className="flex items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
           <ShieldCheckIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-          <span>Acceso seguro · Centro Histórico de Veracruz</span>
+          <span>{t.auth.accesoSeguro}</span>
         </div>
       }
     >
       {/* Formulario principal de credenciales como en el boceto */}
       <form onSubmit={entrar} className="space-y-4">
         <Campo
-          label={es.auth.correo}
+          label={t.auth.correo}
           type="email"
           autoComplete="email"
           inputMode="email"
@@ -126,7 +128,7 @@ function LoginForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <Campo
-          label={es.auth.contrasena}
+          label={t.auth.contrasena}
           type="password"
           autoComplete="current-password"
           required
@@ -140,7 +142,7 @@ function LoginForm() {
 
         {/* Botón principal oscuro como el 'Login Now' del boceto */}
         <Boton type="submit" variante="oscuro" disabled={cargando !== null}>
-          {cargando === "correo" ? "Iniciando sesión..." : "Iniciar Sesión"}
+          {cargando === "correo" ? t.auth.botonIniciando : t.auth.botonIniciarSesion}
         </Boton>
 
         {/* Botón alternativo estilo Google del boceto: Continuar como Visitante */}
@@ -151,17 +153,17 @@ function LoginForm() {
           onClick={entrarComoInvitado}
           disabled={cargando !== null}
         >
-          {cargando === "invitado" ? "Entrando como visitante..." : "Continuar como Visitante (Sin registro)"}
+          {cargando === "invitado" ? t.auth.botonInvitadoCargando : t.auth.botonInvitado}
         </Boton>
 
         {/* Enlace de recuperación al pie del formulario como en el boceto */}
         <p className="text-center text-xs text-neutral-500 pt-1">
-          ¿Olvidaste tu contraseña?{" "}
+          {t.auth.olvidePregunta}{" "}
           <Link
             href="/recuperar"
             className="font-bold text-neutral-900 dark:text-neutral-100 hover:text-teal-700 underline underline-offset-2"
           >
-            Haz clic aquí
+            {t.auth.hazClicAqui}
           </Link>
         </p>
       </form>
@@ -169,7 +171,7 @@ function LoginForm() {
       {/* Accesos rápidos de demostración para el jurado */}
       {flags.accesosDemo && (
         <>
-          <Separador texto="o accede con una cuenta demo (Jurado)" />
+          <Separador texto={t.auth.separadorDemo} />
           <div className="space-y-2.5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {/* Demo Visitante */}
@@ -183,10 +185,10 @@ function LoginForm() {
                   <UserCheckIcon className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-teal-950 dark:text-teal-200">
-                  {cargando === "invitado" ? "Entrando..." : "Visitante"}
+                  {cargando === "invitado" ? (lang === "en" ? "Entering…" : "Entrando...") : t.auth.demoVisitante}
                 </span>
                 <span className="text-[10px] text-teal-700/80 dark:text-teal-400">
-                  Ruta & Sellos
+                  {t.auth.demoSubVisitante}
                 </span>
               </button>
 
@@ -201,10 +203,10 @@ function LoginForm() {
                   <StoreIcon className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
-                  {cargando === "comercio" ? "Entrando..." : "Comercio"}
+                  {cargando === "comercio" ? (lang === "en" ? "Entering…" : "Entrando...") : t.auth.demoComercio}
                 </span>
                 <span className="text-[10px] text-amber-700/80 dark:text-amber-400">
-                  Vitrina & Canjes
+                  {t.auth.demoSubComercio}
                 </span>
               </button>
 
@@ -219,15 +221,15 @@ function LoginForm() {
                   <BarChartIcon className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                  {cargando === "admin" ? "Entrando..." : "Admin"}
+                  {cargando === "admin" ? (lang === "en" ? "Entering…" : "Entrando...") : t.auth.demoAdmin}
                 </span>
                 <span className="text-[10px] text-neutral-600 dark:text-neutral-400">
-                  Afluencia Viva
+                  {t.auth.demoSubAdmin}
                 </span>
               </button>
             </div>
             <p className="text-center text-[11px] text-neutral-500 dark:text-neutral-400">
-              {es.auth.accesosDemoAyuda}
+              {t.auth.accesosDemoAyuda}
             </p>
           </div>
         </>

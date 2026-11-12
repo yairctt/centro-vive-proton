@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { Html5Qrcode } from "html5-qrcode";
-import { es } from "@/lib/i18n/es";
+import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 import { extractToken, TOKEN_PARAM } from "@/lib/qr/parse";
 import type { ValidateResponse } from "@/lib/qr/types";
 import { validateToken, type ValidateResult } from "@/lib/qr/validate";
@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 
-const t = es.qr;
 const LECTOR_ID = "lector-qr";
 
 type Estado =
@@ -66,20 +65,23 @@ function ContadorPuntos({ hasta }: { hasta: number }) {
   return <>{valor}</>;
 }
 
-function estadoFinal(r: ValidateResult): Estado {
+function estadoFinal(r: ValidateResult, errorGenerico: string = "Ocurrió un error"): Estado {
   return r.kind === "ok"
     ? { fase: "exito", data: r.data, demo: r.demo }
-    : { fase: "error", mensaje: r.message ?? t.errorGenerico };
+    : { fase: "error", mensaje: r.message ?? errorGenerico };
 }
 
 function Escaner() {
   const router = useRouter();
   const params = useSearchParams();
+  const { lang, t: dict } = useIdioma();
+  const t = dict.qr;
+
   // QR leído con la cámara normal del teléfono: /escanear?t=<token> → se valida sin abrir la cámara.
   const [estado, setEstado] = useState<Estado>(() => {
     const desdeUrl = params.get(TOKEN_PARAM);
     if (!desdeUrl) return { fase: "inicio" };
-    return extractToken(desdeUrl) ? { fase: "validando" } : { fase: "error", mensaje: t.codigoInvalido };
+    return extractToken(desdeUrl) ? { fase: "validando" } : { fase: "error", mensaje: "Código inválido" };
   });
   const [tokenManual, setTokenManual] = useState("");
   const [errorManual, setErrorManual] = useState<string | null>(null);
@@ -89,8 +91,8 @@ function Escaner() {
 
   const validar = useCallback((token: string) => {
     setEstado({ fase: "validando" });
-    void validateToken(token).then((r) => setEstado(estadoFinal(r)));
-  }, []);
+    void validateToken(token).then((r) => setEstado(estadoFinal(r, t.errorGenerico)));
+  }, [t.errorGenerico]);
 
   const procesarTexto = useCallback(
     (texto: string) => {
@@ -180,16 +182,17 @@ function Escaner() {
       <style>{CSS_ANIMACIONES}</style>
       <header className="flex items-center justify-between">
         <Link
-          href="/ruta"
+          href={`/ruta${lang === "en" ? "?lang=en" : ""}`}
           className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 dark:text-teal-400"
         >
           <ArrowLeftIcon className="h-3.5 w-3.5" />
           {t.volverRuta}
         </Link>
         <div className="flex items-center gap-2">
+          <LanguageSelector size="sm" />
           <PulsoLogo size="xs" conTexto={false} />
           <Link
-            href="/pasaporte"
+            href={`/pasaporte${lang === "en" ? "?lang=en" : ""}`}
             className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300"
           >
             <TrophyIcon className="h-3.5 w-3.5" />
@@ -289,11 +292,11 @@ function Escaner() {
             </p>
           )}
           <div className="mt-4 flex w-full flex-col gap-3">
-            <Link href="/ruta" className={`${btnPrimario} flex items-center justify-center gap-2 text-center`}>
+            <Link href={`/ruta${lang === "en" ? "?lang=en" : ""}`} className={`${btnPrimario} flex items-center justify-center gap-2 text-center`}>
               {t.seguirRuta}
               <ArrowRightIcon className="size-5" />
             </Link>
-            <Link href="/pasaporte" className={`${btnSecundario} flex items-center justify-center gap-2`}>
+            <Link href={`/pasaporte${lang === "en" ? "?lang=en" : ""}`} className={`${btnSecundario} flex items-center justify-center gap-2`}>
               <TrophyIcon className="size-4" />
               {t.verPasaporte}
             </Link>

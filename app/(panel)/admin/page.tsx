@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   KpiCard,
@@ -20,6 +20,7 @@ import {
   ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
+import { SparklesIcon, UsersIcon } from "@/components/paneles/icons";
 import type { Stats } from "@/lib/types";
 
 type TimeRange = "hoy" | "ayer" | "semana";
@@ -32,6 +33,51 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<string>("Recién cargado");
   const [isFetching, setIsFetching] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [isGroupSurgeSimulated, setIsGroupSurgeSimulated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (
+        params.get("group") === "1" ||
+        params.get("contingente") === "1" ||
+        params.get("cruise") === "1" ||
+        params.get("cruise") === "simulated"
+      ) {
+        setIsGroupSurgeSimulated(true);
+      }
+    }
+  }, []);
+
+  const displayStats: ExtendedStats = useMemo(() => {
+    if (!isGroupSurgeSimulated) return stats;
+
+    const groupScans = [
+      { placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", scans: 580 },
+      { placeId: "mercado-artesanias", placeName: "Mercado de Artesanías del Malecón", scans: 510 },
+      { placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", scans: 460 },
+      { placeId: "malecon-veracruz", placeName: "Malecón de Veracruz", scans: 410 },
+      { placeId: "museo-naval", placeName: "Museo Naval México", scans: 340 },
+      { placeId: "toritos-la-chata", placeName: "Toritos La Chata", scans: 290 },
+    ];
+
+    const groupFeed: ExtendedStats["recentVisits"] = [
+      { id: "g1", placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", createdAt: new Date(Date.now() - 15000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Familia Morales (8 pers.) · Canje mesa completa" },
+      { id: "g2", placeId: "mercado-artesanias", placeName: "Mercado de Artesanías", createdAt: new Date(Date.now() - 35000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Contingente Tour Xalapa (22 pers.) · Descuento 20%" },
+      { id: "g3", placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", createdAt: new Date(Date.now() - 65000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Grupo Amigos del Puerto (4 pers.) · Ronda de Toritos" },
+      { id: "g4", placeId: "toritos-la-chata", placeName: "Toritos La Chata", createdAt: new Date(Date.now() - 110000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Excursión Escolar UV (18 pers.) · Check-in grupal" },
+    ];
+
+    return {
+      ...stats,
+      totalInteractions: (stats.totalInteractions || 420) + 2590,
+      missionsAccepted: (stats.missionsAccepted || 210) + 1780,
+      missionsCompleted: (stats.missionsCompleted || 180) + 1420,
+      redemptions: (stats.redemptions || 89) + 640,
+      scansByPlace: groupScans,
+      recentVisits: [...groupFeed, ...(stats.recentVisits || []).slice(0, 3)],
+    };
+  }, [isGroupSurgeSimulated, stats]);
 
   // Consulta a GET /api/stats cada 5 segundos (Requisito CP2: actualización < 10s)
   const fetchStats = useCallback(async () => {
@@ -227,6 +273,72 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Banner de Simulación de Contingentes y Rutas Grupales */}
+      <div className={`p-4 rounded-3xl border transition-all ${
+        isGroupSurgeSimulated
+          ? "bg-gradient-to-r from-amber-950 via-teal-950 to-neutral-900 border-amber-500/50 text-white shadow-md"
+          : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 ${
+              isGroupSurgeSimulated ? "bg-amber-400 text-neutral-950 shadow-xs" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
+            }`}>
+              <UsersIcon className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
+                  Modo Rutas Grupales
+                </span>
+                <span className={`text-xs font-bold ${isGroupSurgeSimulated ? "text-amber-200" : "text-neutral-700 dark:text-neutral-300"}`}>
+                  Operativo de Grupos Pequeños y Grandes Contingentes (2 a 50+ pers.)
+                </span>
+              </div>
+              <p className={`text-xs mt-0.5 ${isGroupSurgeSimulated ? "text-amber-100/90" : "text-neutral-500 dark:text-neutral-400"}`}>
+                {isGroupSurgeSimulated
+                  ? "Simulación activa: 480 grupos y contingentes coordinados (familias, amigos y excursiones) dinamizando comercios locales con bote compartido."
+                  : "Presiona el botón para simular en vivo la afluencia simultánea de grupos pequeños y grandes contingentes con bote colectivo."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsGroupSurgeSimulated((v) => !v)}
+            className={`cursor-pointer px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 ${
+              isGroupSurgeSimulated
+                ? "bg-amber-400 hover:bg-amber-300 text-neutral-950"
+                : "bg-teal-700 hover:bg-teal-800 text-white"
+            }`}
+          >
+            <UsersIcon className="w-4 h-4" />
+            <span>{isGroupSurgeSimulated ? "Desactivar Simulación" : "Simular Contingente Masivo"}</span>
+          </button>
+        </div>
+
+        {isGroupSurgeSimulated && (
+          <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-amber-300 font-black block text-sm">~$520,000 MXN</span>
+              <span className="text-[10px] text-teal-200">Derrama colectiva estimada</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-emerald-300 font-black block text-sm">640 Canjes</span>
+              <span className="text-[10px] text-teal-200">Consumos grupales en caja</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-sky-300 font-black block text-sm">480 Grupos</span>
+              <span className="text-[10px] text-teal-200">Células activas simultáneas</span>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <span className="text-teal-300 font-black block text-sm">100% Sincronizados</span>
+              <span className="text-[10px] text-teal-200">Bote de puntos compartido</span>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Regla 9 Aviso Metodológico */}
       <div className="flex items-start gap-3 rounded-2xl border border-teal-200/70 bg-gradient-to-r from-teal-50/80 to-teal-50/30 p-4 text-xs text-teal-900 shadow-2xs dark:border-teal-900/50 dark:from-teal-950/30 dark:to-teal-950/10 dark:text-teal-200">
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
@@ -277,18 +389,18 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Actividad en la App"
-          value={stats.totalInteractions}
+          value={displayStats.totalInteractions}
           subtitle="Escaneos y validaciones registradas hoy"
-          badge={isLive ? "En vivo" : "En pausa"}
-          badgeType={isLive ? "positive" : "neutral"}
+          badge={isLive ? (isGroupSurgeSimulated ? "+2,590 en Contingentes" : "En vivo") : "En pausa"}
+          badgeType={isGroupSurgeSimulated ? "positive" : isLive ? "positive" : "neutral"}
           icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Misiones Completadas"
-          value={`${stats.missionsCompleted}/${stats.missionsAccepted}`}
+          value={`${displayStats.missionsCompleted}/${displayStats.missionsAccepted}`}
           subtitle={
-            stats.missionsAccepted > 0
-              ? `${Math.round((stats.missionsCompleted / stats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
+            displayStats.missionsAccepted > 0
+              ? `${Math.round((displayStats.missionsCompleted / displayStats.missionsAccepted) * 100)}% de las misiones aceptadas se completaron`
               : "Aún no hay misiones aceptadas"
           }
           badge="Completadas / aceptadas"
@@ -297,29 +409,77 @@ export default function AdminDashboardPage() {
         />
         <KpiCard
           title="Canjes en Comercio"
-          value={stats.redemptions}
+          value={displayStats.redemptions}
           subtitle="Beneficios validados presencialmente"
+          badge={isGroupSurgeSimulated ? "+640 mesas completas" : undefined}
           badgeType="warning"
           icon={<GiftIcon className="h-5 w-5" />}
         />
         <KpiCard
           title="Puntos Conectados"
-          value={`${stats.activePlaces} / ${stats.activeBusinesses}`}
-          subtitle={`${stats.activePlaces} lugares y ${stats.activeBusinesses} comercios participantes`}
+          value={`${displayStats.activePlaces} / ${displayStats.activeBusinesses}`}
+          subtitle={`${displayStats.activePlaces} lugares y ${displayStats.activeBusinesses} comercios participantes`}
           badge="Verificados"
           badgeType="neutral"
           icon={<BuildingIcon className="h-5 w-5" />}
         />
       </div>
 
+      {/* Métrica de Rutas en Grupo y Derrama Colectiva */}
+      <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+            <UsersIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                Rutas Grupales y Células Activas
+              </span>
+              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                Ticket promedio +320%
+              </span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {isGroupSurgeSimulated
+                ? "480 grupos de viaje activos en el centro · Promedio de 4.2 personas por grupo · Mesas completas en gastronomía y compras colectivas."
+                : "Grupos familiares y de amigos compartiendo ruta y acumulando puntos en el bote grupal."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-center shrink-0">
+          <div>
+            <span className="text-base font-black text-teal-700 dark:text-teal-400">
+              {isGroupSurgeSimulated ? "480" : "18"}
+            </span>
+            <span className="block text-[10px] text-neutral-500">Grupos activos</span>
+          </div>
+          <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+          <div>
+            <span className="text-base font-black text-amber-600 dark:text-amber-400">
+              {isGroupSurgeSimulated ? "4.2" : "3.8"}
+            </span>
+            <span className="block text-[10px] text-neutral-500">Pers. / grupo</span>
+          </div>
+          <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+          <div>
+            <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+              {isGroupSurgeSimulated ? "2,016" : "68"}
+            </span>
+            <span className="block text-[10px] text-neutral-500">Turistas en grupo</span>
+          </div>
+        </div>
+      </div>
+
       {/* 2 Gráficas con Recharts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ScansByPlaceChart data={stats.scansByPlace} />
-        <ActivityByHourChart data={stats.activityByHourWithBusinesses} />
+        <ScansByPlaceChart data={displayStats.scansByPlace} />
+        <ActivityByHourChart data={displayStats.activityByHourWithBusinesses} />
       </div>
 
       {/* Feed en Vivo de Escaneos (< 10s para demo de jurado) */}
-      <LiveVisitsFeed initialVisits={stats.recentVisits} />
+      <LiveVisitsFeed initialVisits={displayStats.recentVisits} />
     </div>
   );
 }

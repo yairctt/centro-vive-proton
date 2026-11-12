@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Mapa } from "@/components/mapa";
-import { es } from "@/lib/i18n/es";
+import { getDictionary, type Idioma } from "@/lib/i18n";
+import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 import type { RouteStop } from "@/lib/types";
+import { GroupRouteWidget, JoinGroupCard } from "@/components/ui/GroupExperience";
+import { obtenerGrupo } from "@/lib/grupo";
 
 import { enlaceLugar, enlaceRutaCompleta, type PuntoRuta } from "@/components/visitante/enlaces-maps";
 import {
@@ -55,6 +58,9 @@ export default function RutaPage() {
   const [detalleAbierto, setDetalleAbierto] = useState<string | null>(null);
   const [mapaVisible, setMapaVisible] = useState(false);
   const [enlaceCopiado, setEnlaceCopiado] = useState(false);
+  const [lang, setLang] = useState<Idioma>("es");
+  const [grupoActivo, setGrupoActivo] = useState(false);
+  const [mostrarUnirseGrupo, setMostrarUnirseGrupo] = useState(false);
 
   useEffect(() => {
     // El setTimeout saca la actualización de estado del flujo síncrono del efecto,
@@ -68,12 +74,39 @@ export default function RutaPage() {
           setStops([]);
         }
       }
+
+      if (typeof window !== "undefined") {
+        setGrupoActivo(Boolean(obtenerGrupo()));
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryLang = searchParams.get("lang") as Idioma;
+        const savedLang = sessionStorage.getItem("pulsoLang") as Idioma;
+        if (queryLang === "en" || savedLang === "en") {
+          setLang("en");
+        }
+      }
+
       setCargando(false);
     }, 0);
 
+    const onGrupoChange = (e: Event) => {
+      const custom = e as CustomEvent<unknown>;
+      setGrupoActivo(Boolean(custom.detail));
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("pulso_grupo_changed", onGrupoChange);
+    }
+
     // Limpieza del efecto
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("pulso_grupo_changed", onGrupoChange);
+      }
+    };
   }, []);
+
+  const t = getDictionary(lang);
 
   /** Puntos de la ruta, en el orden en que se visitarán. */
   const puntos: PuntoRuta[] = useMemo(
@@ -111,7 +144,7 @@ export default function RutaPage() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center font-bold text-neutral-500 dark:text-neutral-400">
-        {es.ruta.calculando}
+        {t.ruta.calculando}
       </div>
     );
   }
@@ -122,13 +155,13 @@ export default function RutaPage() {
         <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400">
           <CompassIcon className="w-9 h-9" />
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">{es.ruta.sinRuta}</h2>
-        <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-xs">{es.ruta.sinRutaAyuda}</p>
+        <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">{t.ruta.sinRuta}</h2>
+        <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-xs">{t.ruta.sinRutaAyuda}</p>
         <Link
-          href="/inicio"
-          className="bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100"
+          href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
+          className="bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100 cursor-pointer"
         >
-          {es.ruta.irAlInicio}
+          {t.ruta.irAlInicio}
         </Link>
       </div>
     );
@@ -139,34 +172,37 @@ export default function RutaPage() {
       <header className="bg-white dark:bg-neutral-900 px-5 py-3 border-b border-neutral-200/80 dark:border-neutral-800 z-20 sticky top-0">
         <div className="mb-2 flex items-center justify-between">
           <Link
-            href="/inicio"
+            href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition group py-1"
-            title="Regresar a personalizar recorrido"
+            title={lang === "en" ? "Return to preferences" : "Regresar a personalizar recorrido"}
           >
             <ArrowLeftIcon className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Volver a preferencias</span>
+            <span>{t.ruta.volver}</span>
           </Link>
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
-            <PulsoLogo size="xs" conTexto={false} />
-            <span className="hidden sm:inline">Pulso Jarocho</span>
+          <div className="flex items-center gap-2">
+            <LanguageSelector size="sm" />
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
+              <PulsoLogo size="xs" conTexto={false} />
+              <span className="hidden sm:inline">Pulso Jarocho</span>
+            </div>
           </div>
         </div>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <RouteIcon className="w-6 h-6 text-teal-700 dark:text-teal-400" />
-              {es.ruta.titulo}
+              {t.ruta.titulo}
             </h1>
             <p className="text-neutral-500 dark:text-neutral-400 font-medium text-sm mt-1">
-              {stops.length} {es.ruta.subtitulo} {minutosTotales} {es.ruta.minutos}
+              {stops.length} {t.ruta.subtitulo} {minutosTotales} {t.ruta.minutos}
             </p>
           </div>
           <button
             type="button"
             onClick={() => setMapaVisible((v) => !v)}
             aria-expanded={mapaVisible}
-            aria-label={es.ruta.verMapa}
-            className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors ${
+            aria-label={t.ruta.verMapa}
+            className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors cursor-pointer ${
               mapaVisible
                 ? "bg-teal-700 text-white border-teal-700 dark:bg-teal-600 dark:border-teal-600"
                 : "bg-white text-neutral-600 border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800"
@@ -182,18 +218,18 @@ export default function RutaPage() {
             href={rutaEnMaps.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition duration-100 shadow-xs"
+            className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition duration-100 shadow-xs cursor-pointer"
           >
             <GoogleMapsIcon className="w-4 h-4" />
-            {es.ruta.abrirRutaEnMaps}
+            {t.ruta.abrirRutaEnMaps}
           </a>
           <button
             type="button"
             onClick={copiarEnlace}
-            className="w-full flex items-center justify-center gap-2 bg-white text-neutral-700 py-2.5 rounded-xl font-bold text-xs border border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-white text-neutral-700 py-2.5 rounded-xl font-bold text-xs border border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800 transition-colors cursor-pointer"
           >
             <LinkIcon className="w-4 h-4" />
-            {enlaceCopiado ? es.ruta.enlaceCopiado : es.ruta.copiarEnlace}
+            {enlaceCopiado ? t.ruta.enlaceCopiado : t.ruta.copiarEnlace}
           </button>
           {!rutaEnMaps.completa && (
             <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 dark:text-amber-200 dark:bg-amber-950/40 dark:border-amber-800 rounded-lg px-3 py-2">
@@ -214,12 +250,67 @@ export default function RutaPage() {
             className="h-64 w-full rounded-2xl overflow-hidden shadow-xs border border-neutral-200/80 dark:border-neutral-800"
           />
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1.5 px-1">
-            {es.mapa.trazoAproximado} · {es.mapa.fuente}: OpenStreetMap
+            {t.mapa.trazoAproximado} · {t.mapa.fuente}: OpenStreetMap
           </p>
         </div>
       )}
 
       <div className="flex-1 p-5 pb-32 space-y-4 relative max-w-lg mx-auto w-full">
+        {/* Widget de ruta en grupo o tarjeta para unirse con código */}
+        {grupoActivo ? (
+          <div className="mb-3">
+            <GroupRouteWidget
+              currentPlaceId={stops[0]?.place?.id || "malecon"}
+              currentPlaceName={stops[0]?.place?.name || "Parada Actual"}
+              lang={lang}
+            />
+          </div>
+        ) : (
+          <div className="mb-3">
+            {!mostrarUnirseGrupo ? (
+              <button
+                type="button"
+                onClick={() => setMostrarUnirseGrupo(true)}
+                className="w-full flex items-center justify-between p-3 rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/20 text-neutral-900 dark:text-neutral-100 text-xs font-bold shadow-xs hover:border-amber-400 cursor-pointer transition active:scale-[0.99]"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 font-black">
+                    🔑
+                  </span>
+                  <div className="text-left">
+                    <span>{t.ruta.tienesCodigoPregunta}</span>
+                    <span className="block text-[10px] text-amber-800 dark:text-amber-300 font-normal">
+                      {t.ruta.tienesCodigoDesc}
+                    </span>
+                  </div>
+                </div>
+                <span className="shrink-0 px-2.5 py-1 rounded-xl bg-amber-500 text-neutral-950 text-[11px] font-black shadow-2xs">
+                  {lang === "en" ? "Enter Code" : "Ingresar Código"}
+                </span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setMostrarUnirseGrupo(false)}
+                    className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 cursor-pointer"
+                  >
+                    ✕ {lang === "en" ? "Hide" : "Ocultar"}
+                  </button>
+                </div>
+                <JoinGroupCard
+                  lang={lang}
+                  onGroupJoined={() => {
+                    setGrupoActivo(true);
+                    setMostrarUnirseGrupo(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Línea que une las paradas */}
         <div
           className="absolute left-[2.05rem] top-8 bottom-8 w-0.5 bg-neutral-200 dark:bg-neutral-800 z-0"
@@ -265,15 +356,15 @@ export default function RutaPage() {
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 mb-3">
                       <span className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-2 py-1 rounded-md font-semibold text-neutral-700 dark:text-neutral-300">
-                        {es.ruta.categoria[categoria] ?? stop.place.category}
+                        {t.ruta.categoria[categoria] ?? stop.place.category}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <WalkIcon className="w-3.5 h-3.5" />
-                        {stop.etaMin} {es.ruta.minutos} {es.ruta.aPie}
+                        {stop.etaMin} {t.ruta.minutos} {t.ruta.aPie}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <ClockIcon className="w-3.5 h-3.5" />
-                        {avgVisitMin} {es.ruta.minVisita}
+                        {avgVisitMin} {t.ruta.minVisita}
                       </span>
                     </div>
 
@@ -294,7 +385,7 @@ export default function RutaPage() {
                       {stop.eventName && (
                         <p className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 dark:text-amber-200 dark:bg-amber-950/40 dark:border-amber-800 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
                           <TargetIcon className="w-3.5 h-3.5" />
-                          {es.ruta.evento}: {stop.eventName}
+                          {t.ruta.evento}: {stop.eventName}
                         </p>
                       )}
 
@@ -306,19 +397,19 @@ export default function RutaPage() {
                         })}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center gap-2 bg-white text-neutral-700 py-2.5 rounded-xl font-bold text-xs border border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-white text-neutral-700 py-2.5 rounded-xl font-bold text-xs border border-neutral-200 active:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:active:bg-neutral-800 transition-colors cursor-pointer"
                       >
                         <GoogleMapsIcon className="w-4 h-4" />
-                        {es.ruta.abrirEnMaps}
+                        {t.ruta.abrirEnMaps}
                       </a>
 
                       {stop.missionId && (
                         <Link
                           href={`/mision/${stop.missionId}`}
-                          className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100"
+                          className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100 cursor-pointer"
                         >
                           <TargetIcon className="w-4 h-4" />
-                          {es.ruta.verMision}
+                          {t.ruta.verMision}
                         </Link>
                       )}
                     </div>
@@ -329,10 +420,10 @@ export default function RutaPage() {
                     <div className="px-4 pb-4">
                       <Link
                         href={`/mision/${stop.missionId}`}
-                        className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100"
+                        className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 py-3 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-950/60 active:scale-[0.98] transition duration-100 cursor-pointer"
                       >
                         <TargetIcon className="w-4 h-4" />
-                        {es.ruta.verMision}
+                        {t.ruta.verMision}
                       </Link>
                     </div>
                   )}
@@ -346,16 +437,16 @@ export default function RutaPage() {
       <footer className="bg-white dark:bg-neutral-900 border-t border-neutral-200/80 dark:border-neutral-800 p-4 pb-6 flex flex-col max-w-lg mx-auto w-full sticky bottom-0 z-20 space-y-2">
         <div className="flex gap-3 w-full">
           <Link
-            href="/inicio"
-            className="flex-1 text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors"
+            href={`/inicio${lang === "en" ? "?lang=en" : ""}`}
+            className="flex-1 text-center py-4 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-xl font-bold active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors cursor-pointer"
           >
-            {es.ruta.modificar}
+            {t.ruta.modificar}
           </Link>
           <Link
-            href="/pasaporte"
-            className="flex-[2] text-center py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100"
+            href={`/pasaporte${lang === "en" ? "?lang=en" : ""}`}
+            className="flex-[2] text-center py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold shadow-sm active:scale-[0.98] transition duration-100 cursor-pointer"
           >
-            {es.ruta.verPasaporte}
+            {t.ruta.verPasaporte}
           </Link>
         </div>
         <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
