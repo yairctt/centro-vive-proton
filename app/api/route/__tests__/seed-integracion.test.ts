@@ -47,7 +47,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 120, interests: ["historia", "gastronomia"], budget: "bajo" },
-      { now: new Date("2026-11-11T15:00:00") },
+      { now: new Date("2026-11-11T15:00:00-06:00") },
     );
 
     expect(stops.length).toBeGreaterThan(2);
@@ -61,7 +61,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 180, interests: ["gastronomia"], budget: "medio" },
-      { now: new Date("2026-11-11T20:00:00") },
+      { now: new Date("2026-11-11T20:00:00-06:00") },
     );
 
     const nocturnos = stops.filter((s) => s.place.name.includes("Nocturna") || s.place.name.includes("Puerto Bravo"));
@@ -73,7 +73,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 180, interests: ["gastronomia", "compras"], budget: "bajo" },
-      { now: new Date("2026-11-11T15:00:00") },
+      { now: new Date("2026-11-11T15:00:00-06:00") },
     );
 
     const ids = stops.map((s) => s.place.id);
@@ -103,7 +103,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 300, interests: ["historia"], budget: "bajo" },
-      { now: new Date("2026-11-11T17:00:00"), events: eventos },
+      { now: new Date("2026-11-11T17:00:00-06:00"), events: eventos },
     );
 
     expect(stops.some((s) => s.eventId === "ev-001")).toBe(true);
@@ -134,7 +134,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 300, interests: ["historia", "gastronomia"], budget: "medio" },
-      { now: new Date("2026-11-11T20:00:00"), missions: misiones },
+      { now: new Date("2026-11-11T20:00:00-06:00"), missions: misiones },
     );
 
     // La parada del lugar con misión lleva su missionId.
@@ -165,7 +165,7 @@ describe("el seed completo de I3 genera una ruta útil", () => {
     const { stops } = buildRoute(
       places,
       { minutes: 300, interests: ["historia"], budget: "medio" },
-      { now: new Date("2026-11-11T20:00:00"), missions: misiones },
+      { now: new Date("2026-11-11T20:00:00-06:00"), missions: misiones },
     );
 
     expect(stops.some((s) => s.missionId === "m-003")).toBe(false);
