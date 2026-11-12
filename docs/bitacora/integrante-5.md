@@ -52,3 +52,23 @@
 - **Resultado:** `app/(panel)/admin/page.tsx` con polling cada 5 segundos y toggle de pausar/reanudar; `docs/pitch/diapositivas.md` con 8 diapositivas detalladas (problema, solución, algoritmo, demo en vivo con jurado, brecha de horario, modelo de negocio y cierre).
 - **Revisión humana:** Se validó que el polling no genere parpadeos en pantalla y que la latencia visual del feed sea inferior a 5 segundos.
 - **Commit:** `feat(paneles): polling en vivo cada 5s en admin y diapositivas del pitch`
+
+---
+
+### 18:37 · Fase 3: Endpoint real GET /api/stats y conexión de gráficas
+
+- **Herramienta:** Antigravity (Claude Sonnet 4.6 Thinking)
+- **Objetivo:** Reemplazar los datos mock de las gráficas `ScansByPlaceChart` y `ActivityByHourChart` por datos reales provenientes de Supabase, creando el endpoint `GET /api/stats` que antes no existía.
+- **Prompt (resumen):** «Conecta las gráficas a /api/stats real en lugar de datos simulados/mock.»
+- **Decisiones de diseño tomadas por la IA:**
+  - Consultar las tablas `visits`, `missions` y `places` en paralelo con `Promise.all` para minimizar la latencia del polling.
+  - Derivar `scansByPlace` agrupando visits por `place_id` con join `places(name)` para obtener el nombre legible sin una segunda consulta.
+  - Derivar `activityByHour` y `activityByHourWithBusinesses` sobre el resultado de visits en memoria (evita una función RPC adicional en Supabase).
+  - Calcular `comerciosAbiertos(hora)` con una función local que modela los horarios reales de los 6 comercios demo (apertura, pausa de medio día, cierre nocturno).
+  - Fallback a `MOCK_ADMIN_STATS` si la DB no está disponible o el seed no ha corrido, garantizando que la demo nunca devuelva un 500.
+  - Incluir `Cache-Control: no-store` para que el polling del frontend siempre obtenga datos frescos.
+- **Resultado:**
+  - `app/api/stats/route.ts` — nuevo endpoint `GET /api/stats` con consulta real a Supabase y fallback resiliente.
+  - `app/(panel)/admin/page.tsx` — `fetchStats` actualizado para mapear `activityByHourWithBusinesses`, `activePlaces` y `activeBusinesses` desde la respuesta real.
+- **Revisión humana:** Se ejecutó `tsc --noEmit` y no se encontraron errores de tipos. El branch fue pusheado a `origin/feat/paneles`.
+- **Commit:** `feat(paneles): conectar graficas a /api/stats real con fallback mock`
