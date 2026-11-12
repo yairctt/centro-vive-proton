@@ -44,3 +44,12 @@
 - **Resultado:** `components/ui/icons.tsx` (nuevo, 20 iconos SVG de trazo); rediseño de `app/(visitante)/inicio`, `ruta`, `mision/[id]`, `pasaporte`, `app/escanear`; `PrinterIcon` en `app/(panel)/comercio/qr`; logo sólido en `PanelHeader`. Lógica, hooks, sessionStorage, `#lector-qr` y `CSS_IMPRESION` intactos.
 - **Revisión humana:** `npm run build` sin errores; barrido de emojis en app/ y components/ (solo quedan una flecha en comentario de código y la estrella tipográfica del marcador de Leaflet); los 2 errores de ESLint (`set-state-in-effect`) son preexistentes en lógica que no se tocó.
 - **Commit:** pendiente en `feat/ux-visitante`
+
+### 23:XX · Vista /hoy homogénea con el rediseño
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** restilizar `app/(visitante)/hoy` (venía de main con el estilo anterior) para homogeneizarla con el rediseño editorial: paleta teal/amber, superficies neutras con modo oscuro, iconos SVG en lugar de emojis y badges con borde.
+- **Prompt (resumen):** «Refactoriza la vista /hoy para que sea homogénea con los cambios que se subieron.»
+- **Resultado:** `app/(visitante)/hoy/page.tsx` — badge «Agenda viva» en amber con CalendarIcon, cierre con XIcon, bloque de hora en amber-600 (mismo acento que los eventos en /ruta), categoría traducida con `es.ruta.categoria`, lugar con MapPinIcon, «Por confirmar» con borde visible, estado vacío con icono circular y botón hacia /inicio. Lógica de fetch y formato de hora intactas.
+- **Revisión humana:** `npm run build` sin errores.
+- **Commit:** pendiente en `feat/ux-visitante`
