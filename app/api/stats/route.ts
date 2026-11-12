@@ -6,6 +6,8 @@
  * Query: ?from=ISO8601&to=ISO8601  (opcional; defecto: últimas 24 h)
  * Response: Stats
  */
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import type { Stats } from "@/lib/types";

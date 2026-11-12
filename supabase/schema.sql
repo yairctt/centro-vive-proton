@@ -243,3 +243,4 @@ CREATE POLICY IF NOT EXISTS "redemptions_insert_service"
 CREATE POLICY IF NOT EXISTS "redemptions_update_service"
   ON redemptions FOR UPDATE
   USING (auth.role() = 'service_role');
+

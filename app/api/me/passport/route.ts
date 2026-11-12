@@ -5,6 +5,8 @@
  * Query: ?profileId=<uuid>  (opcional; si se omite usa el perfil demo)
  * Response: { profile: Profile; visits: Visit[]; rewards: Reward[] }
  */
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/server";
 import { toProfile, toVisit, toReward } from "@/lib/db/mappers";
@@ -70,3 +72,4 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     rewards: (rewardRows ?? []).map((r) => toReward(r as Record<string, unknown>)),
   });
 }
+
