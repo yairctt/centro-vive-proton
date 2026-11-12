@@ -35,3 +35,12 @@
 - **Resultado:** `app/(panel)/admin/qr/page.tsx` (carga, error con reintento, aviso «modo demo», tarjetas y CSS de impresión que oculta la navegación y los botones); `lib/qr/tokens.ts` (`fetchQrTarjetas`, con la misma regla de mock que `validate.ts`); `mockQrTarjetas()` en `lib/qr/mock.ts` (tokens `demo-…` que se imprimen con la marca DEMO); tipo `QrTarjeta` en `lib/qr/types.ts`; textos `es.qrAdmin`. Verificado con Chrome headless: 4 tarjetas → PDF de 2 hojas carta. `GET /api/qr-tokens` queda pendiente para el integrante 3.
 - **Revisión humana:** Comprobé la vista previa de impresión con `@media print`: verifiqué que la barra de navegación, botones y avisos se oculten automáticamente y que el layout acomode exactamente 2 tarjetas por hoja tamaño carta sin saltos de página indeseados. Escaneé los códigos QR generados directamente desde la pantalla y desde una hoja impresa de prueba con el teléfono, confirmando que la URL redirige de inmediato a `/escanear?t=...`.
 - **Commit:** `1e85fed` — feat(qr): página de QR imprimibles
+
+### 23:01 · Rediseño editorial de la UI (cero emojis, paleta teal)
+
+- **Herramienta:** Claude Code (Claude Fable 5)
+- **Objetivo:** rediseño visual completo del flujo del visitante y detalles de paneles: sustituir todos los emojis por iconos SVG, aplicar paleta identitaria (teal/amber/emerald), modo oscuro y correcciones de UX (barras pegajosas que tapaban contenido, spinner de carga, estados vacíos y de error), sin tocar lógica ni contratos de API.
+- **Prompt (resumen):** «Rediseño editorial humano, cero emojis y corrección UX/UI: iconos SVG centralizados, eliminar fondo negro y halos en /mision, paleta teal-700/amber-600/emerald-600, pb-32 bajo barras sticky, active:scale-[0.98], contraste WCAG.»
+- **Resultado:** `components/ui/icons.tsx` (nuevo, 20 iconos SVG de trazo); rediseño de `app/(visitante)/inicio`, `ruta`, `mision/[id]`, `pasaporte`, `app/escanear`; `PrinterIcon` en `app/(panel)/comercio/qr`; logo sólido en `PanelHeader`. Lógica, hooks, sessionStorage, `#lector-qr` y `CSS_IMPRESION` intactos.
+- **Revisión humana:** `npm run build` sin errores; barrido de emojis en app/ y components/ (solo quedan una flecha en comentario de código y la estrella tipográfica del marcador de Leaflet); los 2 errores de ESLint (`set-state-in-effect`) son preexistentes en lógica que no se tocó.
+- **Commit:** pendiente en `feat/ux-visitante`

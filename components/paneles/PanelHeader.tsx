@@ -34,7 +34,7 @@ export function PanelHeader() {
         {/* Brand */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-white shadow-xs transition group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs transition group-hover:scale-105">
               <span className="text-sm font-black tracking-wider">PJ</span>
             </div>
             <div>

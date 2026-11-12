@@ -6,6 +6,7 @@ import { es } from "@/lib/i18n/es";
 import { fetchQrTarjetas } from "@/lib/qr/tokens";
 import type { QrTarjeta } from "@/lib/qr/types";
 import { buildQrUrl } from "@/lib/qr/url";
+import { PrinterIcon } from "@/components/ui/icons";
 
 const t = es.qrAdmin;
 
@@ -87,9 +88,10 @@ export default function ComercioQrPage() {
           type="button"
           onClick={() => window.print()}
           disabled={estado.fase !== "listo" || estado.tarjetas.length === 0}
-          className="rounded-2xl bg-teal-700 px-6 py-4 text-base font-semibold text-white shadow-md transition active:scale-[0.98] disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-700 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-teal-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          🖨️ {t.imprimir}
+          <PrinterIcon className="size-5" />
+          {t.imprimir}
         </button>
       </div>
 
