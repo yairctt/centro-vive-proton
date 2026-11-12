@@ -1,9 +1,13 @@
-// Eventos de demostración para la agenda (Integrante 4).
+// Eventos de respaldo para la agenda (Integrante 4).
+//
+// ⚠️ ESTE ARCHIVO ES EL RESPALDO, NO LA FUENTE PRINCIPAL.
+// La agenda real viene de la base de datos (`GET /api/events`, tabla `events`
+// sembrada por el Integrante 3). Estos eventos de muestra solo se usan cuando
+// la base no responde o no tiene agenda cargada.
 //
 // Son eventos SIMULADOS para probar el motor: la lista de lugares del equipo
 // no incluye eventos, así que estos son de muestra y están marcados como
-// tales en `meta.demo = true`. Cuando el backend tenga la agenda real
-// (`GET /api/events`), estos dejan de usarse.
+// tales en `meta.demo = true`.
 //
 // Regla del proyecto: no se inventan eventos reales. Por eso cada ficha
 // lleva `source: "demo"`, `verified: false` y una hora calculada a partir del

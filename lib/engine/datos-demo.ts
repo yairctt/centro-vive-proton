@@ -1,7 +1,13 @@
-// Datos de demostración de lugares y comercios (Integrante 4).
+// Catálogo de respaldo de lugares y comercios (Integrante 4).
 //
-// Fuente: la "Guía turística actualizada: Veracruz Puerto" del equipo
-// (LISTA.md), con los horarios oficiales reportados.
+// ⚠️ ESTE ARCHIVO ES EL RESPALDO, NO LA FUENTE PRINCIPAL.
+// La fuente principal de datos es la base de datos de Supabase, sembrada por
+// el Integrante 3 en `supabase/seed.sql`. Este catálogo se usa únicamente
+// cuando la base no está configurada, responde con error, o todavía no tiene
+// lugares cargados; así la demo nunca se queda con la pantalla en blanco.
+//
+// Origen de los datos: la "Guía turística actualizada: Veracruz Puerto" del
+// equipo (LISTA.md), con los horarios oficiales reportados.
 //
 // Criterios usados (importantes para el resto del equipo):
 // - Los horarios vienen de la lista del equipo, así que `verified` va en true
@@ -15,8 +21,9 @@
 //   (`meta.precioVerificado: false`). No se inventa ninguna cifra de precio.
 // - `meta.avgVisitMin` y `meta.opportunity` son estimaciones del equipo para
 //   que el motor tenga con qué trabajar; se ajustan en `lib/engine/config.ts`.
-// - Las coordenadas son aproximadas (`meta.coordenadasAproximadas: true`):
-//   sirven para calcular distancias y ordenar la ruta, no para navegar.
+// - Las coordenadas están verificadas en OpenStreetMap (Nominatim / Overpass):
+//   el Centro Histórico de Veracruz está en ~19.20, -96.13. Sirven para
+//   calcular distancias y ordenar la ruta, no para navegar con precisión.
 //
 // Los tipos vienen de `lib/types.ts` (Integrante 3). Este archivo no los
 // modifica: los datos opcionales viajan en `meta`.

@@ -5,6 +5,7 @@ import type { Place } from "../types";
 import { engineConfig, weights } from "./config";
 import { distanceM, type LatLng } from "./geo";
 import { abiertoDeNoche, isOpenAt, readPlaceInfo, type DiaSemana, type PlaceInfo } from "./place";
+import { diaSemanaIso, minutosDelDia } from "./zona-horaria";
 
 export interface ScoreContext {
   /** Categorías que le interesan al visitante (texto libre, se normaliza). */
@@ -41,15 +42,19 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
-/** Minutos transcurridos desde medianoche para una fecha. */
+/**
+ * Minutos transcurridos desde medianoche, en la zona horaria del destino
+ * (Veracruz). No se usa `getHours()` porque el servidor corre en UTC.
+ */
 export function minutesOfDay(date: Date): number {
-  return date.getHours() * 60 + date.getMinutes();
+  return minutosDelDia(date);
 }
 
-/** Día de la semana en ISO 8601: 1 = lunes … 7 = domingo. */
+/**
+ * Día de la semana en ISO 8601: 1 = lunes … 7 = domingo, en la zona del destino.
+ */
 export function dayOfWeek(date: Date): DiaSemana {
-  const dia = date.getDay();
-  return (dia === 0 ? 7 : dia) as DiaSemana;
+  return diaSemanaIso(date);
 }
 
 /** ¿La categoría del lugar está entre los intereses del visitante? */
@@ -104,7 +109,7 @@ export function scorePlace(
 
   // Bono nocturno: a partir de las 19:00 y abierto después de esa hora.
   const esNoche = ahora >= engineConfig.horaBonoNocturno * 60;
-  const sigueAbierto = abiertoDeNoche(info, hoy);
+  const sigueAbierto = abiertoDeNoche(info, hoy, place.meta);
   const bonoNocturno = esNoche && sigueAbierto === true ? 1 : 0;
 
   const total =

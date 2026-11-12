@@ -68,8 +68,10 @@ export async function POST(request: Request) {
 
 /**
  * Busca la ficha del lugar:
- * 1. En GET /api/places (backend del Integrante 3).
- * 2. Si no está (base sin configurar o caída), en el catálogo de demostración.
+ * 1. En GET /api/places, que es la fuente principal (base de datos del
+ *    Integrante 3).
+ * 2. Si no está (base sin configurar, caída o seed sin correr), en el catálogo
+ *    de respaldo de `lib/engine/datos-demo.ts`.
  * Si tampoco está ahí, quien llama puede mandar la ficha en el cuerpo.
  */
 async function buscarLugar(placeId: string, urlActual: string): Promise<Place | null> {
@@ -84,7 +86,7 @@ async function buscarLugar(placeId: string, urlActual: string): Promise<Place | 
       }
     }
   } catch {
-    // Sin backend disponible: se intenta el catálogo de demostración.
+    // Sin backend disponible: se intenta el catálogo de respaldo.
   }
 
   return buscarLugarDemo(placeId) ?? null;

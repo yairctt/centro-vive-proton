@@ -80,6 +80,19 @@ export function buildReason(
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
+/**
+ * Localiza el lugar de referencia (el Zócalo).
+ * Primero por id exacto y, si no está, por una palabra clave en el nombre,
+ * para funcionar con cualquier nomenclatura ("Zócalo de Veracruz (Plaza de Armas)").
+ */
+export function buscarLugarReferencia(places: Place[]): Place | undefined {
+  const porId = places.find((lugar) => lugar.id === engineConfig.lugarReferenciaId);
+  if (porId) return porId;
+
+  const clave = normalizeText(engineConfig.palabraClaveReferencia);
+  return places.find((lugar) => normalizeText(lugar.name).includes(clave));
+}
+
 /** Convierte un evento en una parada sintetizable (para mostrarlo en la ruta). */
 function eventToPlace(event: Event): Place {
   return {
@@ -123,7 +136,7 @@ export function buildRoute(
       : null;
 
   if (!origin) {
-    const referencia = places.find((lugar) => lugar.id === engineConfig.lugarReferenciaId);
+    const referencia = buscarLugarReferencia(places);
     if (referencia) origin = { lat: referencia.lat, lng: referencia.lng };
   }
 
