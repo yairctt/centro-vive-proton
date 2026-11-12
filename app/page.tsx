@@ -1,12 +1,12 @@
+import Link from "next/link";
 import { es } from "@/lib/i18n/es";
 import { MenuPorRol } from "@/components/auth/MenuPorRol";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
-import { MapPinIcon } from "@/components/paneles/icons";
-import { CruiseBanner } from "@/components/ui/CruiseExperience";
+import { MapPinIcon, UsersIcon, ChevronRightIcon } from "@/components/paneles/icons";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-8 relative space-y-5">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-8 relative space-y-4">
       <header className="flex flex-col items-center text-center space-y-3">
         <div className="relative">
           <PulsoLogo size="2xl" resaltado={true} className="transition-transform duration-300 hover:scale-105" />
@@ -29,8 +29,34 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Giro del Reto: Atraco de Crucero (3,000 cruceristas · 5 horas) */}
-      <CruiseBanner />
+      {/* Acceso directo a Rutas en Grupo (Pequeños y Grandes Contingentes) */}
+      <Link
+        href="/inicio?mode=grupo"
+        className="group relative overflow-hidden rounded-3xl border border-amber-300/80 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 p-4 text-neutral-950 shadow-md transition-all hover:shadow-lg active:scale-[0.99] flex items-center justify-between gap-3"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-950 text-amber-300 shadow-xs">
+            <UsersIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-neutral-950/20 text-neutral-950 px-2 py-0.5 rounded-full">
+                Nuevo Modo Colaborativo
+              </span>
+              <span className="text-[10px] font-bold text-neutral-800">
+                2 a 50+ pers.
+              </span>
+            </div>
+            <h2 className="text-sm font-black text-neutral-950 leading-snug mt-0.5">
+              Rutas en Grupo y Recompensas Colectivas
+            </h2>
+            <p className="text-[11px] text-neutral-900/90 font-medium">
+              Viaja con familia, amigos o contingentes con bote compartido de puntos.
+            </p>
+          </div>
+        </div>
+        <ChevronRightIcon className="h-5 w-5 text-neutral-950 shrink-0 transition-transform group-hover:translate-x-1" />
+      </Link>
 
       {/* Las opciones dependen del rol: visitante, comercio o admin. */}
       <div className="rounded-3xl border border-neutral-200/90 bg-white/95 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/90 backdrop-blur-xs">

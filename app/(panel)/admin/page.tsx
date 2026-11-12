@@ -20,7 +20,7 @@ import {
   ArrowLeftIcon,
   type ExtendedStats,
 } from "@/components/paneles";
-import { ShipIcon, SparklesIcon, UsersIcon } from "@/components/paneles/icons";
+import { SparklesIcon, UsersIcon } from "@/components/paneles/icons";
 import type { Stats } from "@/lib/types";
 
 type TimeRange = "hoy" | "ayer" | "semana";
@@ -33,46 +33,51 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<string>("Recién cargado");
   const [isFetching, setIsFetching] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [isCruiseSimulated, setIsCruiseSimulated] = useState(false);
+  const [isGroupSurgeSimulated, setIsGroupSurgeSimulated] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("cruise") === "1" || params.get("cruise") === "simulated") {
-        setIsCruiseSimulated(true);
+      if (
+        params.get("group") === "1" ||
+        params.get("contingente") === "1" ||
+        params.get("cruise") === "1" ||
+        params.get("cruise") === "simulated"
+      ) {
+        setIsGroupSurgeSimulated(true);
       }
     }
   }, []);
 
   const displayStats: ExtendedStats = useMemo(() => {
-    if (!isCruiseSimulated) return stats;
+    if (!isGroupSurgeSimulated) return stats;
 
-    const cruiseScans = [
-      { placeId: "mercado-artesanias", placeName: "Mercado de Artesanías del Malecón", scans: 540 },
-      { placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", scans: 490 },
-      { placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", scans: 420 },
-      { placeId: "malecon-veracruz", placeName: "Malecón de Veracruz", scans: 390 },
-      { placeId: "museo-naval", placeName: "Museo Naval México", scans: 310 },
-      { placeId: "toritos-la-chata", placeName: "Toritos La Chata", scans: 270 },
+    const groupScans = [
+      { placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", scans: 580 },
+      { placeId: "mercado-artesanias", placeName: "Mercado de Artesanías del Malecón", scans: 510 },
+      { placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", scans: 460 },
+      { placeId: "malecon-veracruz", placeName: "Malecón de Veracruz", scans: 410 },
+      { placeId: "museo-naval", placeName: "Museo Naval México", scans: 340 },
+      { placeId: "toritos-la-chata", placeName: "Toritos La Chata", scans: 290 },
     ];
 
-    const cruiseFeed: ExtendedStats["recentVisits"] = [
-      { id: "c1", placeId: "mercado-artesanias", placeName: "Mercado de Artesanías", createdAt: new Date(Date.now() - 20000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #142 (USA)" },
-      { id: "c2", placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", createdAt: new Date(Date.now() - 50000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #89 (Canada)" },
-      { id: "c3", placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", createdAt: new Date(Date.now() - 90000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #312 (UK)" },
-      { id: "c4", placeId: "toritos-la-chata", placeName: "Toritos La Chata", createdAt: new Date(Date.now() - 140000).toISOString(), method: "qr", pointsAwarded: 50, missionTitle: "Cruise Guest #405 (USA)" },
+    const groupFeed: ExtendedStats["recentVisits"] = [
+      { id: "g1", placeId: "gran-cafe-parroquia", placeName: "Gran Café de la Parroquia", createdAt: new Date(Date.now() - 15000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Familia Morales (8 pers.) · Canje mesa completa" },
+      { id: "g2", placeId: "mercado-artesanias", placeName: "Mercado de Artesanías", createdAt: new Date(Date.now() - 35000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Contingente Tour Xalapa (22 pers.) · Descuento 20%" },
+      { id: "g3", placeId: "portales-lerdo", placeName: "Los Portales de Veracruz", createdAt: new Date(Date.now() - 65000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Grupo Amigos del Puerto (4 pers.) · Ronda de Toritos" },
+      { id: "g4", placeId: "toritos-la-chata", placeName: "Toritos La Chata", createdAt: new Date(Date.now() - 110000).toISOString(), method: "qr", pointsAwarded: 150, missionTitle: "Excursión Escolar UV (18 pers.) · Check-in grupal" },
     ];
 
     return {
       ...stats,
-      totalInteractions: (stats.totalInteractions || 420) + 2420,
-      missionsAccepted: (stats.missionsAccepted || 210) + 1650,
-      missionsCompleted: (stats.missionsCompleted || 180) + 1240,
-      redemptions: (stats.redemptions || 89) + 590,
-      scansByPlace: cruiseScans,
-      recentVisits: [...cruiseFeed, ...(stats.recentVisits || []).slice(0, 3)],
+      totalInteractions: (stats.totalInteractions || 420) + 2590,
+      missionsAccepted: (stats.missionsAccepted || 210) + 1780,
+      missionsCompleted: (stats.missionsCompleted || 180) + 1420,
+      redemptions: (stats.redemptions || 89) + 640,
+      scansByPlace: groupScans,
+      recentVisits: [...groupFeed, ...(stats.recentVisits || []).slice(0, 3)],
     };
-  }, [isCruiseSimulated, stats]);
+  }, [isGroupSurgeSimulated, stats]);
 
   // Consulta a GET /api/stats cada 5 segundos (Requisito CP2: actualización < 10s)
   const fetchStats = useCallback(async () => {
@@ -268,67 +273,67 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Banner de Simulación de Crucero (Giro del Reto: 3,000 cruceristas) */}
+      {/* Banner de Simulación de Contingentes y Rutas Grupales */}
       <div className={`p-4 rounded-3xl border transition-all ${
-        isCruiseSimulated
-          ? "bg-gradient-to-r from-teal-950 via-teal-900 to-sky-950 border-teal-500/50 text-white shadow-md"
+        isGroupSurgeSimulated
+          ? "bg-gradient-to-r from-amber-950 via-teal-950 to-neutral-900 border-amber-500/50 text-white shadow-md"
           : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200"
       }`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 ${
-              isCruiseSimulated ? "bg-amber-400 text-neutral-950 shadow-xs" : "bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400"
+              isGroupSurgeSimulated ? "bg-amber-400 text-neutral-950 shadow-xs" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
             }`}>
-              <ShipIcon className="w-5 h-5" />
+              <UsersIcon className="w-5 h-5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
-                  Giro del Reto
+                  Modo Rutas Grupales
                 </span>
-                <span className={`text-xs font-bold ${isCruiseSimulated ? "text-teal-200" : "text-neutral-700 dark:text-neutral-300"}`}>
-                  Operativo Crucero en Puerto (3,000 Visitantes · 5 Horas)
+                <span className={`text-xs font-bold ${isGroupSurgeSimulated ? "text-amber-200" : "text-neutral-700 dark:text-neutral-300"}`}>
+                  Operativo de Grupos Pequeños y Grandes Contingentes (2 a 50+ pers.)
                 </span>
               </div>
-              <p className={`text-xs mt-0.5 ${isCruiseSimulated ? "text-teal-100/90" : "text-neutral-500 dark:text-neutral-400"}`}>
-                {isCruiseSimulated
-                  ? "Simulación activa: 2,420 turistas guiados con la app en inglés hacia comercios locales del centro con retorno seguro al muelle."
-                  : "Presiona el botón para simular en vivo la llegada de 3,000 pasajeros de crucero y su derrama comercial."}
+              <p className={`text-xs mt-0.5 ${isGroupSurgeSimulated ? "text-amber-100/90" : "text-neutral-500 dark:text-neutral-400"}`}>
+                {isGroupSurgeSimulated
+                  ? "Simulación activa: 480 grupos y contingentes coordinados (familias, amigos y excursiones) dinamizando comercios locales con bote compartido."
+                  : "Presiona el botón para simular en vivo la afluencia simultánea de grupos pequeños y grandes contingentes con bote colectivo."}
               </p>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsCruiseSimulated((v) => !v)}
+            onClick={() => setIsGroupSurgeSimulated((v) => !v)}
             className={`cursor-pointer px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 ${
-              isCruiseSimulated
+              isGroupSurgeSimulated
                 ? "bg-amber-400 hover:bg-amber-300 text-neutral-950"
                 : "bg-teal-700 hover:bg-teal-800 text-white"
             }`}
           >
-            <ShipIcon className="w-4 h-4" />
-            <span>{isCruiseSimulated ? "Desactivar Simulación" : "Simular Impacto (3,000 Pax)"}</span>
+            <UsersIcon className="w-4 h-4" />
+            <span>{isGroupSurgeSimulated ? "Desactivar Simulación" : "Simular Contingente Masivo"}</span>
           </button>
         </div>
 
-        {isCruiseSimulated && (
+        {isGroupSurgeSimulated && (
           <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
             <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
-              <span className="text-amber-300 font-black block text-sm">~$485,000 MXN</span>
-              <span className="text-[10px] text-teal-200">Derrama comercial estimada</span>
+              <span className="text-amber-300 font-black block text-sm">~$520,000 MXN</span>
+              <span className="text-[10px] text-teal-200">Derrama colectiva estimada</span>
             </div>
             <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
-              <span className="text-emerald-300 font-black block text-sm">590 Canjes</span>
-              <span className="text-[10px] text-teal-200">Consumos en caja en comercios</span>
+              <span className="text-emerald-300 font-black block text-sm">640 Canjes</span>
+              <span className="text-[10px] text-teal-200">Consumos grupales en caja</span>
             </div>
             <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
-              <span className="text-sky-300 font-black block text-sm">8 min a pie</span>
-              <span className="text-[10px] text-teal-200">Distancia máxima al muelle</span>
+              <span className="text-sky-300 font-black block text-sm">480 Grupos</span>
+              <span className="text-[10px] text-teal-200">Células activas simultáneas</span>
             </div>
             <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
-              <span className="text-teal-300 font-black block text-sm">100% Bilingüe</span>
-              <span className="text-[10px] text-teal-200">Turistas guiados en inglés</span>
+              <span className="text-teal-300 font-black block text-sm">100% Sincronizados</span>
+              <span className="text-[10px] text-teal-200">Bote de puntos compartido</span>
             </div>
           </div>
         )}
@@ -386,8 +391,8 @@ export default function AdminDashboardPage() {
           title="Actividad en la App"
           value={displayStats.totalInteractions}
           subtitle="Escaneos y validaciones registradas hoy"
-          badge={isLive ? (isCruiseSimulated ? "+2,420 Cruceristas" : "En vivo") : "En pausa"}
-          badgeType={isCruiseSimulated ? "positive" : isLive ? "positive" : "neutral"}
+          badge={isLive ? (isGroupSurgeSimulated ? "+2,590 en Contingentes" : "En vivo") : "En pausa"}
+          badgeType={isGroupSurgeSimulated ? "positive" : isLive ? "positive" : "neutral"}
           icon={<ActivityIcon className="h-5 w-5" />}
         />
         <KpiCard
@@ -406,7 +411,7 @@ export default function AdminDashboardPage() {
           title="Canjes en Comercio"
           value={displayStats.redemptions}
           subtitle="Beneficios validados presencialmente"
-          badge={isCruiseSimulated ? "+590 en comercios" : undefined}
+          badge={isGroupSurgeSimulated ? "+640 mesas completas" : undefined}
           badgeType="warning"
           icon={<GiftIcon className="h-5 w-5" />}
         />
@@ -436,8 +441,8 @@ export default function AdminDashboardPage() {
               </span>
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {isCruiseSimulated
-                ? "480 grupos de cruceristas activos en el centro · Promedio de 3.8 personas por grupo · Mesas completas en gastronomía y artesanías."
+              {isGroupSurgeSimulated
+                ? "480 grupos de viaje activos en el centro · Promedio de 4.2 personas por grupo · Mesas completas en gastronomía y compras colectivas."
                 : "Grupos familiares y de amigos compartiendo ruta y acumulando puntos en el bote grupal."}
             </p>
           </div>
@@ -446,21 +451,21 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-4 text-center shrink-0">
           <div>
             <span className="text-base font-black text-teal-700 dark:text-teal-400">
-              {isCruiseSimulated ? "480" : "18"}
+              {isGroupSurgeSimulated ? "480" : "18"}
             </span>
             <span className="block text-[10px] text-neutral-500">Grupos activos</span>
           </div>
           <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
           <div>
             <span className="text-base font-black text-amber-600 dark:text-amber-400">
-              3.8
+              {isGroupSurgeSimulated ? "4.2" : "3.8"}
             </span>
             <span className="block text-[10px] text-neutral-500">Pers. / grupo</span>
           </div>
           <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
           <div>
             <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-              {isCruiseSimulated ? "1,824" : "68"}
+              {isGroupSurgeSimulated ? "2,016" : "68"}
             </span>
             <span className="block text-[10px] text-neutral-500">Turistas en grupo</span>
           </div>

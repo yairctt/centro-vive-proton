@@ -18,17 +18,26 @@ export interface RecompensaGrupal {
   icono: string;
 }
 
+export type CategoriaGrupo = "pequeno" | "mediano" | "grande";
+
 export interface GrupoViaje {
   id: string;
   codigo: string;
   nombre: string;
   tamano: number;
+  categoria: CategoriaGrupo;
   lider: string;
   miembros: MiembroGrupo[];
   puntosBoteGrupal: number;
   paradasGrupalesCompletadas: string[];
   recompensas: RecompensaGrupal[];
   creadoEn: string;
+}
+
+export function determinarCategoriaGrupo(tamano: number): CategoriaGrupo {
+  if (tamano <= 4) return "pequeno";
+  if (tamano <= 10) return "mediano";
+  return "grande";
 }
 
 const RECOMPENSAS_DEFAULT: RecompensaGrupal[] = [
@@ -74,12 +83,20 @@ const COLORES_AVATAR = [
   "bg-emerald-600 text-white",
   "bg-indigo-600 text-white",
   "bg-rose-600 text-white",
+  "bg-purple-600 text-white",
+  "bg-orange-600 text-white",
 ];
 
-const NOMBRES_MOCK_MIEMBROS = ["María", "Carlos", "Sofía", "Diego", "Ana", "Luis"];
+const NOMBRES_MOCK_MIEMBROS = [
+  "María", "Carlos", "Sofía", "Diego", "Ana", "Luis",
+  "Valeria", "Mateo", "Camila", "Jorge", "Lucía", "Fernando",
+];
 
 export function crearNuevoGrupo(nombre: string, tamano: number = 4, aliasLider: string = "Tú"): GrupoViaje {
   const codigo = `JAROCHO-${Math.floor(100 + Math.random() * 900)}`;
+  const categoria = determinarCategoriaGrupo(tamano);
+  const totalSlots = Math.min(tamano, 8); // Renderizamos hasta 8 avatares interactivos
+
   const miembros: MiembroGrupo[] = [
     {
       id: "m-1",
@@ -90,7 +107,7 @@ export function crearNuevoGrupo(nombre: string, tamano: number = 4, aliasLider: 
     },
   ];
 
-  for (let i = 1; i < tamano; i++) {
+  for (let i = 1; i < totalSlots; i++) {
     miembros.push({
       id: `m-${i + 1}`,
       alias: NOMBRES_MOCK_MIEMBROS[i - 1] || `Acompañante ${i}`,
@@ -105,6 +122,7 @@ export function crearNuevoGrupo(nombre: string, tamano: number = 4, aliasLider: 
     codigo,
     nombre: nombre.trim() || `Grupo ${codigo}`,
     tamano,
+    categoria,
     lider: aliasLider,
     miembros,
     puntosBoteGrupal: 100 * tamano,
@@ -117,9 +135,26 @@ export function crearNuevoGrupo(nombre: string, tamano: number = 4, aliasLider: 
   return nuevoGrupo;
 }
 
+function getSessionStorage(): Storage | null {
+  if (typeof window !== "undefined" && window.sessionStorage) return window.sessionStorage;
+  if (typeof globalThis !== "undefined" && (globalThis as unknown as { sessionStorage?: Storage }).sessionStorage) {
+    return (globalThis as unknown as { sessionStorage: Storage }).sessionStorage;
+  }
+  return null;
+}
+
+function getLocalStorage(): Storage | null {
+  if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+  if (typeof globalThis !== "undefined" && (globalThis as unknown as { localStorage?: Storage }).localStorage) {
+    return (globalThis as unknown as { localStorage: Storage }).localStorage;
+  }
+  return null;
+}
+
 export function obtenerGrupo(): GrupoViaje | null {
-  if (typeof window === "undefined") return null;
-  const data = sessionStorage.getItem("pulso_grupo_activo");
+  const storage = getSessionStorage();
+  if (!storage) return null;
+  const data = storage.getItem("pulso_grupo_activo");
   if (!data) return null;
   try {
     return JSON.parse(data) as GrupoViaje;
@@ -129,14 +164,21 @@ export function obtenerGrupo(): GrupoViaje | null {
 }
 
 export function guardarGrupo(grupo: GrupoViaje): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem("pulso_grupo_activo", JSON.stringify(grupo));
-  localStorage.setItem("pulso_grupo_reciente", JSON.stringify(grupo));
+  const session = getSessionStorage();
+  if (session) {
+    session.setItem("pulso_grupo_activo", JSON.stringify(grupo));
+  }
+  const local = getLocalStorage();
+  if (local) {
+    local.setItem("pulso_grupo_reciente", JSON.stringify(grupo));
+  }
 }
 
 export function salirDeGrupo(): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem("pulso_grupo_activo");
+  const session = getSessionStorage();
+  if (session) {
+    session.removeItem("pulso_grupo_activo");
+  }
 }
 
 export function registrarCheckinGrupo(placeId: string, miembroId: string): GrupoViaje | null {
@@ -148,7 +190,7 @@ export function registrarCheckinGrupo(placeId: string, miembroId: string): Grupo
     miembro.checkins.push(placeId);
   }
 
-  // Verificar si todos los miembros hicieron check-in en este lugar
+  // Verificar si todos los miembros mostrados hicieron check-in en este lugar
   const todosEscaneados = grupo.miembros.every((m) => m.checkins.includes(placeId));
   if (todosEscaneados && !grupo.paradasGrupalesCompletadas.includes(placeId)) {
     grupo.paradasGrupalesCompletadas.push(placeId);

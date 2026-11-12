@@ -374,3 +374,38 @@
   - `docs/bitacora/integrante-5.md`
 - **Revisión humana:** Se validó la creación del grupo, la interacción colaborativa en la ruta, el reflejo en el pasaporte y la aprobación de las 141 pruebas unitarias y compilación con TypeScript.
 - **Commit:** `feat(grupos): rutas colaborativas en grupo bote de puntos y recompensas colectivas para toda la mesa`
+
+---
+
+### 07:50 · Fase 14: Consolidación de Rutas Grupales (Grupos Pequeños y Grandes Contingentes) y Retiro del Modo Crucero
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Generalizar y consolidar de forma permanente la funcionalidad de rutas grupales para grupos pequeños (2-4), medianos (5-10) y grandes contingentes (15-30+ o cantidad personalizada de hasta 200+ personas), desacoplándola del caso de uso particular del crucero («el crucero fue solo un ejemplo del reto»).
+- **Prompt (resumen):** «Elimina el modo crucero, eso solo es un ejemplo. Lo que se busca integrar es que haya un modo de ruta en grupos grande o pequeños. Implementando sugerencia de tamaños de grupo o cantidad personalizada.»
+- **Decisiones de diseño tomadas por la IA:**
+  - **Sugerencias de tamaño y personalización libre (`app/(visitante)/inicio/page.tsx`, `lib/grupo/index.ts`):**
+    - Se incorporaron 3 presets recomendados:
+      - *Pequeño (2-4 pers.):* Pareja o amigos, con beneficio de café lechero en La Parroquia.
+      - *Mediano (5-10 pers.):* Familia o célula de viaje, con 20% de descuento en artesanías y mesa reservada.
+      - *Contingente (15-30+ pers.):* Excursiones, tours masivos y eventos, con atención prioritaria de área colectiva.
+    - Se añadió selector interactivo con slider continuo (2 a 50+) e input numérico directo para cualquier cantidad personalizada (hasta 300+ integrantes).
+  - **Limpieza y desacoplamiento de Crucero:**
+    - Se retiraron banners y widgets restrictivos de crucero (`CruiseBanner`, `CruiseCountdownWidget`, `CruiseExperience.tsx`).
+    - En la portada (`app/page.tsx`), se colocó un acceso directo destacado a «Rutas en Grupo y Recompensas Colectivas (2 a 50+ pers.)».
+    - En la pantalla de ruta (`app/(visitante)/ruta/page.tsx`), se mantiene el widget colaborativo limpio sin ataduras a horarios náuticos.
+  - **Tablero Administrativo de Contingentes (`app/(panel)/admin/page.tsx`):**
+    - Se transformó el banner del Giro del Reto a «Operativo de Grupos Pequeños y Grandes Contingentes (2 a 50+ pers.)».
+    - Botón de acción: «Simular Contingente Masivo», reflejando 480 grupos sincronizados, +2,590 interacciones en contingentes, +640 consumos de mesas completas y una derrama económica estimada de ~$520,000 MXN.
+  - **Pruebas unitarias completas (`lib/grupo/__tests__/grupo.test.ts`):**
+    - 4 pruebas automatizadas con Vitest cubriendo categorización por tamaño, generación de bote grupal y check-ins sincronizados. Suite total: 145 pruebas aprobadas.
+- **Resultado:**
+  - `lib/grupo/index.ts` (lógica de grupos con soporte SSR y storage)
+  - `lib/grupo/__tests__/grupo.test.ts` (suite de pruebas de grupos)
+  - `components/ui/GroupExperience.tsx` (widgets colaborativos de ruta y pasaporte)
+  - `app/(visitante)/inicio/page.tsx` (selector con sugerencias y slider personalizado)
+  - `app/(visitante)/ruta/page.tsx` (widget colaborativo sin dependencias de crucero)
+  - `app/page.tsx` (tarjeta de acceso directo a rutas en grupo)
+  - `app/(panel)/admin/page.tsx` (monitoreo y simulación de contingentes y grupos)
+  - `components/ui/CruiseExperience.tsx` (eliminado)
+- **Revisión humana:** Se confirmó la compilación con `npx tsc --noEmit` con 0 errores, la ejecución exitosa de los 145 tests de Vitest, la navegación intuitiva en dispositivos móviles y la consistencia en el tablero de administración.
+- **Commit:** `feat(grupos): rutas en grupos pequenos medianos y grandes contingentes con tamano personalizado y recompensas colectivas`

@@ -59,10 +59,14 @@ export function GroupRouteWidget({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
-                {lang === "en" ? "Group Excursion Active" : "Ruta en Grupo Activa"}
+                {grupo.categoria === "grande"
+                  ? (lang === "en" ? "Large Tour Contingent" : "Gran Contingente")
+                  : grupo.categoria === "mediano"
+                  ? (lang === "en" ? "Medium Group / Family" : "Grupo Mediano / Familia")
+                  : (lang === "en" ? "Small Group / Friends" : "Grupo Pequeño")}
               </span>
               <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-mono font-bold text-teal-200">
-                {grupo.codigo}
+                {grupo.codigo} · {grupo.tamano} pers.
               </span>
             </div>
             <h3 className="text-sm font-black text-white">{grupo.nombre}</h3>
@@ -129,6 +133,22 @@ export function GroupRouteWidget({
             );
           })}
         </div>
+
+        {grupo.tamano > grupo.miembros.length && (
+          <div className="mt-2 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                grupo.miembros.forEach((m) => simularCheckinMiembro(m.id));
+              }}
+              className="text-[11px] font-bold text-amber-300 hover:text-white underline cursor-pointer"
+            >
+              {lang === "en"
+                ? `Validate check-in for entire contingent (${grupo.tamano} guests)`
+                : `Validar check-in de todo el contingente (${grupo.tamano} personas)`}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Celebración de Sello Grupal Desbloqueado */}
@@ -247,3 +267,4 @@ export function GroupPassportSection({ lang = "es" }: { lang?: "es" | "en" }) {
     </div>
   );
 }
+

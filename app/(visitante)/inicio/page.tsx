@@ -26,7 +26,7 @@ const DURATION_OPTIONS = [
   { value: 60, label: "1 hora", desc: "Rápido y al punto" },
   { value: 120, label: "2 horas", desc: "Equilibrado y ameno" },
   { value: 180, label: "3+ horas", desc: "Experiencia completa" },
-  { value: 300, label: "5 horas (Crucero)", desc: "Escala con comercios locales" },
+  { value: 240, label: "4+ horas", desc: "Recorrido extenso" },
 ];
 
 const INTEREST_OPTIONS = [
@@ -46,7 +46,6 @@ const BUDGET_OPTIONS: { id: Budget; label: string; desc: string; symbol: string 
 export default function InicioPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Idioma>("es");
-  const [isCruise, setIsCruise] = useState(false);
   const [minutes, setMinutes] = useState<number>(120);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([
     "gastronomia",
@@ -56,6 +55,7 @@ export default function InicioPage() {
   const [loading, setLoading] = useState(false);
   const [esGrupo, setEsGrupo] = useState(false);
   const [tamanoGrupo, setTamanoGrupo] = useState(4);
+  const [esPersonalizado, setEsPersonalizado] = useState(false);
   const [nombreGrupo, setNombreGrupo] = useState("Amigos del Puerto");
 
   useEffect(() => {
@@ -67,32 +67,15 @@ export default function InicioPage() {
     const activeLang: Idioma = queryLang === "en" || queryLang === "es" ? (queryLang as Idioma) : getSavedLanguage();
     setLang(activeLang);
 
-    if (queryMode === "cruise") {
-      setIsCruise(true);
-      setMinutes(300); // 5 horas
-      setSelectedInterests(["gastronomia", "paseo", "compras", "historia"]);
-      setBudget("medio");
+    if (queryMode === "grupo") {
       setEsGrupo(true);
-      setNombreGrupo("Cruise Party #5");
+      setTamanoGrupo(5);
     }
   }, []);
 
   const toggleLanguage = (newLang: Idioma) => {
     setLang(newLang);
     setSavedLanguage(newLang);
-  };
-
-  const toggleCruiseMode = () => {
-    setIsCruise((prev) => {
-      const next = !prev;
-      if (next) {
-        setMinutes(300);
-        setSelectedInterests(["gastronomia", "paseo", "compras", "historia"]);
-      } else {
-        setMinutes(120);
-      }
-      return next;
-    });
   };
 
   const toggleInterest = (id: string) => {
@@ -111,8 +94,6 @@ export default function InicioPage() {
           minutes,
           interests: selectedInterests,
           budget,
-          lat: isCruise ? 19.201 : undefined,
-          lng: isCruise ? -96.134 : undefined,
         })
       });
 
@@ -120,7 +101,6 @@ export default function InicioPage() {
 
       const data = await res.json();
       sessionStorage.setItem('rutaGenerada', JSON.stringify(data.stops));
-      sessionStorage.setItem('isCruiseMode', isCruise ? 'true' : 'false');
       sessionStorage.setItem('pulsoLang', lang);
 
       if (esGrupo) {
@@ -131,7 +111,7 @@ export default function InicioPage() {
         }
       }
 
-      router.push(`/ruta?lang=${lang}${isCruise ? '&mode=cruise' : ''}`);
+      router.push(`/ruta?lang=${lang}`);
     } catch (error) {
       console.error(error);
       alert("Hubo un error al conectar con el motor. Avisa al Integrante 3.");
@@ -194,40 +174,21 @@ export default function InicioPage() {
               </p>
             </div>
 
-            {/* Toggle de Modo Crucero */}
+            {/* Toggle de Modo Grupo */}
             <button
               type="button"
-              onClick={toggleCruiseMode}
+              onClick={() => setEsGrupo((v) => !v)}
               className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black border transition-all shadow-2xs ${
-                isCruise
+                esGrupo
                   ? "bg-amber-500 text-neutral-950 border-amber-600 ring-2 ring-amber-400/30"
                   : "bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800"
               }`}
-              title={lang === "en" ? "5-hour Cruise Excursion preset" : "Configuración de excursión de crucero de 5 horas"}
+              title="Activar o desactivar modalidad de ruta en grupo"
             >
-              <ShipIcon className="w-4 h-4" />
-              <span>{isCruise ? (lang === "en" ? "Cruise 5h ✓" : "Crucero 5h ✓") : (lang === "en" ? "Cruise Mode" : "Modo Crucero")}</span>
+              <UsersIcon className="w-4 h-4" />
+              <span>{esGrupo ? `Grupo (${tamanoGrupo}p) ✓` : "Modo Grupo"}</span>
             </button>
           </div>
-
-          {/* Banner visual cuando está activo el Modo Crucero */}
-          {isCruise && (
-            <div className="rounded-2xl bg-gradient-to-r from-teal-950 to-sky-950 p-4 text-white border border-teal-500/30 shadow-xs">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400/20 text-amber-300">
-                  <ShipIcon className="w-3.5 h-3.5" />
-                </span>
-                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                  {lang === "en" ? "Cruise Excursion Preset (5 Hours)" : "Preset de Crucero (5 Horas en Tierra)"}
-                </span>
-              </div>
-              <p className="text-xs text-teal-100/90 leading-relaxed">
-                {lang === "en"
-                  ? "Optimized starting from Veracruz Cruise Dock (Malecón). Direct access to local cafes, craft markets, and authentic shops with guaranteed 8-minute walk back to ship."
-                  : "Ruta optimizada saliendo del Muelle Turístico del Malecón. Te lleva al Gran Café de la Parroquia, Mercado de Artesanías y Portales con regreso a pie en 8 minutos."}
-              </p>
-            </div>
-          )}
         </div>
       </header>
 
@@ -312,47 +273,133 @@ export default function InicioPage() {
           </div>
 
           {esGrupo && (
-            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-4">
+              {/* Sugerencias de tamaño de grupo */}
               <div>
-                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Cantidad de integrantes en el grupo
+                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-2">
+                  Selecciona sugerencia de tamaño de grupo
                 </label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {[2, 3, 4, 5, 6].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setTamanoGrupo(num)}
-                      className={`py-2 rounded-lg font-bold text-xs border transition ${
-                        tamanoGrupo === num
-                          ? "bg-amber-500 border-amber-600 text-neutral-950 shadow-2xs"
-                          : "border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
-                      }`}
-                    >
-                      {num} pers.
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTamanoGrupo(3);
+                      setEsPersonalizado(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition ${
+                      !esPersonalizado && tamanoGrupo <= 4
+                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                    }`}
+                  >
+                    <div className="text-xs font-bold">Pequeño</div>
+                    <div className="text-[10px] mt-0.5 opacity-90">Pareja / Amigos (2-4)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTamanoGrupo(6);
+                      setEsPersonalizado(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition ${
+                      !esPersonalizado && tamanoGrupo >= 5 && tamanoGrupo <= 10
+                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                    }`}
+                  >
+                    <div className="text-xs font-bold">Mediano</div>
+                    <div className="text-[10px] mt-0.5 opacity-90">Familia / Célula (5-10)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTamanoGrupo(20);
+                      setEsPersonalizado(false);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition ${
+                      !esPersonalizado && tamanoGrupo > 10
+                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                    }`}
+                  >
+                    <div className="text-xs font-bold">Contingente</div>
+                    <div className="text-[10px] mt-0.5 opacity-90">Excursión / Tour (15-30+)</div>
+                  </button>
                 </div>
               </div>
 
+              {/* Cantidad personalizada */}
+              <div className="bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                    O escribe tu cantidad personalizada:
+                  </span>
+                  <span className="font-mono text-sm font-black text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
+                    {tamanoGrupo} personas
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="2"
+                    max="50"
+                    value={tamanoGrupo}
+                    onChange={(e) => {
+                      setTamanoGrupo(Number(e.target.value));
+                      setEsPersonalizado(true);
+                    }}
+                    className="flex-1 accent-amber-600 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    min="2"
+                    max="300"
+                    value={tamanoGrupo}
+                    onChange={(e) => {
+                      const val = Math.max(2, Number(e.target.value) || 2);
+                      setTamanoGrupo(val);
+                      setEsPersonalizado(true);
+                    }}
+                    className="w-16 text-center text-xs font-bold py-1 px-1.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Nombre del grupo */}
               <div>
                 <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Nombre de tu grupo o familia
+                  Nombre de tu grupo, familia o contingente
                 </label>
                 <input
                   type="text"
                   value={nombreGrupo}
                   onChange={(e) => setNombreGrupo(e.target.value)}
-                  placeholder="Ej. Familia Gómez o Amigos del Malecón"
+                  placeholder="Ej. Familia Martínez o Excursión de Turismo"
                   className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
                 />
               </div>
 
-              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2.5 border border-amber-200 dark:border-amber-800 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
+              {/* Beneficio dinámico según el tamaño */}
+              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200 dark:border-amber-800 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
                 <TrophyIcon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] leading-tight">
-                  <strong>Beneficio Grupal:</strong> Todos los miembros acumulan puntos en el bote compartido y desbloquean rondas de café lechero, descuentos de mesa y cortesías en comercios aliados.
-                </p>
+                <div className="space-y-0.5 text-[11px] leading-relaxed">
+                  <p className="font-bold">
+                    {tamanoGrupo <= 4
+                      ? "Beneficio de Grupo Pequeño (2-4 personas):"
+                      : tamanoGrupo <= 10
+                      ? "Beneficio de Grupo Mediano / Familia (5-10 personas):"
+                      : `Beneficio de Gran Contingente (${tamanoGrupo} personas):`}
+                  </p>
+                  <p>
+                    {tamanoGrupo <= 4
+                      ? "Ronda de café lechero en La Parroquia y puntos multiplicados al escanear juntos."
+                      : tamanoGrupo <= 10
+                      ? "20% de descuento en artesanías, mesa reservada en Portales y bote compartido de puntos."
+                      : "Atención prioritaria en comercios aliados, reservación de área colectiva y vales para todos."}
+                  </p>
+                </div>
               </div>
             </div>
           )}
