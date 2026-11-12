@@ -172,6 +172,9 @@ export function guardarGrupo(grupo: GrupoViaje): void {
   if (local) {
     local.setItem("pulso_grupo_reciente", JSON.stringify(grupo));
   }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("pulso_grupo_changed", { detail: grupo }));
+  }
 }
 
 export function salirDeGrupo(): void {
@@ -179,6 +182,124 @@ export function salirDeGrupo(): void {
   if (session) {
     session.removeItem("pulso_grupo_activo");
   }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("pulso_grupo_changed", { detail: null }));
+  }
+}
+
+/**
+ * Permite a un visitante unirse a un grupo grande o pequeño existente
+ * ingresando o pegando el código de grupo (ej: JAROCHO-482, CONTINGENTE-24).
+ */
+export function unirseAGrupoPorCodigo(codigoInput: string, aliasMiembro: string = "Tú"): GrupoViaje {
+  const codigoLimpio = codigoInput.trim().toUpperCase();
+  const grupoActual = obtenerGrupo();
+
+  if (grupoActual && grupoActual.codigo.toUpperCase() === codigoLimpio) {
+    if (!grupoActual.miembros.some((m) => m.alias === aliasMiembro)) {
+      grupoActual.miembros.push({
+        id: `m-${Date.now()}`,
+        alias: aliasMiembro,
+        color: COLORES_AVATAR[grupoActual.miembros.length % COLORES_AVATAR.length],
+        checkins: [],
+        esLider: false,
+      });
+      guardarGrupo(grupoActual);
+    }
+    return grupoActual;
+  }
+
+  const local = getLocalStorage();
+  if (local) {
+    const data = local.getItem("pulso_grupo_reciente");
+    if (data) {
+      try {
+        const reciente = JSON.parse(data) as GrupoViaje;
+        if (reciente && reciente.codigo.toUpperCase() === codigoLimpio) {
+          if (!reciente.miembros.some((m) => m.alias === aliasMiembro)) {
+            reciente.miembros.push({
+              id: `m-${Date.now()}`,
+              alias: aliasMiembro,
+              color: COLORES_AVATAR[reciente.miembros.length % COLORES_AVATAR.length],
+              checkins: [],
+              esLider: false,
+            });
+          }
+          guardarGrupo(reciente);
+          return reciente;
+        }
+      } catch {}
+    }
+  }
+
+  // Detectar si el código indica un contingente masivo o grupo
+  const esContingenteGrande =
+    codigoLimpio.includes("CONTINGENTE") ||
+    codigoLimpio.includes("TOUR") ||
+    codigoLimpio.includes("CRUCERO") ||
+    codigoLimpio.includes("BUS") ||
+    codigoLimpio.includes("MASIVO") ||
+    codigoLimpio.includes("24") ||
+    codigoLimpio.includes("50");
+
+  const tamano = esContingenteGrande ? 24 : 6;
+  const categoria = determinarCategoriaGrupo(tamano);
+
+  const nuevoGrupo: GrupoViaje = {
+    id: `g-${Date.now()}`,
+    codigo: codigoLimpio,
+    nombre: esContingenteGrande ? `Gran Contingente ${codigoLimpio}` : `Grupo ${codigoLimpio}`,
+    tamano,
+    categoria,
+    lider: "Coordinador de Grupo",
+    miembros: [
+      {
+        id: "m-guia",
+        alias: "Coordinador",
+        color: COLORES_AVATAR[1],
+        checkins: ["malecon", "zocalo"],
+        esLider: true,
+      },
+      {
+        id: `m-${Date.now()}`,
+        alias: aliasMiembro,
+        color: COLORES_AVATAR[0],
+        checkins: [],
+        esLider: false,
+      },
+      {
+        id: "m-3",
+        alias: "Carlos M.",
+        color: COLORES_AVATAR[2],
+        checkins: ["malecon"],
+        esLider: false,
+      },
+      {
+        id: "m-4",
+        alias: "Valeria R.",
+        color: COLORES_AVATAR[3],
+        checkins: ["malecon"],
+        esLider: false,
+      },
+      {
+        id: "m-5",
+        alias: "Mateo S.",
+        color: COLORES_AVATAR[4],
+        checkins: [],
+        esLider: false,
+      },
+    ],
+    puntosBoteGrupal: 150 * tamano,
+    paradasGrupalesCompletadas: ["malecon"],
+    recompensas: RECOMPENSAS_DEFAULT.map((r, idx) => ({
+      ...r,
+      desbloqueada: idx === 0,
+    })),
+    creadoEn: new Date().toISOString(),
+  };
+
+  guardarGrupo(nuevoGrupo);
+  return nuevoGrupo;
 }
 
 export function registrarCheckinGrupo(placeId: string, miembroId: string): GrupoViaje | null {

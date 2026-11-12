@@ -6,6 +6,7 @@ import {
   guardarGrupo,
   salirDeGrupo,
   registrarCheckinGrupo,
+  unirseAGrupoPorCodigo,
 } from "../index";
 
 describe("Módulo de Rutas en Grupo (lib/grupo)", () => {
@@ -55,6 +56,28 @@ describe("Módulo de Rutas en Grupo (lib/grupo)", () => {
     expect(grupo.miembros[0].alias).toBe("Papá");
   });
 
+  it("permite a un visitante unirse a un grupo mediante su código copiado", () => {
+    // 1. Unirse a un contingente nuevo por código
+    const grupoUnido = unirseAGrupoPorCodigo("CONTINGENTE-MASIVO", "Turista Nuevo");
+    expect(grupoUnido.codigo).toBe("CONTINGENTE-MASIVO");
+    expect(grupoUnido.categoria).toBe("grande");
+    expect(grupoUnido.tamano).toBe(24);
+    expect(grupoUnido.miembros.some((m) => m.alias === "Turista Nuevo")).toBe(true);
+
+    // 2. Verificar que quedó guardado como grupo activo
+    const activo = obtenerGrupo();
+    expect(activo?.codigo).toBe("CONTINGENTE-MASIVO");
+    expect(activo?.puntosBoteGrupal).toBeGreaterThan(0);
+
+    // 3. Unirse a un grupo existente por código
+    const gExistente = crearNuevoGrupo("Amigos de Tour", 4, "Líder");
+    const cod = gExistente.codigo;
+
+    const gActualizado = unirseAGrupoPorCodigo(cod, "Compañero 2");
+    expect(gActualizado.codigo).toBe(cod);
+    expect(gActualizado.miembros.some((m) => m.alias === "Compañero 2")).toBe(true);
+  });
+
   it("persiste y recupera el grupo en storage", () => {
     const grupo = crearNuevoGrupo("Amigos de Fiesta", 3, "Carlos");
     const guardado = obtenerGrupo();
@@ -83,4 +106,5 @@ describe("Módulo de Rutas en Grupo (lib/grupo)", () => {
     expect(g2?.puntosBoteGrupal).toBe(grupo.puntosBoteGrupal + 150 * 2);
   });
 });
+
 

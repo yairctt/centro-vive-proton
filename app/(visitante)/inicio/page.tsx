@@ -7,7 +7,8 @@ import { Budget } from "@/lib/types";
 import { CalendarIcon, ShipIcon, GlobeIcon, SparklesIcon, UsersIcon, TrophyIcon } from "@/components/paneles/icons";
 import { PulsoLogo } from "@/components/ui/PulsoLogo";
 import { getDictionary, getSavedLanguage, setSavedLanguage, type Idioma } from "@/lib/i18n";
-import { crearNuevoGrupo } from "@/lib/grupo";
+import { crearNuevoGrupo, obtenerGrupo, unirseAGrupoPorCodigo } from "@/lib/grupo";
+import { JoinGroupCard } from "@/components/ui/GroupExperience";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -57,19 +58,35 @@ export default function InicioPage() {
   const [tamanoGrupo, setTamanoGrupo] = useState(4);
   const [esPersonalizado, setEsPersonalizado] = useState(false);
   const [nombreGrupo, setNombreGrupo] = useState("Amigos del Puerto");
+  const [submodoGrupo, setSubmodoGrupo] = useState<"crear" | "unirme">("crear");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const searchParams = new URLSearchParams(window.location.search);
     const queryLang = searchParams.get("lang");
     const queryMode = searchParams.get("mode");
+    const queryGrupo = searchParams.get("grupo") || searchParams.get("code");
 
     const activeLang: Idioma = queryLang === "en" || queryLang === "es" ? (queryLang as Idioma) : getSavedLanguage();
     setLang(activeLang);
 
-    if (queryMode === "grupo") {
+    if (queryGrupo) {
+      setEsGrupo(true);
+      setSubmodoGrupo("unirme");
+      const g = unirseAGrupoPorCodigo(queryGrupo, activeLang === "en" ? "You" : "Tú");
+      setTamanoGrupo(g.tamano);
+      setNombreGrupo(g.nombre);
+    } else if (queryMode === "grupo") {
       setEsGrupo(true);
       setTamanoGrupo(5);
+    } else {
+      const gActivo = obtenerGrupo();
+      if (gActivo) {
+        setEsGrupo(true);
+        setTamanoGrupo(gActivo.tamano);
+        setNombreGrupo(gActivo.nombre);
+        setSubmodoGrupo("unirme");
+      }
     }
 
     const onLangChange = (e: Event) => {
@@ -140,7 +157,10 @@ export default function InicioPage() {
       sessionStorage.setItem('pulsoLang', lang);
 
       if (esGrupo) {
-        crearNuevoGrupo(nombreGrupo, tamanoGrupo, lang === "en" ? "You" : "Tú");
+        const existente = obtenerGrupo();
+        if (!existente || submodoGrupo === "crear") {
+          crearNuevoGrupo(nombreGrupo, tamanoGrupo, lang === "en" ? "You" : "Tú");
+        }
       } else {
         if (typeof window !== "undefined") {
           sessionStorage.removeItem("pulso_grupo_activo");
@@ -308,133 +328,176 @@ export default function InicioPage() {
 
           {esGrupo && (
             <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-4">
-              {/* Sugerencias de tamaño de grupo */}
-              <div>
-                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-2">
-                  {t.inicio.sugerenciaTamano}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTamanoGrupo(3);
-                      setEsPersonalizado(false);
-                    }}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      !esPersonalizado && tamanoGrupo <= 4
-                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{t.inicio.tamanoPequeno}</div>
-                    <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoPequenoDesc}</div>
-                  </button>
+              {/* Pestañas: Crear Grupo vs Unirme con Código */}
+              <div className="grid grid-cols-2 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl text-xs font-bold gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSubmodoGrupo("crear")}
+                  className={`py-2 px-2 rounded-lg transition-all text-center cursor-pointer ${
+                    submodoGrupo === "crear"
+                      ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs font-black"
+                      : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400"
+                  }`}
+                >
+                  ➕ {t.inicio.submodoCrear}
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTamanoGrupo(6);
-                      setEsPersonalizado(false);
-                    }}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      !esPersonalizado && tamanoGrupo >= 5 && tamanoGrupo <= 10
-                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{t.inicio.tamanoMediano}</div>
-                    <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoMedianoDesc}</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTamanoGrupo(20);
-                      setEsPersonalizado(false);
-                    }}
-                    className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
-                      !esPersonalizado && tamanoGrupo > 10
-                        ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{t.inicio.tamanoContingente}</div>
-                    <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoContingenteDesc}</div>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setSubmodoGrupo("unirme")}
+                  className={`py-2 px-2 rounded-lg transition-all text-center cursor-pointer ${
+                    submodoGrupo === "unirme"
+                      ? "bg-amber-500 text-neutral-950 shadow-xs font-black"
+                      : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400"
+                  }`}
+                >
+                  🔑 {t.inicio.submodoUnirme}
+                </button>
               </div>
 
-              {/* Cantidad personalizada */}
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                    {t.inicio.personalizada}
-                  </span>
-                  <span className="font-mono text-sm font-black text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
-                    {tamanoGrupo} {t.inicio.personas}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min="2"
-                    max="50"
-                    value={tamanoGrupo}
-                    onChange={(e) => {
-                      setTamanoGrupo(Number(e.target.value));
-                      setEsPersonalizado(true);
-                    }}
-                    className="flex-1 accent-amber-600 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg"
-                  />
-                  <input
-                    type="number"
-                    min="2"
-                    max="300"
-                    value={tamanoGrupo}
-                    onChange={(e) => {
-                      const val = Math.max(2, Number(e.target.value) || 2);
-                      setTamanoGrupo(val);
-                      setEsPersonalizado(true);
-                    }}
-                    className="w-16 text-center text-xs font-bold py-1 px-1.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Nombre del grupo */}
-              <div>
-                <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  {t.inicio.nombreGrupoLabel}
-                </label>
-                <input
-                  type="text"
-                  value={nombreGrupo}
-                  onChange={(e) => setNombreGrupo(e.target.value)}
-                  placeholder={t.inicio.nombreGrupoPlaceholder}
-                  className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+              {submodoGrupo === "unirme" ? (
+                <JoinGroupCard
+                  lang={lang}
+                  onGroupJoined={(g) => {
+                    setTamanoGrupo(g.tamano);
+                    setNombreGrupo(g.nombre);
+                  }}
+                  onGroupLeft={() => {
+                    setEsGrupo(false);
+                    setSubmodoGrupo("crear");
+                  }}
                 />
-              </div>
+              ) : (
+                <>
+                  {/* Sugerencias de tamaño de grupo */}
+                  <div>
+                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-2">
+                      {t.inicio.sugerenciaTamano}
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTamanoGrupo(3);
+                          setEsPersonalizado(false);
+                        }}
+                        className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                          !esPersonalizado && tamanoGrupo <= 4
+                            ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                            : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{t.inicio.tamanoPequeno}</div>
+                        <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoPequenoDesc}</div>
+                      </button>
 
-              {/* Beneficio dinámico según el tamaño */}
-              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200 dark:border-amber-800 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
-                <TrophyIcon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5 text-[11px] leading-relaxed">
-                  <p className="font-bold">
-                    {tamanoGrupo <= 4
-                      ? t.inicio.beneficioPequenoTitulo
-                      : tamanoGrupo <= 10
-                      ? t.inicio.beneficioMedianoTitulo
-                      : `${t.inicio.beneficioGrandeTitulo} (${tamanoGrupo} ${t.inicio.personas})`}
-                  </p>
-                  <p>
-                    {tamanoGrupo <= 4
-                      ? t.inicio.beneficioPequenoDesc
-                      : tamanoGrupo <= 10
-                      ? t.inicio.beneficioMedianoDesc
-                      : t.inicio.beneficioGrandeDesc}
-                  </p>
-                </div>
-              </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTamanoGrupo(6);
+                          setEsPersonalizado(false);
+                        }}
+                        className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                          !esPersonalizado && tamanoGrupo >= 5 && tamanoGrupo <= 10
+                            ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                            : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{t.inicio.tamanoMediano}</div>
+                        <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoMedianoDesc}</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTamanoGrupo(20);
+                          setEsPersonalizado(false);
+                        }}
+                        className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                          !esPersonalizado && tamanoGrupo > 10
+                            ? "bg-amber-500 border-amber-600 text-neutral-950 font-black shadow-xs"
+                            : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{t.inicio.tamanoContingente}</div>
+                        <div className="text-[10px] mt-0.5 opacity-90">{t.inicio.tamanoContingenteDesc}</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cantidad personalizada */}
+                  <div className="bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                        {t.inicio.personalizada}
+                      </span>
+                      <span className="font-mono text-sm font-black text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
+                        {tamanoGrupo} {t.inicio.personas}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="2"
+                        max="50"
+                        value={tamanoGrupo}
+                        onChange={(e) => {
+                          setTamanoGrupo(Number(e.target.value));
+                          setEsPersonalizado(true);
+                        }}
+                        className="flex-1 accent-amber-600 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg"
+                      />
+                      <input
+                        type="number"
+                        min="2"
+                        max="300"
+                        value={tamanoGrupo}
+                        onChange={(e) => {
+                          const val = Math.max(2, Number(e.target.value) || 2);
+                          setTamanoGrupo(val);
+                          setEsPersonalizado(true);
+                        }}
+                        className="w-16 text-center text-xs font-bold py-1 px-1.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nombre del grupo */}
+                  <div>
+                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
+                      {t.inicio.nombreGrupoLabel}
+                    </label>
+                    <input
+                      type="text"
+                      value={nombreGrupo}
+                      onChange={(e) => setNombreGrupo(e.target.value)}
+                      placeholder={t.inicio.nombreGrupoPlaceholder}
+                      className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Beneficio dinámico según el tamaño */}
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200 dark:border-amber-800 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+                    <TrophyIcon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5 text-[11px] leading-relaxed">
+                      <p className="font-bold">
+                        {tamanoGrupo <= 4
+                          ? t.inicio.beneficioPequenoTitulo
+                          : tamanoGrupo <= 10
+                          ? t.inicio.beneficioMedianoTitulo
+                          : `${t.inicio.beneficioGrandeTitulo} (${tamanoGrupo} ${t.inicio.personas})`}
+                      </p>
+                      <p>
+                        {tamanoGrupo <= 4
+                          ? t.inicio.beneficioPequenoDesc
+                          : tamanoGrupo <= 10
+                          ? t.inicio.beneficioMedianoDesc
+                          : t.inicio.beneficioGrandeDesc}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </section>

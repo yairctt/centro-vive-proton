@@ -452,3 +452,32 @@
   - `app/(visitante)/mision/[id]/page.tsx`
 - **Revisión humana:** Se ejecutó `npx tsc --noEmit` (0 errores) y `npm test` (152/152 pruebas aprobadas). Se verificó el flujo completo en inglés y español.
 - **Commit:** `feat(i18n): traduccion completa al ingles selector de idioma universal y soporte bilingue para cruceristas`
+
+### 08:40 · Fase 16: Interfaz de Usuario para Unirse a Grupos Grandes Mediante Código de Grupo
+
+- **Herramienta:** Antigravity (Gemini 3.8 Flash)
+- **Objetivo:** Permitir que cualquier visitante o turista se una fácilmente a un contingente masivo o grupo de viaje cuando copie o reciba un código de grupo (ej: `JAROCHO-842`, `CONTINGENTE-24`, etc.).
+- **Prompt (resumen):** «Ahora en la vista del usuario se debe ver la forma en la que se unira al grupo grande cuando este copie el codigo de grupo.»
+- **Decisiones técnicas y de diseño tomadas por la IA:**
+  - **Lógica de unión y persistencia (`lib/grupo/index.ts`):**
+    - Función `unirseAGrupoPorCodigo(codigo, alias)` que detecta grupos activos, recientes o instancias de contingente, incorporando al turista como miembro del equipo.
+    - Emisión del evento global reactivo `pulso_grupo_changed` para sincronización en caliente entre componentes.
+  - **Componente interactivo `JoinGroupCard` (`components/ui/GroupExperience.tsx`):**
+    - Input de código con formato en mayúsculas automático y botón directo para pegar desde el portapapeles (`navigator.clipboard.readText()`).
+    - Pastillas de prueba rápida para evaluación del jurado (`CONTINGENTE-24`, `JAROCHO-842`, `TOUR-50`).
+    - Estado de confirmación con animación y visualización del grupo activo (código, tamaño del contingente, puntos de bote colectivo y opción de salida).
+  - **Integración en la Vista del Visitante (`app/(visitante)/inicio/page.tsx` & `app/(visitante)/ruta/page.tsx`):**
+    - En `/inicio`: Sub-pestañas "Crear grupo nuevo" vs "Tengo un código" en la sección de viaje en grupo, además de detección automática de códigos vía parámetro URL (`?grupo=...`).
+    - En `/ruta`: Botón accesible si no hay grupo activo *"¿Vienes en grupo o contingente? Ingresar Código"*, que despliega el formulario de unión directa y activa al instante el `GroupRouteWidget` sin necesidad de reiniciar el recorrido.
+  - **Pruebas unitarias completas:**
+    - Se agregó caso de prueba en `lib/grupo/__tests__/grupo.test.ts` validando la incorporación por código y almacenamiento. 153 pruebas aprobadas.
+- **Resultado:**
+  - `lib/grupo/index.ts`
+  - `lib/grupo/__tests__/grupo.test.ts`
+  - `components/ui/GroupExperience.tsx`
+  - `app/(visitante)/inicio/page.tsx`
+  - `app/(visitante)/ruta/page.tsx`
+  - `lib/i18n/es.ts`
+  - `lib/i18n/en.ts`
+- **Revisión humana:** Se verificó `npx tsc --noEmit` (0 errores) y `npm test` (153/153 pruebas aprobadas). El flujo de unión por código funciona tanto desde `/inicio` como en caliente desde `/ruta`.
+- **Commit:** `feat(grupos): interfaz de union a grupos y contingentes por codigo copiado con soporte reactivo y bilingue`

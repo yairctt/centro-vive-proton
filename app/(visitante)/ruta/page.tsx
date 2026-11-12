@@ -7,7 +7,7 @@ import { Mapa } from "@/components/mapa";
 import { getDictionary, type Idioma } from "@/lib/i18n";
 import { useIdioma, LanguageSelector } from "@/components/ui/LanguageSelector";
 import type { RouteStop } from "@/lib/types";
-import { GroupRouteWidget } from "@/components/ui/GroupExperience";
+import { GroupRouteWidget, JoinGroupCard } from "@/components/ui/GroupExperience";
 import { obtenerGrupo } from "@/lib/grupo";
 
 import { enlaceLugar, enlaceRutaCompleta, type PuntoRuta } from "@/components/visitante/enlaces-maps";
@@ -60,6 +60,7 @@ export default function RutaPage() {
   const [enlaceCopiado, setEnlaceCopiado] = useState(false);
   const [lang, setLang] = useState<Idioma>("es");
   const [grupoActivo, setGrupoActivo] = useState(false);
+  const [mostrarUnirseGrupo, setMostrarUnirseGrupo] = useState(false);
 
   useEffect(() => {
     // El setTimeout saca la actualización de estado del flujo síncrono del efecto,
@@ -88,8 +89,21 @@ export default function RutaPage() {
       setCargando(false);
     }, 0);
 
+    const onGrupoChange = (e: Event) => {
+      const custom = e as CustomEvent<unknown>;
+      setGrupoActivo(Boolean(custom.detail));
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("pulso_grupo_changed", onGrupoChange);
+    }
+
     // Limpieza del efecto
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("pulso_grupo_changed", onGrupoChange);
+      }
+    };
   }, []);
 
   const t = getDictionary(lang);
@@ -242,14 +256,58 @@ export default function RutaPage() {
       )}
 
       <div className="flex-1 p-5 pb-32 space-y-4 relative max-w-lg mx-auto w-full">
-        {/* Widget de ruta en grupo colaborativo */}
-        {grupoActivo && (
+        {/* Widget de ruta en grupo o tarjeta para unirse con código */}
+        {grupoActivo ? (
           <div className="mb-3">
             <GroupRouteWidget
               currentPlaceId={stops[0]?.place?.id || "malecon"}
               currentPlaceName={stops[0]?.place?.name || "Parada Actual"}
               lang={lang}
             />
+          </div>
+        ) : (
+          <div className="mb-3">
+            {!mostrarUnirseGrupo ? (
+              <button
+                type="button"
+                onClick={() => setMostrarUnirseGrupo(true)}
+                className="w-full flex items-center justify-between p-3 rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/20 text-neutral-900 dark:text-neutral-100 text-xs font-bold shadow-xs hover:border-amber-400 cursor-pointer transition active:scale-[0.99]"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 font-black">
+                    🔑
+                  </span>
+                  <div className="text-left">
+                    <span>{t.ruta.tienesCodigoPregunta}</span>
+                    <span className="block text-[10px] text-amber-800 dark:text-amber-300 font-normal">
+                      {t.ruta.tienesCodigoDesc}
+                    </span>
+                  </div>
+                </div>
+                <span className="shrink-0 px-2.5 py-1 rounded-xl bg-amber-500 text-neutral-950 text-[11px] font-black shadow-2xs">
+                  {lang === "en" ? "Enter Code" : "Ingresar Código"}
+                </span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setMostrarUnirseGrupo(false)}
+                    className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 cursor-pointer"
+                  >
+                    ✕ {lang === "en" ? "Hide" : "Ocultar"}
+                  </button>
+                </div>
+                <JoinGroupCard
+                  lang={lang}
+                  onGroupJoined={() => {
+                    setGrupoActivo(true);
+                    setMostrarUnirseGrupo(false);
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
 
